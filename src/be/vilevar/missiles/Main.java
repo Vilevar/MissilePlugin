@@ -160,7 +160,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onEntitySpawn(EntitySpawnEvent e) {
-		if(e.getEntityType()==EntityType.SLIME)
+		if(e.getEntityType()==EntityType.SLIME || e.getEntityType() == EntityType.PHANTOM)
 			e.setCancelled(true);
 	}
 	
