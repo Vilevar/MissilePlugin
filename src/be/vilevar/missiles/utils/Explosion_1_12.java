@@ -93,6 +93,7 @@ public class Explosion_1_12 extends Explosion {
 		this.j = DamageSource.explosion(this);
 	}
 
+	@Override
 	public void a() {
 		if (this.size < 0.1F) {
 			return;
@@ -181,10 +182,10 @@ public class Explosion_1_12 extends Explosion {
 		Vec3D vec3d = new Vec3D(this.posX, this.posY, this.posZ);
 
 		for (int l1 = 0; l1 < list.size(); l1++) {
-			Entity entity = (Entity) list.get(l1);
+			Entity entity = list.get(l1);
 
 			if (!entity.ca()) {
-				double d7 = (double) (MathHelper.sqrt(entity.c(vec3d)) / f3);
+				double d7 = MathHelper.sqrt(entity.c(vec3d)) / f3;
 
 				if (d7 <= 1.0D) {
 					double d8 = entity.locX() - this.posX;
@@ -196,13 +197,13 @@ public class Explosion_1_12 extends Explosion {
 						d8 /= d11;
 						d9 /= d11;
 						d10 /= d11;
-						double d12 = (double) a(vec3d, entity);
+						double d12 = a(vec3d, entity);
 						double d13 = (1.0D - d7) * d12;
 
 						CraftEventFactory.entityDamage = this.source;
 						entity.forceExplosionKnockback = false;
 						boolean wasDamaged = entity.damageEntity(this.b(),
-								(float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f3 + 1.0D)));
+								((int) ((d13 * d13 + d13) / 2.0D * 7.0D * f3 + 1.0D)));
 						CraftEventFactory.entityDamage = null;
 						if (wasDamaged || entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock
 								|| entity.forceExplosionKnockback) {
@@ -229,6 +230,7 @@ public class Explosion_1_12 extends Explosion {
 		}
 	}
 
+	@Override
 	public void a(boolean flag) {
 		if (this.world.isClientSide) {
 			this.world.a(this.posX, this.posY, this.posZ, SoundEffects.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS,
@@ -334,15 +336,15 @@ public class Explosion_1_12 extends Explosion {
 								.iterator();
 
 						while (objectlistiterator.hasNext()) {
-							Pair<ItemStack, BlockPosition> pair = (Pair<ItemStack, BlockPosition>) objectlistiterator
+							Pair<ItemStack, BlockPosition> pair = objectlistiterator
 									.next();
-							net.minecraft.server.v1_15_R1.Block.a(this.world, (BlockPosition) pair.getSecond(),
-									(ItemStack) pair.getFirst());
+							net.minecraft.server.v1_15_R1.Block.a(this.world, pair.getSecond(),
+									pair.getFirst());
 						}
 						break label111;
 					}
 
-					blockposition = (BlockPosition) iterator.next();
+					blockposition = iterator.next();
 					iblockdata = this.world.getType(blockposition);
 					block = iblockdata.getBlock();
 				} while (iblockdata.isAir());
@@ -374,7 +376,7 @@ public class Explosion_1_12 extends Explosion {
 				iterator = this.blocks.iterator();
 
 				while (iterator.hasNext()) {
-					BlockPosition blockposition = (BlockPosition) iterator.next();
+					BlockPosition blockposition = iterator.next();
 					if (this.world.getType(blockposition).getMaterial() == net.minecraft.server.v1_15_R1.Material.AIR
 							&& this.world.getType(blockposition.down()).g(this.world, blockposition.down())
 							&& this.c.nextInt(3) == 0) {
@@ -388,18 +390,22 @@ public class Explosion_1_12 extends Explosion {
 		}
 	}
 
+	@Override
 	public DamageSource b() {
 		return this.j;
 	}
 
+	@Override
 	public void a(DamageSource damagesource) {
 		this.j = damagesource;
 	}
 
+	@Override
 	public Map<EntityHuman, Vec3D> c() {
 		return this.k;
 	}
 
+	@Override
 	@Nullable
 	public EntityLiving getSource() {
 		return (this.source == null) ? null
@@ -409,10 +415,12 @@ public class Explosion_1_12 extends Explosion {
 										: null)));
 	}
 
+	@Override
 	public void clearBlocks() {
 		this.blocks.clear();
 	}
 
+	@Override
 	public List<BlockPosition> getBlocks() {
 		return this.blocks;
 	}
@@ -428,12 +436,12 @@ public class Explosion_1_12 extends Explosion {
 			int i = 0;
 			int j = 0;
 
-			for (float f = 0.0F; f <= 1.0F; f = (float) ((double) f + d0)) {
-				for (float f1 = 0.0F; f1 <= 1.0F; f1 = (float) ((double) f1 + d1)) {
-					for (float f2 = 0.0F; f2 <= 1.0F; f2 = (float) ((double) f2 + d2)) {
-						double d5 = MathHelper.d((double) f, axisalignedbb.minX, axisalignedbb.maxX);
-						double d6 = MathHelper.d((double) f1, axisalignedbb.minY, axisalignedbb.maxY);
-						double d7 = MathHelper.d((double) f2, axisalignedbb.minZ, axisalignedbb.maxZ);
+			for (float f = 0.0F; f <= 1.0F; f = (float) (f + d0)) {
+				for (float f1 = 0.0F; f1 <= 1.0F; f1 = (float) (f1 + d1)) {
+					for (float f2 = 0.0F; f2 <= 1.0F; f2 = (float) (f2 + d2)) {
+						double d5 = MathHelper.d(f, axisalignedbb.minX, axisalignedbb.maxX);
+						double d6 = MathHelper.d(f1, axisalignedbb.minY, axisalignedbb.maxY);
+						double d7 = MathHelper.d(f2, axisalignedbb.minZ, axisalignedbb.maxZ);
 						Vec3D vec3d1 = new Vec3D(d5 + d3, d6, d7 + d4);
 						if (entity.world.rayTrace(new RayTrace(vec3d1, vec3d, BlockCollisionOption.OUTLINE,
 								FluidCollisionOption.NONE, entity)).getType() == EnumMovingObjectType.MISS) {
@@ -460,7 +468,7 @@ public class Explosion_1_12 extends Explosion {
 			ItemStack itemstack1 = pair.getFirst();
 			if (EntityItem.a(itemstack1, itemstack)) {
 				ItemStack itemstack2 = EntityItem.a(itemstack1, itemstack, 16);
-				objectarraylist.set(j, Pair.of(itemstack2, (BlockPosition) pair.getSecond()));
+				objectarraylist.set(j, Pair.of(itemstack2, pair.getSecond()));
 				if (itemstack.isEmpty()) {
 					return;
 				}
@@ -492,7 +500,7 @@ public class Explosion_1_12 extends Explosion {
 			EntityPlayer entityplayer = (EntityPlayer) iterator.next();
 			if (entityplayer.g(x, y, z) < 4096.0D) {
 				entityplayer.playerConnection.sendPacket(new PacketPlayOutExplosion(x, y, z, size,
-						explosion.getBlocks(), (Vec3D) explosion.c().get(entityplayer)));
+						explosion.getBlocks(), explosion.c().get(entityplayer)));
 			}
 		}
 

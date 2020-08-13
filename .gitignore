@@ -4,3 +4,4 @@
 .project
 .gitattributes
 .gitignore
+/bin/

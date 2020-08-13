@@ -12,7 +12,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.utils.MegaExplosion;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class BalisticMissile implements Cloneable {
@@ -167,9 +166,9 @@ public class BalisticMissile implements Cloneable {
 		this.task = Bukkit.getScheduler().runTaskTimer(Main.i, () -> {
 			
 			for(int i = 0; i < n + 1 && !exploded; i++) {
-				float speed = (float) (i == n ? r : PRECISION);
+				float speed = i == n ? r : PRECISION;
 				if(speed == 0) continue;
-				float nextSpeed = (float) ((i+1) < n || (i==n && n>=1) ? PRECISION : r);
+				float nextSpeed = (i+1) < n || (i==n && n>=1) ? PRECISION : r;
 				
 				if(this.state == State.TAKE_OFF) {
 					if(this.position.getY() >= (flightHeight-radius1)) {
@@ -317,6 +316,7 @@ public class BalisticMissile implements Cloneable {
 		State(boolean stable) {}
 	}
 	
+	@Override
 	public BalisticMissile clone() {
 		return new BalisticMissile(particle, this.explosionPower, weight, rotatingForce, range, speed, flightHeight, this.detectorDistance, location);
 	}

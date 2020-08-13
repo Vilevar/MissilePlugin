@@ -63,7 +63,7 @@ public class MissileWorldGenerator {
 				Iterator<WorldServer> var11 = server.getServer().getWorlds().iterator();
 
 				while (var11.hasNext()) {
-					WorldServer worldServer = (WorldServer) var11.next();
+					WorldServer worldServer = var11.next();
 					used = worldServer.getWorldProvider().getDimensionManager().getDimensionID() == dimension;
 					if (used) {
 						++dimension;

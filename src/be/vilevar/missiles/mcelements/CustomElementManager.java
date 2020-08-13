@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
@@ -1368,6 +1367,7 @@ public class CustomElementManager implements Listener {
 			return is;
 		}
 		
+		@Override
 		public BalisticMissileData clone() {
 			return new BalisticMissileData(explosionPower, weight, rotatingForce, range, speed, flightHeight, this.detectDist);
 		}

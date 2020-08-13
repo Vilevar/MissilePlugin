@@ -157,9 +157,9 @@ public class BasicMissile implements Cloneable {
 			} while(isObstructed);
 			
 			for(int i = 0; i < n + 1 && !exploded; i++) {
-				float speed = (float) (i == n ? r : PRECISION);
+				float speed = i == n ? r : PRECISION;
 				if(speed == 0) continue;
-				float nextSpeed = (float) ((i+1) < n || (i==n && n>=1) ? PRECISION : r);
+				float nextSpeed = (i+1) < n || (i==n && n>=1) ? PRECISION : r;
 				
 				this.direction.normalize().multiply(speed);
 				
@@ -219,6 +219,7 @@ public class BasicMissile implements Cloneable {
 		return false;
 	}
 	
+	@Override
 	public BasicMissile clone() {
 		return new BasicMissile(particle, this.explosionPower, weight, rotatingForce, range, speed);
 	}

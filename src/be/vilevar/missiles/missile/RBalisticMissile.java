@@ -180,6 +180,7 @@ public class RBalisticMissile implements Cloneable {
 		Main.display(this.particle, this.position);
 	}
 	
+	@Override
 	public RBalisticMissile clone() {
 		return new RBalisticMissile(particle, explosionPower, weight, speed, maxHeight, location);
 	}

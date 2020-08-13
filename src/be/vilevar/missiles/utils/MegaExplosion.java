@@ -175,9 +175,9 @@ public class MegaExplosion extends Entity {
 			for (int i = 0; i < 16; i++) {
 				for (int j = 0; j < 16; j++) {
 					if (k == 0 || k == 15 || i == 0 || i == 15 || j == 0 || j == 15) {
-						double d0 = (double) ((float) k / 15.0F * 2.0F - 1.0F);
-						double d1 = (double) ((float) i / 15.0F * 2.0F - 1.0F);
-						double d2 = (double) ((float) j / 15.0F * 2.0F - 1.0F);
+						double d0 = k / 15.0F * 2.0F - 1.0F;
+						double d1 = i / 15.0F * 2.0F - 1.0F;
+						double d2 = j / 15.0F * 2.0F - 1.0F;
 						double d3 = Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
 						
 						d0 /= d3;
@@ -343,7 +343,7 @@ public class MegaExplosion extends Entity {
 		}
 		Iterator<BlockPosition> it = this.igniteIterator;
 		for (int i = 0; i < 150 && it.hasNext(); i++) {
-			BlockPosition position = (BlockPosition) it.next();
+			BlockPosition position = it.next();
 			if (this.random.nextInt(3) == 0 && this.world.getType(position).isAir()
 					&& this.world.getType(position.down()).g(this.world, position.down())) {
 				org.bukkit.World bukkitWorld = this.world.getWorld();
@@ -390,17 +390,17 @@ public class MegaExplosion extends Entity {
 			Entity entity = list.get(this.entityIndex);
 			if (!entity.ca()) {
 				double squaredDelta = entity.c(vec3d);
-				double relativeDistance = (double) (MathHelper.sqrt(squaredDelta) / f3);
+				double relativeDistance = MathHelper.sqrt(squaredDelta) / f3;
 				if (relativeDistance <= 1.0D) {
 					double dX = entity.locX() - x;
 					double dY = entity.getHeadY() - y;
 					double dZ = entity.locZ() - z;
-					double distance = (double) MathHelper.sqrt(dX * dX + dY * dY + dZ * dZ);
+					double distance = MathHelper.sqrt(dX * dX + dY * dY + dZ * dZ);
 					if (distance != 0.0D) {
 						dX /= distance;
 						dY /= distance;
 						dZ /= distance;
-						double ejectPower = (double) Explosion.a(vec3d, entity);
+						double ejectPower = Explosion.a(vec3d, entity);
 						double damage = (1.0D - relativeDistance) * ejectPower;
 						CraftEventFactory.entityDamage = this;
 						entity.forceExplosionKnockback = false;
@@ -495,6 +495,7 @@ public class MegaExplosion extends Entity {
 	
 	public static enum State {
 		WAITING(null) {
+			@Override
 			public State doStep(MegaExplosion explosion) {
 				return WAITING;
 			}
