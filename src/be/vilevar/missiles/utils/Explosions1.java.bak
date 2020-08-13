@@ -1,0 +1,249 @@
+package be.vilevar.missiles.utils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
+import org.bukkit.util.Vector;
+
+import net.minecraft.server.v1_12_R1.Block;
+import net.minecraft.server.v1_12_R1.BlockPosition;
+import net.minecraft.server.v1_12_R1.Blocks;
+import net.minecraft.server.v1_12_R1.Entity;
+import net.minecraft.server.v1_12_R1.EntityHuman;
+import net.minecraft.server.v1_12_R1.EntityLiving;
+import net.minecraft.server.v1_12_R1.Explosion;
+import net.minecraft.server.v1_12_R1.IBlockData;
+import net.minecraft.server.v1_12_R1.MathHelper;
+import net.minecraft.server.v1_12_R1.Vec3D;
+import net.minecraft.server.v1_12_R1.World;
+
+public class Explosions1 extends Explosion {
+
+	private Random random = new Random();
+
+	private Location loc;
+	private Vector vLoc;
+	private float power;
+	private boolean setFire;
+
+	private float yield;
+	private World world;
+	private int critical;
+	private double blast;
+
+	public Explosions1(Location loc, float power, boolean setFire) {
+		super(getWorld(loc), null, loc.getX(), loc.getY(), loc.getZ(), power, setFire, true);
+		this.loc = loc;
+		this.vLoc = loc.toVector();
+		this.power = power;
+		this.setFire = setFire;
+		this.yield = 1 / power;
+		this.critical = (int) (power / 5);
+		this.world = getWorld(loc);
+		this.blast = power * 2;
+	}
+
+	public void doExplosion() {
+		ParticleEffect.EXPLOSION_LARGE.display(1, 0, 0, 0.1f, 1, loc, loc.getWorld().getPlayers());
+		// Create the sphere[radius = power] to get the extremities and work with it
+		double radius = power;
+		while (radius > 25)
+			radius /= 2;
+		radius += 0.5;
+		final double invRadius = 1.0 / radius;
+		final int ceilRadius = (int) Math.ceil(radius);
+		double nextXn = 0.0;
+		double xn;
+		double nextYn;
+		double yn;
+		double nextZn;
+		int z;
+		double zn;
+		double distanceSq;
+		Label_0425: Label_0419: for (int x = 0; x <= ceilRadius; ++x) {
+			xn = nextXn;
+			nextXn = (x + 1) * invRadius;
+			nextYn = 0.0;
+			for (int y = 0; y <= ceilRadius; ++y) {
+				yn = nextYn;
+				nextYn = (y + 1) * invRadius;
+				nextZn = 0.0;
+				z = 0;
+				while (z <= ceilRadius) {
+					zn = nextZn;
+					nextZn = (z + 1) * invRadius;
+					distanceSq = lengthSq(xn, yn, zn);
+					if (distanceSq > 1.0) {
+						if (z != 0) {
+							break;
+						}
+						if (y == 0) {
+							break Label_0425;
+						}
+						continue Label_0419;
+					} else {
+						if (lengthSq(nextXn, yn, zn) > 1.0 || lengthSq(xn, nextYn, zn) > 1.0 || lengthSq(xn, yn, nextZn) > 1.0) {
+							this.workWithExtremity(new Vector(x, y, z));
+							this.workWithExtremity(new Vector(-x, y, z));
+							this.workWithExtremity(new Vector(x, -y, z));
+							this.workWithExtremity(new Vector(x, y, -z));
+							this.workWithExtremity(new Vector(-x, -y, z));
+							this.workWithExtremity(new Vector(x, -y, -z));
+							this.workWithExtremity(new Vector(-x, y, -z));
+							this.workWithExtremity(new Vector(-x, -y, -z));
+						}
+						++z;
+					}
+				}
+			}
+		}
+	}
+
+	private void workWithExtremity(Vector v) {
+		// Get all the densities of the way
+		List<Integer> densities = new ArrayList<>();
+		int density = 0;
+		for (int dist = 1; dist <= power; dist++) {
+			v.multiply(dist);
+			loc.add(v);
+			if (loc.getBlock().getType() == org.bukkit.Material.AIR) {
+				if (density != 0) {
+					densities.add(density / 2);
+				}
+				density = 0;
+			} else {
+				BlockPosition bp = new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
+				density += world.getType(bp).getBlock().a((Entity) null);
+			}
+			loc.subtract(v);
+			v.normalize();
+		}
+		if (density != 0)
+			densities.add(density / 2);
+		// Explode the blocks, take of the densities
+		Iterator<Integer> it = densities.iterator();
+		double deflagration = power;
+		boolean hasLostByDensity = false;
+		for (int dist = 1; it.hasNext() && deflagration > 0; dist++) {
+			v.multiply(dist);
+			loc.add(v);
+			// Try to remove block
+			if (loc.getBlock().getType() != Material.AIR) {
+				density = it.next();
+				it.remove();
+				if (!hasLostByDensity) {
+					deflagration -= density;
+					hasLostByDensity = true;
+				}
+				BlockPosition bp = new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
+				IBlockData blockdata = world.getType(bp);
+				Block block = blockdata.getBlock();
+				if ((deflagration -= block.a((Entity) null)) > 0) {
+					if (block.a(this)) {
+						block.dropNaturally(world, bp, blockdata, yield, 0);
+					}
+					world.setTypeAndData(bp, Blocks.AIR.getBlockData(), 3);
+					block.wasExploded(world, bp, this);
+					createParticles(loc, random, power, vLoc);
+				}
+			} else {
+				hasLostByDensity = false;
+			}
+			// Continue
+			loc.subtract(v);
+			v.normalize();
+			deflagration -= 0.2;
+		}
+	}
+
+	public void doBlast() {
+
+	}
+
+	
+	
+	
+	// Override
+	
+	@Override
+	public void a() {
+		this.doExplosion();
+	}
+
+	@Override
+	public void a(boolean flag) {
+		this.doBlast();
+	}
+
+	@Override
+	public Map<EntityHuman, Vec3D> b() {
+		return null;
+	}
+
+	@Override
+	public EntityLiving getSource() {
+		return null;
+	}
+
+	@Override
+	public void clearBlocks() {
+	}
+
+	@Override
+	public List<BlockPosition> getBlocks() {
+		return null;
+	}
+	
+	
+	// Static
+
+	public static void createExplosion(Location loc, int power, boolean setFire) {
+		long l = System.nanoTime();
+		Explosions1 e = new Explosions1(loc, power, setFire);
+		e.doExplosion();
+		e.doBlast();
+		System.out.println(System.nanoTime() - l);
+	}
+
+	private static void createParticles(Location loc, Random random, float power, Vector vLoc) {
+		double x = loc.getX() + random.nextFloat();
+		double y = loc.getY() + random.nextFloat();
+		double z = loc.getZ() + random.nextFloat();
+		float dX = (float) (x - vLoc.getX());
+		float dY = (float) (y - vLoc.getY());
+		float dZ = (float) (z - vLoc.getZ());
+		double dLength = MathHelper.sqrt(dX * dX + dY * dY + dZ * dZ);
+		dX /= dLength;
+		dY /= dLength;
+		dZ /= dLength;
+		double difference = 0.5D / (dLength / power + 0.1D);
+		difference *= random.nextFloat() * random.nextFloat() + 0.3F;
+		dX *= difference;
+		dY *= difference;
+		dZ *= difference;
+		Location pLoc = new Location(loc.getWorld(), (x + vLoc.getX()) / 2D, (y + vLoc.getY()) / 2D,
+				(z + vLoc.getZ()) / 2D);
+		ParticleEffect.EXPLOSION_NORMAL.display(dX, dY, dZ, 0.1f, 1, pLoc, pLoc.getWorld().getPlayers());
+		ParticleEffect.SMOKE_NORMAL.display(dX, dY, dZ, 0.1f, 1, pLoc, pLoc.getWorld().getPlayers());
+	}
+
+	private static World getWorld(Location loc) {
+		for (World w : ((CraftServer) Bukkit.getServer()).getServer().worlds) {
+			if (w.getDataManager().getUUID().equals(loc.getWorld().getUID())) {
+				return w;
+			}
+		}
+		return null;
+	}
+
+	private static double lengthSq(final double x, final double y, final double z) {
+		return x * x + y * y + z * z;
+	}
+}
