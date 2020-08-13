@@ -83,7 +83,6 @@ public class Main extends JavaPlugin implements Listener {
 				//	RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.HEART, 1);
 				//	RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.BARRIER, 0.5);
 				//	RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.FIREWORKS_SPARK, 50);
-					System.out.println("Test");
 					break d;
 				}
 			}
