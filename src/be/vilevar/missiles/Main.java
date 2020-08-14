@@ -147,9 +147,9 @@ public class Main extends JavaPlugin implements Listener {
 			}
 			if(launcher!=null) {
 				Bukkit.broadcastMessage(
-						"§6Un lanceur de missiles de "+launcher.getOwner().getName()+" vient de se casser en ("+l.getBlockX()+"; "+l.getBlockZ()+") !");
+						"§6Un lanceur de missiles de "+launcher.getOwner().getName()+" a été détruit en ("+l.getBlockX()+"; "+l.getBlockZ()+") !");
 			} else {
-				Bukkit.broadcastMessage("§6Un lanceur de missiles vient de se casser en ("+l.getBlockX()+"; "+l.getBlockZ()+") !");
+				Bukkit.broadcastMessage("§6Un lanceur de missiles a été détruit en ("+l.getBlockX()+"; "+l.getBlockZ()+") !");
 			}
 			MissileLauncherBlock.checkDestroy(block.getLocation());
 		}
