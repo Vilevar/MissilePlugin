@@ -29,6 +29,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.mcelements.persistantdata.BalisticMissilePersistantDataType;
 import be.vilevar.missiles.mcelements.persistantdata.LaserPointerPersistantDataType;
 import be.vilevar.missiles.missile.BalisticMissile;
 import be.vilevar.missiles.utils.ParticleEffect;
@@ -1153,21 +1154,10 @@ public class CustomElementManager implements Listener {
 	public static BalisticMissileData getBalisticMissileData(ItemStack is) {
 		if(is!=null && is.getType()==BALISTIC_MISSILE) {
 			ItemMeta im = is.getItemMeta();
-			if(im.hasLore() && im.getLore().size()==7) {
-				try {
-					List<String> lore = im.getLore();
-					float explosionPower = Float.parseFloat(lore.get(0));
-					double weight = Double.parseDouble(lore.get(1));
-					double rotatingForce = Double.parseDouble(lore.get(2));
-					double range = Double.parseDouble(lore.get(3));
-					float speed = Float.parseFloat(lore.get(4));
-					double flightHeight = Double.parseDouble(lore.get(5));
-					double detectDist = Double.parseDouble(lore.get(6));
-					return new BalisticMissileData(explosionPower, weight, rotatingForce, range, speed, flightHeight, detectDist);
-				} catch (Exception e) {}
-			}
-			return new BalisticMissileData(balisticMissileDefaultExplosionPower, balisticMissileDefaultWeight, balisticMissileDefaultRotatingForce,
-					balisticMissileDefaultRange, balisticMissileDefaultSpeed, balisticMissileDefaultFlightHeight, balisticMissileDefaultDetectorDistance);
+			return im.getPersistentDataContainer().getOrDefault(BalisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
+					BalisticMissilePersistantDataType.BALLISTIC_MISSILE, new BalisticMissileData(balisticMissileDefaultExplosionPower, balisticMissileDefaultWeight,
+							balisticMissileDefaultRotatingForce, balisticMissileDefaultRange, balisticMissileDefaultSpeed,
+							balisticMissileDefaultFlightHeight, balisticMissileDefaultDetectorDistance));
 		}
 		return null;
 	}
@@ -1354,15 +1344,8 @@ public class CustomElementManager implements Listener {
 		public ItemStack toItemStack() {
 			ItemStack is = new ItemStack(BALISTIC_MISSILE);
 			ItemMeta im = is.getItemMeta();
-			ArrayList<String> lores = new ArrayList<>();
-			lores.add(Float.toString(explosionPower));
-			lores.add(Double.toString(weight));
-			lores.add(Double.toString(rotatingForce));
-			lores.add(Double.toString(range));
-			lores.add(Float.toString(speed));
-			lores.add(Double.toString(flightHeight));
-			lores.add(Double.toString(detectDist));
-			im.setLore(lores);
+			im.getPersistentDataContainer().set(BalisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
+					BalisticMissilePersistantDataType.BALLISTIC_MISSILE, this);
 			is.setItemMeta(im);
 			return is;
 		}
