@@ -13,17 +13,14 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftLivingEntity;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -39,8 +36,6 @@ import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.MissileCraftBlock;
 import be.vilevar.missiles.mcelements.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.MissileRadarBlock;
-import be.vilevar.missiles.missile.RBalisticMissile;
-import be.vilevar.missiles.utils.MegaExplosion;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class Main extends JavaPlugin implements Listener {
@@ -65,59 +60,25 @@ public class Main extends JavaPlugin implements Listener {
 	//	cmd.setExecutor(this);
 	//	cmd.setPermissionMessage(SpigotConfig.unknownCommandMessage);
 		
-		MegaExplosion.registerMegaExplosion();
 		CustomElementManager.createMissileTrackerBlockScheduler();
 	}
 	
 	@EventHandler
 	public void onClick(PlayerInteractEvent e) {
-		if(e.getItem()!=null && e.getItem().getType()==CustomElementManager.FUEL) {
+		if(e.getItem() != null && e.getItem().getType() == CustomElementManager.FUEL) {
 			e.setCancelled(true);
-		}
-		if(e.getItem()!=null && e.getItem().getType()==Material.BOOK && e.getAction()==Action.RIGHT_CLICK_BLOCK) {
-			RMissileTest.createParticles(e.getPlayer().getEyeLocation(), e.getPlayer(), ParticleEffect.FLAME, 0.5);
-			d: for(Entity ent : e.getPlayer().getNearbyEntities(100, 50, 100)) {
-				if(ent instanceof Minecart) {
-					ent.setInvulnerable(true);
-					RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.HEART, 0.1);
-				//	RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.HEART, 1);
-				//	RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.BARRIER, 0.5);
-				//	RMissileTest.createParticles(e.getPlayer().getEyeLocation(), ent, ParticleEffect.FIREWORKS_SPARK, 50);
-					break d;
-				}
-			}
-		//	Explosions1.createExplosion(e.getClickedBlock().getLocation(), 10, true);
-		}
-		if(e.getAction()==Action.LEFT_CLICK_BLOCK && e.getClickedBlock()!=null && e.getClickedBlock().getType()==Material.GRASS_BLOCK
-				&& e.getItem()!=null && e.getItem().getType()==CustomElementManager.LASER_POINTER) {
-			Location t = CustomElementManager.getLaserPointerData(e.getItem()).getTarget().add(.5, 1, .5);
-			e.setCancelled(true);
-			Location l = e.getClickedBlock().getLocation().add(.5, 1, .5);
-			new RBalisticMissile(ParticleEffect.FLAME, 0, 1, 25, 1000000, l).launch(t, e.getPlayer());
-			/*
-			BasicMissile bm = new BasicMissile(ParticleEffect.FLAME, 2, 1, 100, 1000, 20);
-			Entity ent = null;
-			for(Entity et : e.getPlayer().getWorld().getEntities()) {
-				if(et instanceof Minecart) {
-					ent = et;
-				}
-			}
-			if(ent != null)
-				bm.launch(bm.new Target(ent), e.getPlayer());
-			else
-				e.getPlayer().sendMessage("§cNo minecart");*/
 		}
 	}
 	
 	@EventHandler
 	public void onPlace(BlockPlaceEvent e) {
-		if(e.getBlock().getType()==CustomElementManager.MISSILE_RADAR) {
+		if(e.getBlock().getType() == CustomElementManager.MISSILE_RADAR) {
 			MissileRadarBlock.radars.add(new MissileRadarBlock(e.getBlock().getLocation()));
 		}
-		if(e.getBlock().getType()==CustomElementManager.MISSILE_LAUNCHER) {
+		if(e.getBlock().getType() == CustomElementManager.MISSILE_LAUNCHER) {
 			MissileLauncherBlock.launchers.add(new MissileLauncherBlock(e.getBlock().getLocation()));
 		}
-		if(e.getBlock().getType()==CustomElementManager.MISSILE_CRAFT) {
+		if(e.getBlock().getType() == CustomElementManager.MISSILE_CRAFT) {
 			MissileCraftBlock.crafts.add(new MissileCraftBlock(e.getBlock().getLocation()));
 		}
 	}
@@ -251,7 +212,7 @@ public class Main extends JavaPlugin implements Listener {
 					int nTnt = random.nextInt(8);
 					int nCompass = random.nextInt(4);
 					int nBlazePowder = Math.abs(20 - nMissiles - nFuel - nTnt - nCompass);
-					p.getInventory().addItem(new ItemStack(CustomElementManager.BALISTIC_MISSILE, nMissiles),
+					p.getInventory().addItem(new ItemStack(CustomElementManager.BALLISTIC_MISSILE, nMissiles),
 							new ItemStack(Material.BLAZE_POWDER, nBlazePowder), new ItemStack(Material.TNT, nTnt),
 							new ItemStack(Material.COMPASS, nCompass), new ItemStack(CustomElementManager.FUEL, nFuel));
 				}

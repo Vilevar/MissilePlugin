@@ -1,39 +1,8 @@
 package be.vilevar.missiles.utils;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.Locale;
-
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.Validate;
-import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
-import org.bukkit.event.world.WorldInitEvent;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.generator.ChunkGenerator;
-
-import com.google.common.base.Preconditions;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
-import net.minecraft.server.v1_15_R1.Biomes;
-import net.minecraft.server.v1_15_R1.DimensionManager;
-import net.minecraft.server.v1_15_R1.EnumDifficulty;
-import net.minecraft.server.v1_15_R1.EnumGamemode;
-import net.minecraft.server.v1_15_R1.GeneratorSettingsDefault;
-import net.minecraft.server.v1_15_R1.WorldData;
-import net.minecraft.server.v1_15_R1.WorldGenFeatureVillageConfiguration;
-import net.minecraft.server.v1_15_R1.WorldGenerator;
-import net.minecraft.server.v1_15_R1.WorldNBTStorage;
-import net.minecraft.server.v1_15_R1.WorldProvider;
-import net.minecraft.server.v1_15_R1.WorldServer;
-import net.minecraft.server.v1_15_R1.WorldSettings;
-import net.minecraft.server.v1_15_R1.WorldType;
-
 public class MissileWorldGenerator {
 
-	@SuppressWarnings({ "deprecation", "resource" })
+/*	@SuppressWarnings({ "deprecation", "resource" })
 	public static World createWorld(CraftServer server, String name) {
 		generateBiomes();
 		
@@ -178,5 +147,5 @@ public class MissileWorldGenerator {
 		Biomes.WOODED_BADLANDS_PLATEAU.a(WorldGenerator.VILLAGE.b(new WorldGenFeatureVillageConfiguration("village/savanna/town_centers", 6)));
 		Biomes.WOODED_HILLS.a(WorldGenerator.VILLAGE.b(new WorldGenFeatureVillageConfiguration("village/taiga/town_centers", 6)));
 		Biomes.WOODED_MOUNTAINS.a(WorldGenerator.VILLAGE.b(new WorldGenFeatureVillageConfiguration("village/taiga/town_centers", 6)));
-	}
+	}*/
 }

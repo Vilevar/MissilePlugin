@@ -11,24 +11,24 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-import net.minecraft.server.v1_15_R1.Block;
-import net.minecraft.server.v1_15_R1.Blocks;
-import net.minecraft.server.v1_15_R1.IBlockData;
-import net.minecraft.server.v1_15_R1.IRegistry;
-import net.minecraft.server.v1_15_R1.ItemStack;
-import net.minecraft.server.v1_15_R1.MinecraftKey;
-import net.minecraft.server.v1_15_R1.Packet;
-import net.minecraft.server.v1_15_R1.PacketPlayOutWorldParticles;
-import net.minecraft.server.v1_15_R1.Particle;
-import net.minecraft.server.v1_15_R1.ParticleParam;
-import net.minecraft.server.v1_15_R1.ParticleParamBlock;
-import net.minecraft.server.v1_15_R1.ParticleParamItem;
-import net.minecraft.server.v1_15_R1.ParticleParamRedstone;
+import net.minecraft.server.v1_16_R1.Block;
+import net.minecraft.server.v1_16_R1.Blocks;
+import net.minecraft.server.v1_16_R1.IBlockData;
+import net.minecraft.server.v1_16_R1.IRegistry;
+import net.minecraft.server.v1_16_R1.ItemStack;
+import net.minecraft.server.v1_16_R1.MinecraftKey;
+import net.minecraft.server.v1_16_R1.Packet;
+import net.minecraft.server.v1_16_R1.PacketPlayOutWorldParticles;
+import net.minecraft.server.v1_16_R1.Particle;
+import net.minecraft.server.v1_16_R1.ParticleParam;
+import net.minecraft.server.v1_16_R1.ParticleParamBlock;
+import net.minecraft.server.v1_16_R1.ParticleParamItem;
+import net.minecraft.server.v1_16_R1.ParticleParamRedstone;
 
 /**
  * <b>ParticleEffect Library</b>

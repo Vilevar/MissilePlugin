@@ -1,4 +1,4 @@
-package be.vilevar.missiles.mcelements.persistantdata;
+package be.vilevar.missiles.mcelements.data.persistanttype;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.mcelements.CustomElementManager.LaserPointerData;
+import be.vilevar.missiles.mcelements.data.LaserPointerData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 

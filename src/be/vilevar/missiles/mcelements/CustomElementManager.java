@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,29 +30,17 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.mcelements.persistantdata.BalisticMissilePersistantDataType;
-import be.vilevar.missiles.mcelements.persistantdata.LaserPointerPersistantDataType;
-import be.vilevar.missiles.missile.BalisticMissile;
-import be.vilevar.missiles.utils.ParticleEffect;
+import be.vilevar.missiles.mcelements.data.BallisticMissileData;
+import be.vilevar.missiles.mcelements.data.LaserPointerData;
 
 public class CustomElementManager implements Listener {
 
 	public static final Material LASER_POINTER = Material.GLOWSTONE_DUST,
 								FUEL = Material.GLASS_BOTTLE,
-								BALISTIC_MISSILE = Material.SUGAR;
+								BALLISTIC_MISSILE = Material.SUGAR;
 	public static final Material MISSILE_RADAR = Material.RED_NETHER_BRICKS,
 								MISSILE_LAUNCHER = Material.NETHER_QUARTZ_ORE,
 								MISSILE_CRAFT = Material.NETHERRACK;
-	
-	public static final double laserPointerDefaultRange = 100;
-	public static final float balisticMissileDefaultExplosionPower = 10;
-	public static final double balisticMissileDefaultWeight = 1;
-	public static final double balisticMissileDefaultRotatingForce = 100;
-	public static final double balisticMissileDefaultRange = 300;
-	public static final float balisticMissileDefaultSpeed = 20;
-	public static final double balisticMissileDefaultFlightHeight = 200;
-	public static final double balisticMissileDefaultDetectorDistance = 0;
-	
 	
 	private ItemStack unusedSlot;
 	
@@ -350,14 +339,14 @@ public class CustomElementManager implements Listener {
 						launcher.setOwner(Bukkit.getPlayer(sm.getOwner()));
 						return;
 					}
-					if(is.getType()==BALISTIC_MISSILE && inv.getItem(4)==null) {
+					if(is.getType()==BALLISTIC_MISSILE && inv.getItem(4)==null) {
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount()-1);
 						p.getInventory().setItem(slot, is.getAmount() > 0 ? is : null);
 						p.updateInventory();
 						i.setAmount(1);
 						inv.setItem(4, i);
-						launcher.setMissileData(getBalisticMissileData(i));
+						launcher.setMissileData(BallisticMissileData.getBallisticMissileData(i));
 						return;
 					}
 					if(is.getType()==LASER_POINTER && inv.getItem(8)==null) {
@@ -367,7 +356,7 @@ public class CustomElementManager implements Listener {
 						p.updateInventory();
 						i.setAmount(1);
 						inv.setItem(8, i);
-						launcher.setLaserPointer(getLaserPointerData(i));
+						launcher.setLaserPointer(LaserPointerData.getLaserPointerData(i));
 						return;
 					}
 				}
@@ -387,7 +376,7 @@ public class CustomElementManager implements Listener {
 					if(craft.getOriginalMissile()!=null) {
 						if(slot==0) {
 							if(p.getInventory().firstEmpty()!=-1) {
-								BalisticMissileData o = craft.getOriginalMissile();
+								BallisticMissileData o = craft.getOriginalMissile();
 								if(craft.getExplosionPower() < o.getExplosionPower() || craft.getRange() < o.getRange() ||
 										craft.getRotatingForce() < o .getRotatingForce() || craft.getSpeed() < o.getSpeed()) return;
 								p.getInventory().addItem(o.toItemStack());
@@ -442,7 +431,7 @@ public class CustomElementManager implements Listener {
 								}
 							} else
 							if(e.getAction()==InventoryAction.PICKUP_HALF) {
-								if((craft.getSpeed()-10) >= Math.max(balisticMissileDefaultSpeed, craft.getResultMissile().getMinSpeed())
+								if((craft.getSpeed()-10) >= Math.max(BallisticMissileData.defaultSpeed, craft.getResultMissile().getMinSpeed())
 										&& a.getAmount() < a.getType().getMaxStackSize()) {
 									a.setAmount(a.getAmount()+1);
 									inv.setItem(4, a);
@@ -454,7 +443,8 @@ public class CustomElementManager implements Listener {
 							if(e.getAction()==InventoryAction.CLONE_STACK) {
 								int amount = a.getAmount();
 								int nb = Math.min(a.getType().getMaxStackSize() - amount, 
-										(int) ((craft.getSpeed()-Math.max(balisticMissileDefaultSpeed, craft.getResultMissile().getMinSpeed()))/10));
+										(int) ((craft.getSpeed()-Math.max(BallisticMissileData.defaultSpeed,
+												craft.getResultMissile().getMinSpeed()))/10));
 								a.setAmount(amount + nb);
 								inv.setItem(4, a);
 								craft.addSpeedFuel(nb);
@@ -485,7 +475,7 @@ public class CustomElementManager implements Listener {
 								}
 							} else
 							if(e.getAction()==InventoryAction.PICKUP_HALF) {
-								if((craft.getRange()-100) >= Math.max(balisticMissileDefaultRange, craft.getResultMissile().getMinRange())
+								if((craft.getRange()-100) >= Math.max(BallisticMissileData.defaultRange, craft.getResultMissile().getMinRange())
 										&& a.getAmount() < a.getType().getMaxStackSize()) {
 									a.setAmount(a.getAmount()+1);
 									inv.setItem(36, a);
@@ -497,7 +487,7 @@ public class CustomElementManager implements Listener {
 							if(e.getAction()==InventoryAction.CLONE_STACK) {
 								int amount = a.getAmount();
 								int nb = Math.min(a.getType().getMaxStackSize() - amount, 
-										(int) ((craft.getRange()-Math.max(balisticMissileDefaultRange, craft.getResultMissile().getMinRange()))/100));
+										(int) ((craft.getRange()-Math.max(BallisticMissileData.defaultRange, craft.getResultMissile().getMinRange()))/100));
 								a.setAmount(amount + nb);
 								inv.setItem(36, a);
 								craft.addRangeFuel(nb);
@@ -530,7 +520,7 @@ public class CustomElementManager implements Listener {
 							} else
 							if(e.getAction()==InventoryAction.PICKUP_HALF) {
 								if((craft.getRotatingForce()-50) >= 
-										Math.max(balisticMissileDefaultRotatingForce, craft.getResultMissile().getMinRotatingForce())
+										Math.max(BallisticMissileData.defaultRotatingForce, craft.getResultMissile().getMinRotatingForce())
 										&& a.getAmount() < a.getType().getMaxStackSize()) {
 									a.setAmount(a.getAmount()+1);
 									inv.setItem(40, a);
@@ -542,7 +532,7 @@ public class CustomElementManager implements Listener {
 							if(e.getAction()==InventoryAction.CLONE_STACK) {
 								int amount = a.getAmount();
 								int nb = Math.min(a.getType().getMaxStackSize() - amount, 
-										(int) ((craft.getRotatingForce() - Math.max(balisticMissileDefaultRotatingForce,
+										(int) ((craft.getRotatingForce() - Math.max(BallisticMissileData.defaultRotatingForce,
 												craft.getResultMissile().getMinRotatingForce()))/50));
 								a.setAmount(amount + nb);
 								inv.setItem(40, a);
@@ -574,7 +564,7 @@ public class CustomElementManager implements Listener {
 								}
 							} else
 							if(e.getAction()==InventoryAction.PICKUP_HALF) {
-								if((craft.getExplosionPower()-10) >= balisticMissileDefaultExplosionPower 
+								if((craft.getExplosionPower()-10) >= BallisticMissileData.defaultExplosionPower 
 										&& a.getAmount() < a.getType().getMaxStackSize()) {
 									a.setAmount(a.getAmount()+1);
 									inv.setItem(22, a);
@@ -586,7 +576,7 @@ public class CustomElementManager implements Listener {
 							if(e.getAction()==InventoryAction.CLONE_STACK) {
 								int amount = a.getAmount();
 								int nb = Math.min(a.getType().getMaxStackSize() - amount,
-										(int) ((craft.getExplosionPower()-balisticMissileDefaultExplosionPower)/10));
+										(int) ((craft.getExplosionPower()-BallisticMissileData.defaultExplosionPower)/10));
 								a.setAmount(amount + nb);
 								inv.setItem(22, a);
 								craft.addTNT(nb);
@@ -667,14 +657,14 @@ public class CustomElementManager implements Listener {
 						}
 					}
 				} else {
-					if(is.getType()==BALISTIC_MISSILE && inv.getItem(0)==null && craft.getResultMissile()==null) {
+					if(is.getType()==BALLISTIC_MISSILE && inv.getItem(0)==null && craft.getResultMissile()==null) {
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount()-1);
 						p.getInventory().setItem(slot, is.getAmount() > 0 ? is : null);
 						p.updateInventory();
 						i.setAmount(1);
 						inv.setItem(0, i);
-						craft.setMissile(getBalisticMissileData(i));
+						craft.setMissile(BallisticMissileData.getBallisticMissileData(i));
 						this.adaptCraftInventory(inv, craft);
 						return;
 					}else
@@ -834,33 +824,25 @@ public class CustomElementManager implements Listener {
 	public void onLaserPointer(PlayerInteractEvent e) {
 		ItemStack is = e.getItem();
 		Player p = e.getPlayer();
-		if(is!=null && is.getType()==LASER_POINTER && is.equals(p.getInventory().getItemInMainHand()) && p.isSneaking()) {
-			if(e.getAction()==Action.RIGHT_CLICK_BLOCK) {
+		if(is!=null && is.getType() == LASER_POINTER && is.equals(p.getInventory().getItemInMainHand()) && p.isSneaking()) {
+			if(e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				int amount = is.getAmount();
-				LaserPointerData lp = getLaserPointerData(is);
+				LaserPointerData lp = LaserPointerData.getLaserPointerData(is);
 				lp.setTarget(e.getClickedBlock().getLocation());
 				is = lp.toItemStack();
 				is.setAmount(amount);
 				p.getInventory().setItemInMainHand(is);
 				p.updateInventory();
 				e.setCancelled(true);
-				return;
-			} else if(e.getAction()==Action.RIGHT_CLICK_AIR) {
+			} else if(e.getAction() == Action.RIGHT_CLICK_AIR) {
 				int amount = is.getAmount();
-				LaserPointerData lp = getLaserPointerData(is);
-				Location l = p.getEyeLocation();
-				Vector v = l.getDirection().normalize();
-				a: for(int i = 0; i < lp.getRange(); i++) {
-					l.add(v);
-					if(l.getBlock().getType().isSolid()) break a;
-				}
-				lp.setTarget(l);
+				LaserPointerData lp = LaserPointerData.getLaserPointerData(is);
+				lp.setTarget(p.rayTraceBlocks(lp.getRange(), FluidCollisionMode.NEVER).getHitBlock().getLocation());
 				is = lp.toItemStack();
 				is.setAmount(amount);
 				p.getInventory().setItemInMainHand(is);
 				p.updateInventory();
 				e.setCancelled(true);
-				return;
 			}
 		}
 	}
@@ -904,7 +886,7 @@ public class CustomElementManager implements Listener {
 					double y = Double.parseDouble(args[2]);
 					double z = Double.parseDouble(args[3]);
 					int amount = is.getAmount();
-					LaserPointerData lp = getLaserPointerData(is);
+					LaserPointerData lp = LaserPointerData.getLaserPointerData(is);
 					lp.setTarget(new Location(p.getWorld(), x, y, z));
 					is = lp.toItemStack();
 					is.setAmount(amount);
@@ -1079,7 +1061,7 @@ public class CustomElementManager implements Listener {
 		if(craft!=null && craft.getResultMissile()!=null) {
 			List<String> lore = new ArrayList<>();
 			double radius = craft.getRadius();
-			BalisticMissileData r = craft.getResultMissile();
+			BallisticMissileData r = craft.getResultMissile();
 			lore.add("§aPuissance d'explosion : §7"+craft.getExplosionPower());
 			lore.add("§aForce de rotation : §7"+craft.getRotatingForce());
 			lore.add("§aPortée : §7"+craft.getRange());
@@ -1142,217 +1124,4 @@ public class CustomElementManager implements Listener {
 		}, 20, 20);
 	}
 	
-	public static LaserPointerData getLaserPointerData(ItemStack is) {
-		if(is!=null && is.getType()==LASER_POINTER) {
-			ItemMeta im = is.getItemMeta();
-			return im.getPersistentDataContainer().getOrDefault(LaserPointerPersistantDataType.LASER_POINTER_KEY,
-					LaserPointerPersistantDataType.LASER_POINTER, new LaserPointerData(laserPointerDefaultRange, null));
-		}
-		return null;
-	}
-	
-	public static BalisticMissileData getBalisticMissileData(ItemStack is) {
-		if(is!=null && is.getType()==BALISTIC_MISSILE) {
-			ItemMeta im = is.getItemMeta();
-			return im.getPersistentDataContainer().getOrDefault(BalisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
-					BalisticMissilePersistantDataType.BALLISTIC_MISSILE, new BalisticMissileData(balisticMissileDefaultExplosionPower, balisticMissileDefaultWeight,
-							balisticMissileDefaultRotatingForce, balisticMissileDefaultRange, balisticMissileDefaultSpeed,
-							balisticMissileDefaultFlightHeight, balisticMissileDefaultDetectorDistance));
-		}
-		return null;
-	}
-	
-	
-	
-	
-	
-	public static class LaserPointerData {
-		
-		private double range;
-		private Location target;
-		
-		public LaserPointerData(double range, Location target) {
-			this.range = range;
-			this.target = target;
-		}
-		
-		public double getRange() {
-			return range;
-		}
-
-		public void setRange(double range) {
-			this.range = range;
-		}
-
-		public Location getTarget() {
-			return target;
-		}
-
-		public void setTarget(Location target) {
-			this.target = target;
-		}
-		
-		public ItemStack toItemStack() {
-			ItemStack is = new ItemStack(LASER_POINTER);
-			ItemMeta im = is.getItemMeta();
-			im.getPersistentDataContainer().set(LaserPointerPersistantDataType.LASER_POINTER_KEY, LaserPointerPersistantDataType.LASER_POINTER, this);
-			is.setItemMeta(im);
-			return is;
-		}
-	}
-	
-	
-	
-	
-	public static class BalisticMissileData implements Cloneable {
-		
-		private float explosionPower;
-		private double weight;
-		private double rotatingForce;
-		private double range;
-		private float speed;
-		private double flightHeight;
-		private double detectDist;
-		
-		private double minRotatingForce, maxRotatingForce;
-		private double minRange;
-		private double minSpeed;
-		
-		public BalisticMissileData(float explosionPower, double weight, double rotatingForce, double range, float speed, double flightHeight, double detectDist) {
-			this.explosionPower = explosionPower;
-			this.weight = weight;
-			this.rotatingForce = rotatingForce;
-			this.range = range;
-			this.speed = speed;
-			this.flightHeight = flightHeight;
-			this.detectDist = detectDist;
-			this.setMinRotatingForce();
-			this.setMaxRotatingForce();
-			this.setMinRange();
-			this.setMinSpeed();
-		}
-
-		public float getExplosionPower() {
-			return explosionPower;
-		}
-
-		public void setExplosionPower(float explosionPower) {
-			this.explosionPower = explosionPower;
-		}
-
-		public double getWeight() {
-			return weight;
-		}
-
-		public void setWeight(double weight) {
-			this.weight = weight;
-			this.setMinRotatingForce();
-			this.setMaxRotatingForce();
-			this.setMinRange();
-			this.setMinSpeed();
-		}
-		
-		public double getRotatingForce() {
-			return rotatingForce;
-		}
-
-		public void setRotatingForce(double rotatingForce) {
-			this.rotatingForce = rotatingForce;
-			this.setMinRange();
-			this.setMinSpeed();
-		}
-
-		public double getRange() {
-			return range;
-		}
-
-		public void setRange(double range) {
-			this.range = range;
-		}
-
-		public float getSpeed() {
-			return speed;
-		}
-
-		public void setSpeed(float speed) {
-			this.speed = speed;
-			this.setMinRotatingForce();
-			this.setMaxRotatingForce();
-			this.setMinRange();
-		}
-
-		public double getFlightHeight() {
-			return flightHeight;
-		}
-
-		public void setFlightHeight(double flightHeight) {
-			this.flightHeight = flightHeight;
-			this.setMinRotatingForce();
-		}
-		
-		public double getDetectorDistance() {
-			return this.detectDist;
-		}
-		
-		public void setDetectorDistance(double distance) {
-			this.detectDist = Math.min(10, Math.max(0, distance));
-		}
-		
-
-		
-		
-		public double getMinRotatingForce() {
-			return minRotatingForce;
-		}
-
-		public double getMaxRotatingForce() {
-			return maxRotatingForce;
-		}
-
-		public double getMinRange() {
-			return minRange;
-		}
-
-		public double getMinSpeed() {
-			return minSpeed;
-		}
-
-		
-		
-		private void setMinRotatingForce() {
-			this.minRotatingForce = (this.weight * this.speed * this.speed) / (flightHeight - 4);
-		}
-
-		private void setMaxRotatingForce() {
-			this.maxRotatingForce = this.weight * this.speed * this.speed;
-		}
-
-		private void setMinRange() {
-			double a = 1.1 * this.weight * this.speed * this.speed;
-			this.minRange = (a / this.rotatingForce) + (a / (this.rotatingForce + (BalisticMissile.GRAVITY * this.weight)));
-		}
-
-		private void setMinSpeed() {
-			this.minSpeed = Math.sqrt(this.rotatingForce / this.weight);
-		}
-		
-		
-		public BalisticMissile toBalisticMissile(Location loc) {
-			return new BalisticMissile(ParticleEffect.FLAME, explosionPower, weight, rotatingForce, range, speed, flightHeight, detectDist, loc);
-		}
-		
-		public ItemStack toItemStack() {
-			ItemStack is = new ItemStack(BALISTIC_MISSILE);
-			ItemMeta im = is.getItemMeta();
-			im.getPersistentDataContainer().set(BalisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
-					BalisticMissilePersistantDataType.BALLISTIC_MISSILE, this);
-			is.setItemMeta(im);
-			return is;
-		}
-		
-		@Override
-		public BalisticMissileData clone() {
-			return new BalisticMissileData(explosionPower, weight, rotatingForce, range, speed, flightHeight, this.detectDist);
-		}
-	}
 }

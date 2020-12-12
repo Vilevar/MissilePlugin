@@ -7,15 +7,15 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import be.vilevar.missiles.mcelements.CustomElementManager.BalisticMissileData;
+import be.vilevar.missiles.mcelements.data.BallisticMissileData;
 
 public class MissileCraftBlock {
 
 	public static final ArrayList<MissileCraftBlock> crafts = new ArrayList<>();
 	
 	private final Location location;
-	private BalisticMissileData original;
-	private BalisticMissileData result;
+	private BallisticMissileData original;
+	private BallisticMissileData result;
 	private boolean open;
 	private int tnt;
 	private int speedFuel;
@@ -38,16 +38,16 @@ public class MissileCraftBlock {
 		this.result = null;
 	}
 	
-	public void setMissile(BalisticMissileData missile) {
+	public void setMissile(BallisticMissileData missile) {
 		this.original = missile;
 		this.result = this.original==null ? null : this.original.clone();
 	}
 	
-	public BalisticMissileData getOriginalMissile() {
+	public BallisticMissileData getOriginalMissile() {
 		return this.original;
 	}
 	
-	public BalisticMissileData getResultMissile() {
+	public BallisticMissileData getResultMissile() {
 		return result;
 	}
 	
@@ -215,7 +215,7 @@ public class MissileCraftBlock {
 		ItemStack tnt = new ItemStack(Material.TNT, this.tnt);
 		ItemStack blaze_powder = new ItemStack(Material.BLAZE_POWDER, this.blaze_powder);
 		ItemStack fuel = new ItemStack(CustomElementManager.FUEL, this.rangeFuel+this.speedFuel);
-		ItemStack missile = this.original==null ? new ItemStack(CustomElementManager.BALISTIC_MISSILE, 0) : this.original.toItemStack();
+		ItemStack missile = this.original==null ? new ItemStack(CustomElementManager.BALLISTIC_MISSILE, 0) : this.original.toItemStack();
 		this.setMissile(null);
 		this.tnt = 0;
 		this.blaze_powder = 0;

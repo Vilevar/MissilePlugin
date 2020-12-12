@@ -1,10 +1,11 @@
-package be.vilevar.missiles;
+package be.vilevar.missiles.missile;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import be.vilevar.missiles.Main;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class RMissileTest {

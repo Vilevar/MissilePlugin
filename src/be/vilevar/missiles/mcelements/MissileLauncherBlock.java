@@ -13,8 +13,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitTask;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.mcelements.CustomElementManager.BalisticMissileData;
-import be.vilevar.missiles.mcelements.CustomElementManager.LaserPointerData;
+import be.vilevar.missiles.mcelements.data.BallisticMissileData;
+import be.vilevar.missiles.mcelements.data.LaserPointerData;
 import be.vilevar.missiles.missile.BalisticMissile;
 import be.vilevar.missiles.utils.ParticleEffect;
 
@@ -29,7 +29,7 @@ public class MissileLauncherBlock {
 	
 	
 	private final Location location;
-	private BalisticMissileData missileData;
+	private BallisticMissileData missileData;
 	private BalisticMissile missile;
 	private LaserPointerData laserPointer;
 	private Player owner;
@@ -44,11 +44,11 @@ public class MissileLauncherBlock {
 		return location;
 	}
 	
-	public BalisticMissileData getMissileData() {
+	public BallisticMissileData getMissileData() {
 		return missileData;
 	}
 	
-	public boolean setMissileData(BalisticMissileData missile) {
+	public boolean setMissileData(BallisticMissileData missile) {
 		if(this.isLaunchingConfirmed()) return false;
 		this.missileData = missile;
 		return true;
