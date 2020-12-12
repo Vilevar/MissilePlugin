@@ -215,8 +215,8 @@ public class MissileCraftBlock {
 			crafts.remove(this);
 		ItemStack tnt = new ItemStack(Material.TNT, this.tnt);
 		ItemStack blaze_powder = new ItemStack(Material.BLAZE_POWDER, this.blaze_powder);
-		ItemStack fuel = new ItemStack(CustomElementManager.FUEL, this.rangeFuel+this.speedFuel);
-		ItemStack missile = this.original==null ? new ItemStack(CustomElementManager.BALLISTIC_MISSILE, 0) : this.original.toItemStack();
+		ItemStack fuel = CustomElementManager.FUEL.create(this.rangeFuel+this.speedFuel);
+		ItemStack missile = this.original==null ? CustomElementManager.BALLISTIC_MISSILE.create(0) : this.original.toItemStack();
 		this.setMissile(null);
 		this.tnt = 0;
 		this.blaze_powder = 0;

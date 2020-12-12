@@ -22,7 +22,7 @@ public class LaserPointerListener implements Listener {
 	public void onTarget(PlayerInteractEvent e) {
 		ItemStack is = e.getItem();
 		Player p = e.getPlayer();
-		if(is != null && is.getType() == CustomElementManager.LASER_POINTER && is.equals(p.getInventory().getItemInMainHand()) && p.isSneaking() 
+		if(is != null && CustomElementManager.LASER_POINTER.isParentOf(is) && is.equals(p.getInventory().getItemInMainHand()) && p.isSneaking() 
 				&& (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
 			int amount = is.getAmount();
 			LaserPointerData lp = LaserPointerData.getLaserPointerData(is);
@@ -43,7 +43,7 @@ public class LaserPointerListener implements Listener {
 		ItemStack is = p.getInventory().getItemInMainHand();
 		if(args[0].equalsIgnoreCase("%lp")) {
 			e.setCancelled(true);
-			if(is!=null && is.getType() == CustomElementManager.LASER_POINTER) {
+			if(is!=null && CustomElementManager.LASER_POINTER.isParentOf(is)) {
 				if(args.length < 4) {
 					p.sendMessage("§c%lp <x> <y> <z>");
 					return;

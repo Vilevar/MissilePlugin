@@ -23,9 +23,9 @@ import be.vilevar.missiles.mcelements.radar.RadarBlockListener;
 
 public class CustomElementManager implements Listener {
 
-	public static final Material 	LASER_POINTER = Material.GLOWSTONE_DUST,
-									FUEL = Material.GLASS_BOTTLE,
-									BALLISTIC_MISSILE = Material.SUGAR;
+	public static final CustomItem 	LASER_POINTER = new CustomItem(Material.GLOWSTONE_DUST, 1, "Laser pointer"),
+									FUEL = new CustomItem(Material.GLOWSTONE_DUST, 2, "Fuel"),
+									BALLISTIC_MISSILE = new CustomItem(Material.GLOWSTONE_DUST, 3, "Ballistic missile");
 	
 	public static final Material 	MISSILE_RADAR = Material.RED_NETHER_BRICKS,
 									MISSILE_LAUNCHER = Material.NETHER_QUARTZ_ORE,

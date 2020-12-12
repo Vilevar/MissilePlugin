@@ -129,7 +129,7 @@ public class LauncherBlockListener implements Listener {
 						launcher.setOwner(Bukkit.getPlayer(sm.getOwner()));
 						return;
 					}
-					if(is.getType()==CustomElementManager.BALLISTIC_MISSILE && inv.getItem(4)==null) {
+					if(CustomElementManager.BALLISTIC_MISSILE.isParentOf(is) && inv.getItem(4)==null) {
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount()-1);
 						p.getInventory().setItem(slot, is.getAmount() > 0 ? is : null);
@@ -139,7 +139,7 @@ public class LauncherBlockListener implements Listener {
 						launcher.setMissileData(BallisticMissileData.getBallisticMissileData(i));
 						return;
 					}
-					if(is.getType()==CustomElementManager.LASER_POINTER && inv.getItem(8)==null) {
+					if(CustomElementManager.LASER_POINTER.isParentOf(is) && inv.getItem(8)==null) {
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount()-1);
 						p.getInventory().setItem(slot, is.getAmount() > 0 ? is : null);

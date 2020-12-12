@@ -33,7 +33,8 @@ public class BallisticMissileData implements Cloneable {
 	private double minRange;
 	private double minSpeed;
 	
-	public BallisticMissileData(float explosionPower, double weight, double rotatingForce, double range, float speed, double flightHeight, double detectDist) {
+	public BallisticMissileData(float explosionPower, double weight, double rotatingForce, double range, float speed, double flightHeight,
+			double detectDist) {
 		this.explosionPower = explosionPower;
 		this.weight = weight;
 		this.rotatingForce = rotatingForce;
@@ -157,7 +158,7 @@ public class BallisticMissileData implements Cloneable {
 	}
 	
 	public ItemStack toItemStack() {
-		ItemStack is = new ItemStack(CustomElementManager.BALLISTIC_MISSILE);
+		ItemStack is = CustomElementManager.BALLISTIC_MISSILE.create();
 		ItemMeta im = is.getItemMeta();
 		im.getPersistentDataContainer().set(BallisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
 				BallisticMissilePersistantDataType.BALLISTIC_MISSILE, this);
@@ -172,7 +173,7 @@ public class BallisticMissileData implements Cloneable {
 	
 	
 	public static BallisticMissileData getBallisticMissileData(ItemStack is) {
-		if(is!=null && is.getType()==CustomElementManager.BALLISTIC_MISSILE) {
+		if(is!=null && CustomElementManager.BALLISTIC_MISSILE.isParentOf(is)) {
 			ItemMeta im = is.getItemMeta();
 			return im.getPersistentDataContainer().getOrDefault(BallisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
 					BallisticMissilePersistantDataType.BALLISTIC_MISSILE, new BallisticMissileData(defaultExplosionPower, defaultWeight, 

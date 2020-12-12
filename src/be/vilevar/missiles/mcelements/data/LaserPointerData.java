@@ -36,7 +36,7 @@ public class LaserPointerData {
 	}
 	
 	public ItemStack toItemStack() {
-		ItemStack is = new ItemStack(CustomElementManager.LASER_POINTER);
+		ItemStack is = CustomElementManager.LASER_POINTER.create();
 		ItemMeta im = is.getItemMeta();
 		im.getPersistentDataContainer().set(LaserPointerPersistantDataType.LASER_POINTER_KEY, LaserPointerPersistantDataType.LASER_POINTER, this);
 		is.setItemMeta(im);
@@ -46,7 +46,7 @@ public class LaserPointerData {
 	
 	
 	public static LaserPointerData getLaserPointerData(ItemStack is) {
-		if(is!=null && is.getType()==CustomElementManager.LASER_POINTER) {
+		if(is!=null && CustomElementManager.LASER_POINTER.isParentOf(is)) {
 			ItemMeta im = is.getItemMeta();
 			return im.getPersistentDataContainer().getOrDefault(LaserPointerPersistantDataType.LASER_POINTER_KEY,
 					LaserPointerPersistantDataType.LASER_POINTER, new LaserPointerData(defaultRange, null));

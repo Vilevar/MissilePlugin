@@ -56,7 +56,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onClick(PlayerInteractEvent e) {
-		if(e.getItem() != null && e.getItem().getType() == CustomElementManager.FUEL) {
+		if(e.getItem() != null && CustomElementManager.FUEL.isParentOf(e.getItem())) {
 			e.setCancelled(true);
 		}
 	}
@@ -179,7 +179,7 @@ public class Main extends JavaPlugin implements Listener {
 				p.getInventory().addItem(new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_CHESTPLATE),
 						new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.DIAMOND_SWORD),
 						pickaxe, new ItemStack(CustomElementManager.MISSILE_RADAR, 2), new ItemStack(CustomElementManager.MISSILE_LAUNCHER),
-						new ItemStack(CustomElementManager.MISSILE_CRAFT), new ItemStack(CustomElementManager.LASER_POINTER), h,
+						new ItemStack(CustomElementManager.MISSILE_CRAFT), CustomElementManager.LASER_POINTER.create(), h,
 						new ItemStack(Material.STONE_BUTTON), new ItemStack(Material.OBSIDIAN, 32), new ItemStack(Material.COOKED_BEEF, 64));
 				p.updateInventory();
 			}
@@ -193,9 +193,9 @@ public class Main extends JavaPlugin implements Listener {
 					int nTnt = random.nextInt(8);
 					int nCompass = random.nextInt(4);
 					int nBlazePowder = Math.abs(20 - nMissiles - nFuel - nTnt - nCompass);
-					p.getInventory().addItem(new ItemStack(CustomElementManager.BALLISTIC_MISSILE, nMissiles),
+					p.getInventory().addItem(CustomElementManager.BALLISTIC_MISSILE.create(nMissiles),
 							new ItemStack(Material.BLAZE_POWDER, nBlazePowder), new ItemStack(Material.TNT, nTnt),
-							new ItemStack(Material.COMPASS, nCompass), new ItemStack(CustomElementManager.FUEL, nFuel));
+							new ItemStack(Material.COMPASS, nCompass), CustomElementManager.FUEL.create(nFuel));
 				}
 			}, 0, 1200);
 		/*} else if(command.getName().equals("missile_world")) {

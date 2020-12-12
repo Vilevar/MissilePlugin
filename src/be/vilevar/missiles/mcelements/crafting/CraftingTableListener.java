@@ -121,7 +121,7 @@ public class CraftingTableListener implements Listener {
 							// Speed
 							ItemStack a = inv.getItem(4);
 							if (a == null || a.getType() == Material.AIR)
-								a = new ItemStack(CustomElementManager.FUEL, 0);
+								a = CustomElementManager.FUEL.create(0);
 							if (e.getAction() == InventoryAction.PICKUP_ALL) {
 								if (a.getAmount() > 0) {
 									a.setAmount(a.getAmount() - 1);
@@ -163,7 +163,7 @@ public class CraftingTableListener implements Listener {
 							// Range
 							ItemStack a = inv.getItem(36);
 							if (a == null || a.getType() == Material.AIR)
-								a = new ItemStack(CustomElementManager.FUEL, 0);
+								a = CustomElementManager.FUEL.create(0);
 							if (e.getAction() == InventoryAction.PICKUP_ALL) {
 								if (a.getAmount() > 0) {
 									a.setAmount(a.getAmount() - 1);
@@ -364,7 +364,7 @@ public class CraftingTableListener implements Listener {
 						}
 					}
 				} else {
-					if (is.getType() == CustomElementManager.BALLISTIC_MISSILE && inv.getItem(0) == null
+					if (CustomElementManager.BALLISTIC_MISSILE.isParentOf(is) && inv.getItem(0) == null
 							&& craft.getResultMissile() == null) {
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount() - 1);
@@ -439,12 +439,12 @@ public class CraftingTableListener implements Listener {
 							craft.addBlazePowder(nb);
 						}
 						return;
-					} else if (is.getType() == CustomElementManager.FUEL && inv.getItem(0) != null) {
+					} else if (CustomElementManager.FUEL.isParentOf(is) && inv.getItem(0) != null) {
 						// Speed
 						if (e.getAction() == InventoryAction.PICKUP_ALL) {
 							ItemStack a = inv.getItem(4);
 							if (a == null || a.getType() == Material.AIR)
-								a = new ItemStack(CustomElementManager.FUEL, 0);
+								a = CustomElementManager.FUEL.create(0);
 							if (a.getAmount() >= a.getType().getMaxStackSize())
 								return;
 							ItemStack i = is.clone();
@@ -457,7 +457,7 @@ public class CraftingTableListener implements Listener {
 						} else if (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
 							ItemStack a = inv.getItem(4);
 							if (a == null || a.getType() == Material.AIR)
-								a = new ItemStack(CustomElementManager.FUEL, 0);
+								a = CustomElementManager.FUEL.create(0);
 							int amount = is.getAmount();
 							int max = is.getType().getMaxStackSize() - a.getAmount();
 							int nb = Math.min(amount, max);
@@ -473,7 +473,7 @@ public class CraftingTableListener implements Listener {
 						if (e.getAction() == InventoryAction.PICKUP_HALF) {
 							ItemStack a = inv.getItem(36);
 							if (a == null || a.getType() == Material.AIR)
-								a = new ItemStack(CustomElementManager.FUEL, 0);
+								a = CustomElementManager.FUEL.create(0);
 							if (a.getAmount() >= a.getType().getMaxStackSize())
 								return;
 							ItemStack i = is.clone();
@@ -486,7 +486,7 @@ public class CraftingTableListener implements Listener {
 						} else if (e.getAction() == InventoryAction.CLONE_STACK) {
 							ItemStack a = inv.getItem(36);
 							if (a == null || a.getType() == Material.AIR)
-								a = new ItemStack(CustomElementManager.FUEL, 0);
+								a = CustomElementManager.FUEL.create(0);
 							int amount = is.getAmount();
 							int max = is.getType().getMaxStackSize() - a.getAmount();
 							int nb = Math.min(amount, max);
