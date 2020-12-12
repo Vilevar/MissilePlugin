@@ -1,4 +1,4 @@
-package be.vilevar.missiles.mcelements;
+package be.vilevar.missiles.mcelements.launcher;
 
 import java.util.ArrayList;
 import java.util.Iterator;

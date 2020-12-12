@@ -13,11 +13,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftLivingEntity;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,13 +26,14 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
-import be.vilevar.missiles.mcelements.MissileCraftBlock;
-import be.vilevar.missiles.mcelements.MissileLauncherBlock;
-import be.vilevar.missiles.mcelements.MissileRadarBlock;
+import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
+import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
+import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class Main extends JavaPlugin implements Listener {
@@ -47,20 +45,13 @@ public class Main extends JavaPlugin implements Listener {
 	public static Main i;
 	private int t;
 	
-//	private static final UUID LAURENT = UUID.fromString("d03d7128-f318-4c68-ad0a-cd0511fa7d6d");
-//	private static final UUID VILEVAR = UUID.fromString("b821a472-2b9d-40f3-a5df-d28b50cae96f");
-	
 	@Override
 	public void onEnable() {
 		i = this;
-		getServer().getPluginManager().registerEvents(this, this);
-		getServer().getPluginManager().registerEvents(new CustomElementManager(), this);
+		PluginManager pm = getServer().getPluginManager();
+		pm.registerEvents(this, this);
+		pm.registerEvents(new CustomElementManager(this, pm), this);
 		getCommand("missile").setExecutor(this);
-	//	PluginCommand cmd = getCommand("offrir_gateau_a_laurent");
-	//	cmd.setExecutor(this);
-	//	cmd.setPermissionMessage(SpigotConfig.unknownCommandMessage);
-		
-		CustomElementManager.createMissileTrackerBlockScheduler();
 	}
 	
 	@EventHandler
@@ -162,16 +153,6 @@ public class Main extends JavaPlugin implements Listener {
 			}
 			arrow.remove();
 		}*/
-		if(e.getEntity() instanceof Arrow && e.getHitEntity() != null && e.getHitEntity() instanceof LivingEntity &&
-				e.getEntity().getShooter() instanceof Player) {
-			CraftLivingEntity target = (CraftLivingEntity) e.getHitEntity();
-			Arrow arw = (Arrow) e.getEntity();
-			System.out.println("hit : "+e.getEntity().getLocation());
-			if(arw.getLocation().getY() > target.getHandle().getHeadY()) {
-				((Player) e.getEntity().getShooter()).sendMessage("Headshot");
-				arw.setDamage(arw.getDamage() + 4);
-			}
-		}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -217,28 +198,7 @@ public class Main extends JavaPlugin implements Listener {
 							new ItemStack(Material.COMPASS, nCompass), new ItemStack(CustomElementManager.FUEL, nFuel));
 				}
 			}, 0, 1200);
-	/*	} else if(command.getName().equals("offrir_gateau_a_laurent") && sender instanceof Player) {
-			Player p = (Player) sender;
-			if(p.getUniqueId().equals(LAURENT)) {
-				p.sendMessage(SpigotConfig.unknownCommandMessage);
-				return false;
-			}
-			Player laurent = getServer().getPlayer(LAURENT);
-			if(laurent == null || !laurent.isOnline()) {
-				p.sendMessage("§cLaurent n'est pas présent.");
-				return true;
-			} else {
-				p.getInventory().addItem(new ItemStack(CustomElementManager.FUEL, 64));
-				laurent.getInventory().addItem(new ItemStack(Material.CAKE));
-				laurent.sendMessage("§6"+p.getDisplayName()+"§a t'a offert un gâteau pour ton anniversaire !");
-				p.sendMessage("§6Tu as offert ton gâteau à §aLaurent§6, c'est que tu es prêt à §cfaire feu§6.");
-				Player vilevar = getServer().getPlayer(VILEVAR);
-				if(vilevar != null && vilevar.isOnline()) {
-					vilevar.sendMessage("§a"+p.getDisplayName()+"§6 est prêt à §cfaire feu§6.");
-				}
-				return true;
-			}
-		} else if(command.getName().equals("missile_world")) {
+		/*} else if(command.getName().equals("missile_world")) {
 			String name = "missile_world";
 			World world = getServer().getWorld(name);
 			if(world == null && !(sender instanceof Player))

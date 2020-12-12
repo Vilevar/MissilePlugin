@@ -2,12 +2,9 @@ name: Missiles
 version: 1.0
 author: Vilevar
 main: be.vilevar.missiles.Main
-api-version: 1.15
+api-version: 1.16
 commands:
  missile:
   description: launch the game
-# offrir_gateau_a_laurent:
-#  description : Null
-#  permission: missiles.laurent
  missile_world:
   description: Create a world with a lot of villages

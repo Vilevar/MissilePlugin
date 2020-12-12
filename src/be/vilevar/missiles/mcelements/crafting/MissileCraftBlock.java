@@ -1,4 +1,4 @@
-package be.vilevar.missiles.mcelements;
+package be.vilevar.missiles.mcelements.crafting;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.data.BallisticMissileData;
 
 public class MissileCraftBlock {

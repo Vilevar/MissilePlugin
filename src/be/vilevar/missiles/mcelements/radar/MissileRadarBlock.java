@@ -1,4 +1,4 @@
-package be.vilevar.missiles.mcelements;
+package be.vilevar.missiles.mcelements.radar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
