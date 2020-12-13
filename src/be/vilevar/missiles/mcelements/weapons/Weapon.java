@@ -11,6 +11,8 @@ import org.bukkit.util.Vector;
 import be.vilevar.missiles.mcelements.CustomItem;
 
 public class Weapon {
+	
+	private static final float SPREAD_AIMING_IMPROVEMENT = 3.f;
 
 	private CustomItem item;
 	private CustomItem ammunition;
@@ -81,12 +83,13 @@ public class Weapon {
 		return rechargeTime;
 	}
 	
-	public void shoot(Player p) {
+	public void shoot(Player p, boolean isAiming) {
 		World world = p.getWorld();
 		Location loc = p.getEyeLocation();
 		Vector direction = loc.getDirection();
+		float spread = isAiming ? Math.max(0, this.spread - SPREAD_AIMING_IMPROVEMENT) : this.spread;
 		for(int i = 0; i < this.bullets; i++) {
-			Arrow arrow = world.spawnArrow(loc, direction, this.speed, this.spread);
+			Arrow arrow = world.spawnArrow(loc, direction, this.speed, spread);
 			arrow.setShooter(p);
 			arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
 			arrow.setDamage(this.damage);

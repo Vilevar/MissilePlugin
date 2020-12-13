@@ -23,7 +23,6 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.PluginManager;
@@ -31,7 +30,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
-import be.vilevar.missiles.mcelements.CustomItem;
 import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
@@ -65,7 +63,8 @@ public class Main extends JavaPlugin implements Listener {
 					CustomElementManager.SNIPER.getItem().create(), CustomElementManager.SNIPER.getAmmunition().create(),
 					CustomElementManager.PISTOL.getItem().create(), CustomElementManager.PISTOL.getAmmunition().create(),
 					CustomElementManager.MACHINE_GUN.getItem().create(), CustomElementManager.MACHINE_GUN.getAmmunition().create(),
-					CustomElementManager.SHOTGUN.getItem().create(), CustomElementManager.SHOTGUN.getAmmunition().create());
+					CustomElementManager.SHOTGUN.getItem().create(), CustomElementManager.SHOTGUN.getAmmunition().create(),
+					CustomElementManager.BOMB.create(), CustomElementManager.SMOKE_BOMB.create());
 		}
 	}
 	
@@ -122,12 +121,6 @@ public class Main extends JavaPlugin implements Listener {
 	public void onEntitySpawn(EntitySpawnEvent e) {
 		if(e.getEntityType()==EntityType.SLIME)
 			e.setCancelled(true);
-	}
-	
-	@EventHandler
-	public void onJoin(PlayerJoinEvent e) {
-		e.getPlayer().getInventory().addItem(new CustomItem(Material.IRON_HOE, 4).create(), new CustomItem(Material.IRON_HOE, 2).create(),
-				new CustomItem(Material.IRON_HOE, 3).create());
 	}
 	
 	@SuppressWarnings("deprecation")

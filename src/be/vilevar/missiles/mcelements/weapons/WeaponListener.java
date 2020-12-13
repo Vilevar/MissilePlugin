@@ -1,26 +1,44 @@
 package be.vilevar.missiles.mcelements.weapons;
 
+import static be.vilevar.missiles.mcelements.CustomElementManager.BOMB;
 import static be.vilevar.missiles.mcelements.CustomElementManager.MACHINE_GUN;
 import static be.vilevar.missiles.mcelements.CustomElementManager.PISTOL;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SHOTGUN;
+import static be.vilevar.missiles.mcelements.CustomElementManager.SMOKE_BOMB;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SNIPER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.util.Vector;
+
+import be.vilevar.missiles.Main;
+import be.vilevar.missiles.utils.ParticleEffect;
 
 public class WeaponListener implements Listener {
 
@@ -81,7 +99,7 @@ public class WeaponListener implements Listener {
 					}
 				}
 				// Shoot
-				w.shoot(p);
+				w.shoot(p, this.aiming.contains(p.getUniqueId()));
 				this.recover.put(p.getUniqueId(), System.currentTimeMillis() + recover);
 			} else {
 				// Aim
@@ -115,6 +133,44 @@ public class WeaponListener implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void onLaunch(ProjectileLaunchEvent e) {
+		ProjectileSource shooter = e.getEntity().getShooter();
+		if(shooter != null && shooter instanceof Player) {
+			Player p = (Player) shooter;
+			if(e.getEntityType() == EntityType.ARROW) {
+				e.setCancelled(true);
+			} else if(e.getEntityType() == EntityType.SNOWBALL) {
+				ItemStack main = p.getInventory().getItemInMainHand();
+				if(BOMB.isParentOf(main)  || (main.getType() != Material.SNOWBALL && BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
+					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(Main.i, 0));
+				} else if(SMOKE_BOMB.isParentOf(main)
+						|| (main.getType() != Material.SNOWBALL && SMOKE_BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
+					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(Main.i, 1));
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onHit(ProjectileHitEvent e) {
+		Projectile ball = e.getEntity();
+		ProjectileSource shooter = ball.getShooter();
+		if(shooter != null && shooter instanceof Player && ball.getType() == EntityType.SNOWBALL && ball.hasMetadata("bomb-type")) {
+			int bombType = ball.getMetadata("bomb-type").get(0).asInt();
+			if(bombType == 0) {
+				TNTPrimed tnt = (TNTPrimed) ball.getWorld().spawnEntity(ball.getLocation(), EntityType.PRIMED_TNT);
+				tnt.setFuseTicks(20);
+				tnt.setYield(5.0f);
+				tnt.setIsIncendiary(true);
+				tnt.setSource((Player) shooter);
+			} else if(bombType == 1) {
+				final int task = this.createSmoke(ball.getLocation(), 5., 100);
+				Bukkit.getScheduler().runTaskLater(Main.i, () -> Bukkit.getScheduler().cancelTask(task), 20*10);
+			}
+		}
+	}
+	
 	public Weapon getWeapon(ItemStack is) {
 		if(is == null) {
 			return null;
@@ -131,4 +187,18 @@ public class WeaponListener implements Listener {
 			return null;
 	}
 	
+	private int createSmoke(Location loc, double radius, int n) {
+		return Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.i, () -> {
+			for(int i = 0; i < n; i++) {
+				double r = radius * Math.sqrt(Math.random());
+				double theta = 2 * Math.PI * Math.random();
+				double phi = 2 * Math.PI * Math.random();
+				Vector add = new Vector(r*Math.sin(theta)*Math.cos(phi), r*Math.cos(theta), r*Math.sin(theta)*Math.sin(phi));
+				Main.display(ParticleEffect.SMOKE_LARGE, loc.clone().add(add));
+			}
+			for(Entity ent : loc.getWorld().getNearbyEntities(loc, radius, radius, radius, (e) -> e instanceof LivingEntity)) {
+				((LivingEntity) ent).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 255));
+			}
+		}, 1, 1);
+	}
 }

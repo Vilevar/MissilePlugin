@@ -51,6 +51,9 @@ public class CustomElementManager implements Listener {
 										10, 20.f, 1.f, 15., 50, 0, 0, 3.f, 0.5f,
 										Sound.ENTITY_GHAST_DEATH, 1.f, 1.f);
 	
+	public static final CustomItem	BOMB = new CustomItem(Material.SNOWBALL, 1, "Bomb"),
+									SMOKE_BOMB = new CustomItem(Material.SNOWBALL, 2, "Smoke Bomb");
+	
 	public static final Material	MISSILE_RADAR = Material.RED_NETHER_BRICKS,
 									MISSILE_LAUNCHER = Material.NETHER_QUARTZ_ORE,
 									MISSILE_CRAFT = Material.NETHERRACK;

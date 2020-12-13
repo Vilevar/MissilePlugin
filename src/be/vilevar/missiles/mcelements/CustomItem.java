@@ -49,9 +49,9 @@ public class CustomItem {
 	}
 
 	public boolean isParentOf(ItemStack is) {
-		if(is.getType() == material) {
+		if(is != null && is.getType() == material) {
 			ItemMeta im = is.getItemMeta();
-			return im.getCustomModelData() == model;
+			return im.hasCustomModelData() && im.getCustomModelData() == model;
 		}
 		return false;
 	}
