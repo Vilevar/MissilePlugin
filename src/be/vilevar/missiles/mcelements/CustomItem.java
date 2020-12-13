@@ -17,6 +17,8 @@ public class CustomItem {
 	public CustomItem(Material material, int model, String name) {
 		this.material = material;
 		this.model = model;
+		if(name != null)
+			name = "§f" + name;
 		this.name = name;
 	}
 

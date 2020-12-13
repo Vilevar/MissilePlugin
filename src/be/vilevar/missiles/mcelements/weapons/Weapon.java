@@ -1,6 +1,7 @@
 package be.vilevar.missiles.mcelements.weapons;
 
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
@@ -12,43 +13,72 @@ import be.vilevar.missiles.mcelements.CustomItem;
 public class Weapon {
 
 	private CustomItem item;
+	private CustomItem ammunition;
 	private int aiming;
 	private int price;
+	private long recover;
+	private long rechargeTime;
 	private int bullets;
 	private float spread;
 	private float speed;
 	private double damage;
+	private int fireTicks;
 	private int knockback;
 	private int pierce;
 	private float pitchDecline;
 	private float planeDecline;
+	private Sound sound;
+	private float volume;
+	private float pitch;
 	
-	// TODO Sound
-	public Weapon(CustomItem item, int aiming, int price, int bullets, float spread, float speed, double damage, int knockback, int pierce,
-			float pitchDecline, float planeDecline) {
-		this.aiming = aiming;
+	public Weapon(
+			CustomItem item, CustomItem ammunition,
+			int aiming, int price, long recover, long rechargeTime,
+			int bullets, float spread, float speed, double damage, int fireTicks, int knockback, int pierce,
+			float pitchDecline, float planeDecline,
+			Sound sound, float volume, float pitch) {
 		this.item = item;
+		this.ammunition = ammunition;
+		this.aiming = aiming;
 		this.price = price;
+		this.recover = recover;
+		this.rechargeTime = rechargeTime;
 		this.bullets = bullets;
 		this.spread = spread;
 		this.speed = speed;
 		this.damage = damage;
+		this.fireTicks = fireTicks;
 		this.knockback = knockback;
 		this.pierce = pierce;
 		this.pitchDecline = pitchDecline;
 		this.planeDecline = planeDecline;
-	}
-	
-	public int getAiming() {
-		return aiming;
+		this.sound = sound;
+		this.volume = volume;
+		this.pitch = pitch;
 	}
 	
 	public CustomItem getItem() {
 		return item;
 	}
 	
+	public CustomItem getAmmunition() {
+		return ammunition;
+	}
+	
+	public int getAiming() {
+		return aiming;
+	}
+	
 	public int getPrice() {
 		return price;
+	}
+	
+	public long getRecover() {
+		return recover;
+	}
+	
+	public long getRechargeTime() {
+		return rechargeTime;
 	}
 	
 	public void shoot(Player p) {
@@ -62,6 +92,7 @@ public class Weapon {
 			arrow.setDamage(this.damage);
 			arrow.setKnockbackStrength(this.knockback);
 			arrow.setPierceLevel(this.pierce);
+			arrow.setFireTicks(this.fireTicks);
 		}
 		if(this.pitchDecline != 0) {
 			Location newPitch = p.getLocation();
@@ -71,7 +102,7 @@ public class Weapon {
 		if(planeDecline != 0) {
 			p.setVelocity(p.getVelocity().add(direction.normalize().setY(0).multiply(-this.planeDecline)));
 		}
-		// TODO Sound
+		world.playSound(loc, sound, volume, pitch);
 	}
 	
 	

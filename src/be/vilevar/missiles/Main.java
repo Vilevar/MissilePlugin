@@ -60,6 +60,13 @@ public class Main extends JavaPlugin implements Listener {
 		if(e.getItem() != null && CustomElementManager.FUEL.isParentOf(e.getItem())) {
 			e.setCancelled(true);
 		}
+		if(e.getItem() != null && e.getItem().getType() == Material.BOOK) {
+			e.getPlayer().getInventory().addItem(
+					CustomElementManager.SNIPER.getItem().create(), CustomElementManager.SNIPER.getAmmunition().create(),
+					CustomElementManager.PISTOL.getItem().create(), CustomElementManager.PISTOL.getAmmunition().create(),
+					CustomElementManager.MACHINE_GUN.getItem().create(), CustomElementManager.MACHINE_GUN.getAmmunition().create(),
+					CustomElementManager.SHOTGUN.getItem().create(), CustomElementManager.SHOTGUN.getAmmunition().create());
+		}
 	}
 	
 	@EventHandler

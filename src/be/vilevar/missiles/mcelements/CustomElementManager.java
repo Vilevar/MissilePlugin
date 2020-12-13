@@ -1,6 +1,7 @@
 package be.vilevar.missiles.mcelements;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,10 +30,26 @@ public class CustomElementManager implements Listener {
 									FUEL = new CustomItem(Material.GLOWSTONE_DUST, 2, "Fuel"),
 									BALLISTIC_MISSILE = new CustomItem(Material.GLOWSTONE_DUST, 3, "Ballistic missile");
 	
-	public static final Weapon	SNIPER = new Weapon(new CustomItem(Material.IRON_HOE, 1, "Barrett .50"), 500, 50, 1, 0.f, 20.f, 20., 5, 2, 3.f, 1.f),
-								PISTOL = new Weapon(new CustomItem(Material.IRON_HOE, 2, "KB-485"), 2, 25, 1, 3.f, 2.f, 2.5, 0, 0, 0.f, 0.f),
-								MACHINE_GUN = new Weapon(new CustomItem(Material.IRON_HOE, 3, "Vityaz-SN"), 3, 5, 1, 8.f, 4.f, 1., 1, 0, 1.f, 0.f),
-								SHOTGUN = new Weapon(new CustomItem(Material.IRON_HOE, 4, "CZ-569"), 1, 35, 10, 20.f, 1.f, 17., 0, 1, 2.f, 0.5f);
+	public static final Weapon	SNIPER = new Weapon(
+										new CustomItem(Material.IRON_HOE, 1, "Barrett .50"), new CustomItem(Material.GLOWSTONE_DUST, 4, "Barrett Ammo"),
+										500, 50, 3000, 3500,
+										1, 0.f, 20.f, 20., 0, 5, 2, 5.f, 1.f,
+										Sound.ENTITY_BLAZE_DEATH, 5.f, 1.f),
+								PISTOL = new Weapon(
+										new CustomItem(Material.IRON_HOE, 2, "KB-485"), new CustomItem(Material.GLOWSTONE_DUST, 5, "Pistol Ammo"),
+										2, 25, 500, 500,
+										1, 3.f, 2.f, 2.5, 0, 0, 0, 0.f, 0.f,
+										Sound.ENTITY_ENDER_DRAGON_HURT, 0.5f, 1.f),
+								MACHINE_GUN = new Weapon(
+										new CustomItem(Material.IRON_HOE, 3, "Vityaz-SN"), new CustomItem(Material.GLOWSTONE_DUST, 6, "Vityaz-SN Ammo"),
+										3, 5, 0, 4000,
+										1, 8.f, 4.f, 1., 0, 1, 0, 1.f, 0.f,
+										Sound.ENTITY_EVOKER_FANGS_ATTACK, 1.f, 1.f),
+								SHOTGUN = new Weapon(
+										new CustomItem(Material.IRON_HOE, 4, "CZ-569"), new CustomItem(Material.GLOWSTONE_DUST, 7, "CZ-569 Ammo"),
+										1, 35, 1000, 5000,
+										10, 20.f, 1.f, 15., 50, 0, 0, 3.f, 0.5f,
+										Sound.ENTITY_GHAST_DEATH, 1.f, 1.f);
 	
 	public static final Material	MISSILE_RADAR = Material.RED_NETHER_BRICKS,
 									MISSILE_LAUNCHER = Material.NETHER_QUARTZ_ORE,
