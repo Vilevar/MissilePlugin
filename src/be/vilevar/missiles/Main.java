@@ -22,8 +22,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.PluginManager;
@@ -31,6 +31,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
+import be.vilevar.missiles.mcelements.CustomItem;
 import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
@@ -117,44 +118,11 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	@EventHandler
-	public void onProjectileHit(ProjectileHitEvent e) {
-	/*	if(e.getEntity() instanceof Arrow && e.getHitEntity() == null) {
-			Arrow arrow = (Arrow) e.getEntity();
-			Vector direction = arrow.getVelocity().multiply(5);
-			double energy = .5 * Math.pow(direction.length(), 2);
-			direction.normalize();
-			Location hit = e.getEntity().getLocation().subtract(direction);
-			Location center = hit.clone();
-			while(energy > 0) {
-				center.add(direction);
-				int radius = (int) Math.ceil(Math.sqrt(energy)/2);
-				for(int x = -radius; x <= radius; x++) {
-					for(int y = -radius; y <= radius; y++) {
-						Vector dPos = rotate(new Vector(x, y, 1), hit);
-						if(Math.ceil(dPos.length()) <= radius) {
-							center.add(dPos);
-							Material blockType = center.getBlock().getType();
-							if(blockType != Material.AIR) {
-								float resistance = blockType.getBlastResistance();
-								if(resistance < (energy + 1)) {
-									Vector dHit = hit.toVector().subtract(center.toVector()).normalize().multiply(energy / 2);
-									FallingBlock falling = center.getWorld().spawnFallingBlock(center, center.getBlock().getBlockData());
-									falling.setVelocity(dHit);
-									center.getBlock().setType(Material.AIR);
-								}
-								energy -= (resistance / 4d) + (Math.random() * resistance / 2d);
-							} else {
-								energy -= Math.random()*0.01;
-							}
-							center.subtract(dPos);
-						}
-					}
-				}
-			}
-			arrow.remove();
-		}*/
+	public void onJoin(PlayerJoinEvent e) {
+		e.getPlayer().getInventory().addItem(new CustomItem(Material.IRON_HOE, 4).create(), new CustomItem(Material.IRON_HOE, 2).create(),
+				new CustomItem(Material.IRON_HOE, 3).create());
 	}
-
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

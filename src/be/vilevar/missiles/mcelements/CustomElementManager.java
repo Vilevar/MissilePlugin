@@ -20,6 +20,8 @@ import be.vilevar.missiles.mcelements.launcher.LauncherBlockListener;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
 import be.vilevar.missiles.mcelements.radar.RadarBlockListener;
+import be.vilevar.missiles.mcelements.weapons.Weapon;
+import be.vilevar.missiles.mcelements.weapons.WeaponListener;
 
 public class CustomElementManager implements Listener {
 
@@ -27,7 +29,12 @@ public class CustomElementManager implements Listener {
 									FUEL = new CustomItem(Material.GLOWSTONE_DUST, 2, "Fuel"),
 									BALLISTIC_MISSILE = new CustomItem(Material.GLOWSTONE_DUST, 3, "Ballistic missile");
 	
-	public static final Material 	MISSILE_RADAR = Material.RED_NETHER_BRICKS,
+	public static final Weapon	SNIPER = new Weapon(new CustomItem(Material.IRON_HOE, 1, "Barrett .50"), 500, 50, 1, 0.f, 20.f, 20., 5, 2, 3.f, 1.f),
+								PISTOL = new Weapon(new CustomItem(Material.IRON_HOE, 2, "KB-485"), 2, 25, 1, 3.f, 2.f, 2.5, 0, 0, 0.f, 0.f),
+								MACHINE_GUN = new Weapon(new CustomItem(Material.IRON_HOE, 3, "Vityaz-SN"), 3, 5, 1, 8.f, 4.f, 1., 1, 0, 1.f, 0.f),
+								SHOTGUN = new Weapon(new CustomItem(Material.IRON_HOE, 4, "CZ-569"), 1, 35, 10, 20.f, 1.f, 17., 0, 1, 2.f, 0.5f);
+	
+	public static final Material	MISSILE_RADAR = Material.RED_NETHER_BRICKS,
 									MISSILE_LAUNCHER = Material.NETHER_QUARTZ_ORE,
 									MISSILE_CRAFT = Material.NETHERRACK;
 	
@@ -54,6 +61,7 @@ public class CustomElementManager implements Listener {
 		pm.registerEvents(this.craft, pl);
 		
 		pm.registerEvents(new LaserPointerListener(), pl);
+		pm.registerEvents(new WeaponListener(), pl);
 	}
 	
 	
