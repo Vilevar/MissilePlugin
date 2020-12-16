@@ -7,6 +7,7 @@ import static java.lang.Math.toRadians;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,17 +23,27 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.Team.Option;
+import org.bukkit.scoreboard.Team.OptionStatus;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
+import be.vilevar.missiles.mcelements.weapons.Weapon;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class Main extends JavaPlugin implements Listener {
@@ -44,13 +55,33 @@ public class Main extends JavaPlugin implements Listener {
 	public static Main i;
 	private int t;
 	
+	private CustomElementManager custom;
+	
+	private Scoreboard scoreboard;
+	private Team communist;
+	private Team capitalist;
+	
 	@Override
 	public void onEnable() {
 		i = this;
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(this, this);
-		pm.registerEvents(new CustomElementManager(this, pm), this);
+		pm.registerEvents(this.custom = new CustomElementManager(this, pm), this);
 		getCommand("missile").setExecutor(this);
+		getCommand("discharge").setExecutor(this);
+		
+		this.scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
+		this.communist = this.scoreboard.getTeam("Communisme");
+		if(this.communist == null)
+			this.prepareTeam(this.communist = this.scoreboard.registerNewTeam("Communisme"), ChatColor.RED, "Communiste ");
+		this.capitalist = this.scoreboard.getTeam("Capitalisme");
+		if(this.capitalist == null)
+			this.prepareTeam(this.capitalist = this.scoreboard.registerNewTeam("Capitalisme"), ChatColor.BLUE, "Capitaliste ");
+	}
+	
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		
 	}
 	
 	@EventHandler
@@ -60,11 +91,12 @@ public class Main extends JavaPlugin implements Listener {
 		}
 		if(e.getItem() != null && e.getItem().getType() == Material.BOOK) {
 			e.getPlayer().getInventory().addItem(
-					CustomElementManager.SNIPER.getItem().create(), CustomElementManager.SNIPER.getAmmunition().create(),
-					CustomElementManager.PISTOL.getItem().create(), CustomElementManager.PISTOL.getAmmunition().create(),
-					CustomElementManager.MACHINE_GUN.getItem().create(), CustomElementManager.MACHINE_GUN.getAmmunition().create(),
-					CustomElementManager.SHOTGUN.getItem().create(), CustomElementManager.SHOTGUN.getAmmunition().create(),
-					CustomElementManager.BOMB.create(), CustomElementManager.SMOKE_BOMB.create());
+					CustomElementManager.SNIPER.createItem(), CustomElementManager.SNIPER.getAmmunition().create(),
+					CustomElementManager.PISTOL.createItem(), CustomElementManager.PISTOL.getAmmunition().create(),
+					CustomElementManager.MACHINE_GUN.createItem(), CustomElementManager.MACHINE_GUN.getAmmunition().create(),
+					CustomElementManager.SHOTGUN.createItem(), CustomElementManager.SHOTGUN.getAmmunition().create(),
+					CustomElementManager.BOMB.create(), CustomElementManager.SMOKE_BOMB.create(),
+					CustomElementManager.BALLISTIC_MISSILE.create(), CustomElementManager.FUEL.create(), CustomElementManager.RANGEFINDER.create());
 		}
 	}
 	
@@ -118,15 +150,28 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	@EventHandler
+	public void onPortal(PortalCreateEvent e) {
+		e.setCancelled(true);
+	}
+	
+	@EventHandler
 	public void onEntitySpawn(EntitySpawnEvent e) {
 		if(e.getEntityType()==EntityType.SLIME)
 			e.setCancelled(true);
+	}
+	
+	@EventHandler
+	public void onDeath(PlayerDeathEvent e) {
+		if(e.getEntity().getKiller() != null) {
+			System.out.println(e.getDeathMessage());
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(!(sender instanceof Player) && command.getName().equals("missile")) {
+			
 			if(t!=0) {
 				getServer().getScheduler().cancelTask(t);
 				for(Player p : Bukkit.getOnlinePlayers()) {
@@ -147,7 +192,7 @@ public class Main extends JavaPlugin implements Listener {
 				p.getInventory().addItem(new ItemStack(Material.IRON_HELMET), new ItemStack(Material.IRON_CHESTPLATE),
 						new ItemStack(Material.IRON_LEGGINGS), new ItemStack(Material.IRON_BOOTS), new ItemStack(Material.DIAMOND_SWORD),
 						pickaxe, new ItemStack(CustomElementManager.MISSILE_RADAR, 2), new ItemStack(CustomElementManager.MISSILE_LAUNCHER),
-						new ItemStack(CustomElementManager.MISSILE_CRAFT), CustomElementManager.LASER_POINTER.create(), h,
+						new ItemStack(CustomElementManager.MISSILE_CRAFT), CustomElementManager.RANGEFINDER.create(), h,
 						new ItemStack(Material.STONE_BUTTON), new ItemStack(Material.OBSIDIAN, 32), new ItemStack(Material.COOKED_BEEF, 64));
 				p.updateInventory();
 			}
@@ -166,6 +211,7 @@ public class Main extends JavaPlugin implements Listener {
 							new ItemStack(Material.COMPASS, nCompass), CustomElementManager.FUEL.create(nFuel));
 				}
 			}, 0, 1200);
+			return true;
 		/*} else if(command.getName().equals("missile_world")) {
 			String name = "missile_world";
 			World world = getServer().getWorld(name);
@@ -175,10 +221,35 @@ public class Main extends JavaPlugin implements Listener {
 				((Player) sender).teleport(world.getSpawnLocation());
 				
 			return true;*/
+		} else if(command.getName().equals("discharge") && sender instanceof Player) {
+			Player p = (Player) sender;
+			ItemStack is = p.getInventory().getItemInMainHand();
+			Weapon w = this.custom.getWeapons().getWeapon(is);
+			if(w == null) {
+				p.sendMessage("§6Mettez une §carme à feu§6 dans votre §amain principale§c.");
+			} else {
+				ItemMeta im = is.getItemMeta();
+				if(im instanceof Damageable) {
+					Damageable dam = (Damageable) im;
+					dam.setDamage(is.getType().getMaxDurability());
+					p.sendMessage("§6Arme déchargée.");
+				} else {
+					p.sendMessage("§6Cette arme a munitions infinies.");
+				}
+			}
+			return true;
 		}
 		return true;
 	}
 	
+	
+	private void prepareTeam(Team team, ChatColor color, String prefix) {
+		team.setAllowFriendlyFire(false);
+		team.setCanSeeFriendlyInvisibles(true);
+		team.setColor(color);
+		team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OWN_TEAM);
+		team.setPrefix(prefix);
+	}
 	
 	
 	public static Vector rotate(Vector v, Location loc) {

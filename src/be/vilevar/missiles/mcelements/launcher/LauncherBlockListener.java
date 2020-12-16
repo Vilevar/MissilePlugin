@@ -21,7 +21,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.data.BallisticMissileData;
-import be.vilevar.missiles.mcelements.data.LaserPointerData;
+import be.vilevar.missiles.mcelements.data.RangefinderData;
 
 public class LauncherBlockListener implements Listener {
 
@@ -139,14 +139,14 @@ public class LauncherBlockListener implements Listener {
 						launcher.setMissileData(BallisticMissileData.getBallisticMissileData(i));
 						return;
 					}
-					if(CustomElementManager.LASER_POINTER.isParentOf(is) && inv.getItem(8)==null) {
+					if(CustomElementManager.RANGEFINDER.isParentOf(is) && inv.getItem(8)==null) {
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount()-1);
 						p.getInventory().setItem(slot, is.getAmount() > 0 ? is : null);
 						p.updateInventory();
 						i.setAmount(1);
 						inv.setItem(8, i);
-						launcher.setLaserPointer(LaserPointerData.getLaserPointerData(i));
+						launcher.setLaserPointer(RangefinderData.getRangefinderData(i));
 						return;
 					}
 				}

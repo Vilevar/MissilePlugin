@@ -26,29 +26,41 @@ import be.vilevar.missiles.mcelements.weapons.WeaponListener;
 
 public class CustomElementManager implements Listener {
 
-	public static final CustomItem 	LASER_POINTER = new CustomItem(Material.GLOWSTONE_DUST, 1, "Laser pointer"),
+	public static final CustomItem 	RANGEFINDER = new CustomItem(Material.GLOWSTONE_DUST, 1, "Rangefinder"),
 									FUEL = new CustomItem(Material.GLOWSTONE_DUST, 2, "Fuel"),
 									BALLISTIC_MISSILE = new CustomItem(Material.GLOWSTONE_DUST, 3, "Ballistic missile");
 	
 	public static final Weapon	SNIPER = new Weapon(
 										new CustomItem(Material.IRON_HOE, 1, "Barrett .50"), new CustomItem(Material.GLOWSTONE_DUST, 4, "Barrett Ammo"),
-										500, 50, 3000, 3500,
-										1, 0.f, 20.f, 20., 0, 5, 2, 5.f, 1.f,
-										Sound.ENTITY_BLAZE_DEATH, 5.f, 1.f),
+										0.03, 4., -2.9,
+										500, 50, 4000, 4500,
+										1, 100.f, 0.f, 20.f,
+										10., 0, 5, 2,
+										5.f, 1.f,
+										Sound.ENTITY_BLAZE_DEATH, 2.f, 1.f),
 								PISTOL = new Weapon(
 										new CustomItem(Material.IRON_HOE, 2, "KB-485"), new CustomItem(Material.GLOWSTONE_DUST, 5, "Pistol Ammo"),
+										0., 1., 1.,
 										2, 25, 500, 500,
-										1, 3.f, 2.f, 2.5, 0, 0, 0, 0.f, 0.f,
+										1, 3.f, .5f, 2.f,
+										2.5, 0, 0, 0,
+										0.f, 0.f,
 										Sound.ENTITY_ENDER_DRAGON_HURT, 0.5f, 1.f),
 								MACHINE_GUN = new Weapon(
 										new CustomItem(Material.IRON_HOE, 3, "Vityaz-SN"), new CustomItem(Material.GLOWSTONE_DUST, 6, "Vityaz-SN Ammo"),
+										0.01, 2., -2.,
 										3, 5, 0, 4000,
-										1, 8.f, 4.f, 1., 0, 1, 0, 1.f, 0.f,
+										1, 8.f, 5.f, 4.f,
+										2.5, 0, 0, 0,
+										0.f, 0.25f,
 										Sound.ENTITY_EVOKER_FANGS_ATTACK, 1.f, 1.f),
 								SHOTGUN = new Weapon(
 										new CustomItem(Material.IRON_HOE, 4, "CZ-569"), new CustomItem(Material.GLOWSTONE_DUST, 7, "CZ-569 Ammo"),
+										0.02, 3.5, -0.5,
 										1, 35, 1000, 5000,
-										10, 20.f, 1.f, 15., 50, 0, 0, 3.f, 0.5f,
+										10, 20.f, 15.f, 1.f,
+										15., 50, 1, 0,
+										3.f, 0.5f,
 										Sound.ENTITY_GHAST_DEATH, 1.f, 1.f);
 	
 	public static final CustomItem	BOMB = new CustomItem(Material.SNOWBALL, 1, "Bomb"),
@@ -63,6 +75,8 @@ public class CustomElementManager implements Listener {
 	private RadarBlockListener radar;
 	private LauncherBlockListener launcher;
 	private CraftingTableListener craft;
+	
+	private WeaponListener weapons;
 	
 	
 	public CustomElementManager(Main pl, PluginManager pm) {
@@ -80,8 +94,10 @@ public class CustomElementManager implements Listener {
 		this.craft = new CraftingTableListener(this.unusedSlot);
 		pm.registerEvents(this.craft, pl);
 		
-		pm.registerEvents(new LaserPointerListener(), pl);
-		pm.registerEvents(new WeaponListener(), pl);
+		pm.registerEvents(new RangefinderListener(), pl);
+		
+		this.weapons = new WeaponListener();
+		pm.registerEvents(this.weapons, pl);
 	}
 	
 	
@@ -149,5 +165,7 @@ public class CustomElementManager implements Listener {
 		}
 	}
 	
-	
+	public WeaponListener getWeapons() {
+		return weapons;
+	}
 }

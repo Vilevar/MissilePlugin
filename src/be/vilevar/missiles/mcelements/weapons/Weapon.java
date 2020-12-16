@@ -1,27 +1,37 @@
 package be.vilevar.missiles.mcelements.weapons;
 
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.mcelements.CustomItem;
 
 public class Weapon {
 	
-	private static final float SPREAD_AIMING_IMPROVEMENT = 3.f;
-
 	private CustomItem item;
 	private CustomItem ammunition;
+	private double weight;
+	private double crossDamage;
+	private double crossSpeed;
 	private int aiming;
 	private int price;
 	private long recover;
 	private long rechargeTime;
 	private int bullets;
 	private float spread;
+	private float aimingSpread;
 	private float speed;
 	private double damage;
 	private int fireTicks;
@@ -35,13 +45,19 @@ public class Weapon {
 	
 	public Weapon(
 			CustomItem item, CustomItem ammunition,
+			double weight, double crossDamage, double crossSpeed,
 			int aiming, int price, long recover, long rechargeTime,
-			int bullets, float spread, float speed, double damage, int fireTicks, int knockback, int pierce,
+			int bullets, float spread, float aimingSpread, float speed,
+			double damage, int fireTicks, int knockback, int pierce,
 			float pitchDecline, float planeDecline,
 			Sound sound, float volume, float pitch) {
 		this.item = item;
 		this.ammunition = ammunition;
+		this.weight = weight;
+		this.crossDamage = crossDamage;
+		this.crossSpeed = crossSpeed;
 		this.aiming = aiming;
+		this.aimingSpread = aimingSpread;
 		this.price = price;
 		this.recover = recover;
 		this.rechargeTime = rechargeTime;
@@ -61,6 +77,22 @@ public class Weapon {
 	
 	public CustomItem getItem() {
 		return item;
+	}
+	
+	public ItemStack createItem() {
+		ItemStack is = this.getItem().create();
+		ItemMeta im = is.getItemMeta();
+		if(this.weight != 0)
+			im.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED,
+					new AttributeModifier(UUID.randomUUID(), "weapon-weight", -this.weight, Operation.ADD_NUMBER, EquipmentSlot.HAND));
+		if(this.crossDamage != 0)
+			im.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE,
+					new AttributeModifier(UUID.randomUUID(), "weapon-cross-damage", this.crossDamage, Operation.ADD_NUMBER, EquipmentSlot.HAND));
+		if(this.crossSpeed != 0)
+			im.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED,
+					new AttributeModifier(UUID.randomUUID(), "weapon-cross-speed", this.crossSpeed, Operation.ADD_NUMBER, EquipmentSlot.HAND));
+		is.setItemMeta(im);
+		return is;
 	}
 	
 	public CustomItem getAmmunition() {
@@ -87,7 +119,7 @@ public class Weapon {
 		World world = p.getWorld();
 		Location loc = p.getEyeLocation();
 		Vector direction = loc.getDirection();
-		float spread = isAiming ? Math.max(0, this.spread - SPREAD_AIMING_IMPROVEMENT) : this.spread;
+		float spread = isAiming ? this.aimingSpread : this.spread;
 		for(int i = 0; i < this.bullets; i++) {
 			Arrow arrow = world.spawnArrow(loc, direction, this.speed, spread);
 			arrow.setShooter(p);

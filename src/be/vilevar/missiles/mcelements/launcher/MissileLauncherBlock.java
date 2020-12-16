@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.mcelements.data.BallisticMissileData;
-import be.vilevar.missiles.mcelements.data.LaserPointerData;
+import be.vilevar.missiles.mcelements.data.RangefinderData;
 import be.vilevar.missiles.missile.BalisticMissile;
 import be.vilevar.missiles.utils.ParticleEffect;
 
@@ -31,7 +31,7 @@ public class MissileLauncherBlock {
 	private final Location location;
 	private BallisticMissileData missileData;
 	private BalisticMissile missile;
-	private LaserPointerData laserPointer;
+	private RangefinderData laserPointer;
 	private Player owner;
 	private BukkitTask smokeTask;
 	private boolean isOpen;
@@ -54,11 +54,11 @@ public class MissileLauncherBlock {
 		return true;
 	}
 	
-	public LaserPointerData getLaserPointer() {
+	public RangefinderData getLaserPointer() {
 		return laserPointer;
 	}
 	
-	public void setLaserPointer(LaserPointerData laserPointer) {
+	public void setLaserPointer(RangefinderData laserPointer) {
 		this.laserPointer = laserPointer;
 	}
 	

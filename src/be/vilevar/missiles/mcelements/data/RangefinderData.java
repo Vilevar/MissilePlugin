@@ -5,16 +5,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
-import be.vilevar.missiles.mcelements.data.persistanttype.LaserPointerPersistantDataType;
+import be.vilevar.missiles.mcelements.data.persistanttype.RangefinderPersistantDataType;
 
-public class LaserPointerData {
+public class RangefinderData {
 	
 	public static final double defaultRange = 100;
 	
 	private double range;
 	private Location target;
 	
-	public LaserPointerData(double range, Location target) {
+	public RangefinderData(double range, Location target) {
 		this.range = range;
 		this.target = target;
 	}
@@ -36,20 +36,20 @@ public class LaserPointerData {
 	}
 	
 	public ItemStack toItemStack() {
-		ItemStack is = CustomElementManager.LASER_POINTER.create();
+		ItemStack is = CustomElementManager.RANGEFINDER.create();
 		ItemMeta im = is.getItemMeta();
-		im.getPersistentDataContainer().set(LaserPointerPersistantDataType.LASER_POINTER_KEY, LaserPointerPersistantDataType.LASER_POINTER, this);
+		im.getPersistentDataContainer().set(RangefinderPersistantDataType.RANGEFINDER_KEY, RangefinderPersistantDataType.RANGEFINDER, this);
 		is.setItemMeta(im);
 		return is;
 	}
 	
 	
 	
-	public static LaserPointerData getLaserPointerData(ItemStack is) {
-		if(is!=null && CustomElementManager.LASER_POINTER.isParentOf(is)) {
+	public static RangefinderData getRangefinderData(ItemStack is) {
+		if(is != null && CustomElementManager.RANGEFINDER.isParentOf(is)) {
 			ItemMeta im = is.getItemMeta();
-			return im.getPersistentDataContainer().getOrDefault(LaserPointerPersistantDataType.LASER_POINTER_KEY,
-					LaserPointerPersistantDataType.LASER_POINTER, new LaserPointerData(defaultRange, null));
+			return im.getPersistentDataContainer().getOrDefault(RangefinderPersistantDataType.RANGEFINDER_KEY,
+					RangefinderPersistantDataType.RANGEFINDER, new RangefinderData(defaultRange, null));
 		}
 		return null;
 	}

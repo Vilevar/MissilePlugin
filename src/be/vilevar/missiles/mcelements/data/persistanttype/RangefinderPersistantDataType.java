@@ -9,18 +9,18 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.mcelements.data.LaserPointerData;
+import be.vilevar.missiles.mcelements.data.RangefinderData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-public class LaserPointerPersistantDataType implements PersistentDataType<byte[], LaserPointerData> {
+public class RangefinderPersistantDataType implements PersistentDataType<byte[], RangefinderData> {
 
-	public static final LaserPointerPersistantDataType LASER_POINTER = new LaserPointerPersistantDataType();
-	public static final NamespacedKey LASER_POINTER_KEY = new NamespacedKey(Main.i, "laser-pointer");
+	public static final RangefinderPersistantDataType RANGEFINDER = new RangefinderPersistantDataType();
+	public static final NamespacedKey RANGEFINDER_KEY = new NamespacedKey(Main.i, "rangefinder");
 	
 	@Override
-	public Class<LaserPointerData> getComplexType() {
-		return LaserPointerData.class;
+	public Class<RangefinderData> getComplexType() {
+		return RangefinderData.class;
 	}
 
 	@Override
@@ -29,7 +29,7 @@ public class LaserPointerPersistantDataType implements PersistentDataType<byte[]
 	}
 	
 	@Override
-	public LaserPointerData fromPrimitive(byte[] bs, PersistentDataAdapterContext ctx) {
+	public RangefinderData fromPrimitive(byte[] bs, PersistentDataAdapterContext ctx) {
 		ByteBuf buffer = Unpooled.copiedBuffer(bs);
 		double range = buffer.readDouble();
 		Location t = null;
@@ -37,11 +37,11 @@ public class LaserPointerPersistantDataType implements PersistentDataType<byte[]
 			t = new Location(Bukkit.getWorld(new UUID(buffer.readLong(), buffer.readLong())), buffer.readDouble(), buffer.readDouble(),
 					buffer.readDouble());
 		}
-		return new LaserPointerData(range, t);
+		return new RangefinderData(range, t);
 	}
 
 	@Override
-	public byte[] toPrimitive(LaserPointerData laser, PersistentDataAdapterContext ctx) {
+	public byte[] toPrimitive(RangefinderData laser, PersistentDataAdapterContext ctx) {
 		ByteBuf buffer = Unpooled.buffer();
 		buffer.writeDouble(laser.getRange());
 		if(laser.getTarget() != null) {

@@ -8,3 +8,5 @@ commands:
   description: launch the game
  missile_world:
   description: Create a world with a lot of villages
+ discharge:
+  description: Discharge your gun

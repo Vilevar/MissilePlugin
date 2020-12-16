@@ -27,7 +27,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,7 +52,7 @@ public class WeaponListener implements Listener {
 		Player p = e.getPlayer();
 		ItemStack is = e.getItem();
 		Weapon w = this.getWeapon(is);
-		if(w != null) {
+		if(w != null && e.getHand() == EquipmentSlot.HAND) {
 			e.setCancelled(true);
 			if(e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				// Test recover
@@ -103,22 +105,13 @@ public class WeaponListener implements Listener {
 				this.recover.put(p.getUniqueId(), System.currentTimeMillis() + recover);
 			} else {
 				// Aim
-				if(!p.isSneaking()) {
-					if(p.hasPotionEffect(PotionEffectType.SLOW)) {
-						p.removePotionEffect(PotionEffectType.SLOW);
-						if(aiming.contains(p.getUniqueId()))
-							aiming.remove(p.getUniqueId());
-					} else {
-						p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 999999, w.getAiming(), true, false, false));
-						aiming.add(p.getUniqueId());
-					}
-				} else if(p.getGameMode() != GameMode.CREATIVE) {
-					// Discharge
-					ItemMeta im = is.getItemMeta();
-					if(im instanceof Damageable) {
-						((Damageable) im).setDamage(is.getType().getMaxDurability());
-						is.setItemMeta(im);
-					}
+				if(p.hasPotionEffect(PotionEffectType.SLOW)) {
+					p.removePotionEffect(PotionEffectType.SLOW);
+					if(aiming.contains(p.getUniqueId()))
+						aiming.remove(p.getUniqueId());
+				} else {
+					p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 999999, w.getAiming(), true, false, false));
+					aiming.add(p.getUniqueId());
 				}
 			}
 		}
@@ -131,6 +124,12 @@ public class WeaponListener implements Listener {
 			p.removePotionEffect(PotionEffectType.SLOW);
 			aiming.remove(p.getUniqueId());
 		}
+	}
+	
+	@EventHandler
+	public void onDamage(PlayerItemDamageEvent e) {
+		if(this.getWeapon(e.getItem()) != null)
+			e.setCancelled(true);
 	}
 	
 	@EventHandler
@@ -161,7 +160,7 @@ public class WeaponListener implements Listener {
 			if(bombType == 0) {
 				TNTPrimed tnt = (TNTPrimed) ball.getWorld().spawnEntity(ball.getLocation(), EntityType.PRIMED_TNT);
 				tnt.setFuseTicks(20);
-				tnt.setYield(5.0f);
+				tnt.setYield(3.0f);
 				tnt.setIsIncendiary(true);
 				tnt.setSource((Player) shooter);
 			} else if(bombType == 1) {

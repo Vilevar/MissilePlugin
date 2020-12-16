@@ -47,7 +47,7 @@ public class CustomItem {
 		is.setItemMeta(im);
 		return is;
 	}
-
+	
 	public boolean isParentOf(ItemStack is) {
 		if(is != null && is.getType() == material) {
 			ItemMeta im = is.getItemMeta();
