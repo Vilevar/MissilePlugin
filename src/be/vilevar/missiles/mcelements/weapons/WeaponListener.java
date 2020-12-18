@@ -159,9 +159,9 @@ public class WeaponListener implements Listener {
 			int bombType = ball.getMetadata("bomb-type").get(0).asInt();
 			if(bombType == 0) {
 				TNTPrimed tnt = (TNTPrimed) ball.getWorld().spawnEntity(ball.getLocation(), EntityType.PRIMED_TNT);
-				tnt.setFuseTicks(20);
-				tnt.setYield(3.0f);
-				tnt.setIsIncendiary(true);
+				tnt.setFuseTicks(30);
+				tnt.setYield(4.0f);
+				tnt.setIsIncendiary(false);
 				tnt.setSource((Player) shooter);
 			} else if(bombType == 1) {
 				final int task = this.createSmoke(ball.getLocation(), 5., 100);

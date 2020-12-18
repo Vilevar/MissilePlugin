@@ -9,7 +9,7 @@ import be.vilevar.missiles.mcelements.data.persistanttype.RangefinderPersistantD
 
 public class RangefinderData {
 	
-	public static final double defaultRange = 100;
+	public static final double defaultRange = 300;
 	
 	private double range;
 	private Location target;

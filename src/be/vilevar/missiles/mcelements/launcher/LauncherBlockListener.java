@@ -167,7 +167,7 @@ public class LauncherBlockListener implements Listener {
 			for(int y = -1; y < 2; y++) {
 				for(int z = -1; z < 2; z++) {
 					final Block b = e.getBlock().getLocation().add(x, y, z).getBlock();
-					if(b.getType()==CustomElementManager.MISSILE_LAUNCHER && !b.isBlockPowered()) {
+					if(CustomElementManager.MISSILE_LAUNCHER.isParentOf(b) && !b.isBlockPowered()) {
 						MissileLauncherBlock launcher = MissileLauncherBlock.getLauncherAt(b.getLocation());
 						if(launcher!=null && launcher.isLaunchingConfirmed()) {
 							Bukkit.getScheduler().runTaskLater(Main.i, () -> {

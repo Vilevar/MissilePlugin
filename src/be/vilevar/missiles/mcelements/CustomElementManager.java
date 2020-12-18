@@ -2,6 +2,7 @@ package be.vilevar.missiles.mcelements;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,7 +36,7 @@ public class CustomElementManager implements Listener {
 										0.03, 4., -2.9,
 										500, 50, 4000, 4500,
 										1, 100.f, 0.f, 20.f,
-										10., 0, 5, 2,
+										1.5, 0, 5, 2,
 										5.f, 1.f,
 										Sound.ENTITY_BLAZE_DEATH, 2.f, 1.f),
 								PISTOL = new Weapon(
@@ -66,9 +67,9 @@ public class CustomElementManager implements Listener {
 	public static final CustomItem	BOMB = new CustomItem(Material.SNOWBALL, 1, "Bomb"),
 									SMOKE_BOMB = new CustomItem(Material.SNOWBALL, 2, "Smoke Bomb");
 	
-	public static final Material	MISSILE_RADAR = Material.RED_NETHER_BRICKS,
-									MISSILE_LAUNCHER = Material.NETHER_QUARTZ_ORE,
-									MISSILE_CRAFT = Material.NETHERRACK;
+	public static final CustomBlock	MISSILE_RADAR = new CustomBlock(Material.RED_NETHER_BRICKS, "Missile Radar"),
+									MISSILE_LAUNCHER = new CustomBlock(Material.NETHER_QUARTZ_ORE, "Missile Launcher"),
+									MISSILE_CRAFT = new CustomBlock(Material.NETHERRACK, "Missile Crafter");
 	
 	private ItemStack unusedSlot;
 	
@@ -104,32 +105,30 @@ public class CustomElementManager implements Listener {
 	
 	@EventHandler
 	public void onInteract(PlayerInteractEvent e) {
+		Block block = e.getClickedBlock();
 		if(e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.getPlayer().isSneaking()) {
-			if(e.getClickedBlock().getType() == MISSILE_RADAR) {
-				MissileRadarBlock radar = MissileRadarBlock.getRadarAt(e.getClickedBlock().getLocation());
+			if(MISSILE_RADAR.isParentOf(block)) {
+				MissileRadarBlock radar = MissileRadarBlock.getRadarAt(block.getLocation());
 				if(radar!=null && !radar.isOpen()) {
 					this.radar.openRadarInventory(radar, e.getPlayer());
 					e.setCancelled(true);
 				}
 				return;
 			}else
-			if(e.getClickedBlock().getType() == MISSILE_LAUNCHER) {
-				MissileLauncherBlock launcher = MissileLauncherBlock.getLauncherAt(e.getClickedBlock().getLocation());
+			if(MISSILE_LAUNCHER.isParentOf(block)) {
+				MissileLauncherBlock launcher = MissileLauncherBlock.getLauncherAt(block.getLocation());
 				if(launcher!=null && !launcher.isOpen()) {
 					this.launcher.openLauncherInventory(launcher, e.getPlayer());
 					e.setCancelled(true);
 				}
 				return;
 			}else
-			if(e.getClickedBlock().getType() == MISSILE_CRAFT) {
-				MissileCraftBlock craft = MissileCraftBlock.getCraftAt(e.getClickedBlock().getLocation());
+			if(MISSILE_CRAFT.isParentOf(block)) {
+				MissileCraftBlock craft = MissileCraftBlock.getCraftAt(block.getLocation());
 				if(craft != null && !craft.isOpen()) {
 					this.craft.openCraftTable(craft, e.getPlayer());
 					e.setCancelled(true);
 				}
-			}else
-			if(e.getClickedBlock().getType()==Material.CHEST) {
-				System.out.println(e.getPlayer()+" interact with a chest");
 			}
 		}
 	}

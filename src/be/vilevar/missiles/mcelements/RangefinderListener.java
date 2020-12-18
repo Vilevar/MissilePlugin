@@ -103,6 +103,7 @@ public class RangefinderListener implements Listener {
 		Score y;
 		Score z;
 		Score dist;
+		Score distXZ;
 		
 		Location target = lp.getTarget();
 		if(target == null) {
@@ -111,6 +112,7 @@ public class RangefinderListener implements Listener {
 			y = obj.getScore("§dY : §enull");
 			z = obj.getScore("§dZ : §enull");
 			dist = obj.getScore("§dDistance: §enull");
+			distXZ = obj.getScore("§6Distance XZ; §enull");
 		} else {
 			world = obj.getScore("§dWorld : §e"+target.getWorld().getName());
 			x = obj.getScore("§dX : §e"+this.round(target.getX()));
@@ -118,16 +120,21 @@ public class RangefinderListener implements Listener {
 			z = obj.getScore("§dZ : §e"+this.round(target.getZ()));
 			try {
 				dist = obj.getScore("§dDistance: §e"+this.round(target.distance(current)));
+				Location xzTarget = target.clone();
+				xzTarget.setY(current.getY());
+				distXZ = obj.getScore("§dDistance XZ: §e"+this.round(xzTarget.distance(current)));
 			} catch (Exception e) {
 				dist = obj.getScore("§dDistance: §enull");
+				distXZ = obj.getScore("§6Distance XZ; §enull");
 			}
 		}
 		
-		world.setScore(4);
-		x.setScore(3);
-		y.setScore(2);
-		z.setScore(1);
-		dist.setScore(0);
+		world.setScore(5);
+		x.setScore(4);
+		y.setScore(3);
+		z.setScore(2);
+		dist.setScore(1);
+		distXZ.setScore(0);
 	}
 	
 	private double round(double d) {
