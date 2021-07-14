@@ -7,6 +7,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,7 +31,8 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void onPlaceBanner(BlockPlaceEvent e) {
 		Game game = main.getGame();
-		if(game != null && !game.isStarted()) {
+		if(game != null && !game.isStopped() && !game.isStarted()) {
+			System.out.println(e.getBlock().getType()+" "+game.getBanner(capitalism)+" "+game.getBanner(communism));
 			if(e.getBlock().getType() == Material.RED_BANNER && game.getBanner(communism) == null && communism.hasEntry(e.getPlayer().getName())) {
 				game.setBanner(communism, e.getBlock().getLocation());
 			} else if(e.getBlock().getType() == Material.BLUE_BANNER && game.getBanner(capitalism) == null &&
@@ -44,24 +46,33 @@ public class GameListener implements Listener {
 	public void onBreakBanner(BlockBreakEvent e) {
 		Game game = main.getGame();
 		if(game != null) {
-			if(e.getBlock().getType() == Material.RED_BANNER && e.getBlock().getLocation().equals(game.getBanner(communism))) {
-				if(!game.isStarted())
-					if(e.getPlayer() != null && communism.hasEntry(e.getPlayer().getName()))
-						game.removeBanner(communism);
-					else
-						e.setCancelled(true);
-				else
-					game.stop(capitalism, true);
-			} else if(e.getBlock().getType() == Material.BLUE_BANNER && e.getBlock().getLocation().equals(game.getBanner(capitalism))) {
-				if(!game.isStarted())
-					if(e.getPlayer() != null && capitalism.hasEntry(e.getPlayer().getName()))
-						game.removeBanner(communism);
-					else
-						e.setCancelled(true);
-				else
-					game.stop(communism, true);
+			if(this.testBlockBreak(game, e.getBlock(), e.getPlayer())) {
+				e.setCancelled(true);
+			} else if(!game.isStopped() && this.testBlockBreak(game, e.getBlock().getRelative(BlockFace.UP), e.getPlayer())) {
+				e.setCancelled(true);
 			}
 		}
+	}
+	
+	private boolean testBlockBreak(Game game, Block block, Player p) {
+		if(block.getType() == Material.RED_BANNER && block.getLocation().equals(game.getBanner(communism))) {
+			if(!game.isStarted())
+				if(p != null && communism.hasEntry(p.getName()))
+					game.removeBanner(communism);
+				else
+					return true;
+			else
+				game.stop(capitalism, true);
+		} else if(block.getType() == Material.BLUE_BANNER && block.getLocation().equals(game.getBanner(capitalism))) {
+			if(!game.isStarted())
+				if(p != null && capitalism.hasEntry(p.getName()))
+					game.removeBanner(communism);
+				else
+					return true;
+			else
+				game.stop(communism, true);
+		}
+		return false;
 	}
 	
 	@EventHandler

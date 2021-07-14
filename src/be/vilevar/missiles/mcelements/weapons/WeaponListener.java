@@ -2,6 +2,8 @@ package be.vilevar.missiles.mcelements.weapons;
 
 import static be.vilevar.missiles.mcelements.CustomElementManager.BOMB;
 import static be.vilevar.missiles.mcelements.CustomElementManager.MACHINE_GUN;
+import static be.vilevar.missiles.mcelements.CustomElementManager.MINE;
+import static be.vilevar.missiles.mcelements.CustomElementManager.CLAYMORE;
 import static be.vilevar.missiles.mcelements.CustomElementManager.PISTOL;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SHOTGUN;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SMOKE_BOMB;
@@ -9,12 +11,15 @@ import static be.vilevar.missiles.mcelements.CustomElementManager.SNIPER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -24,6 +29,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -44,8 +50,70 @@ import be.vilevar.missiles.utils.ParticleEffect;
 
 public class WeaponListener implements Listener {
 
+	private Main main = Main.i;
 	private HashMap<UUID, Long> recover = new HashMap<>();
 	private ArrayList<UUID> aiming = new ArrayList<>();
+	
+	private ArrayList<MinePredicate> mines = new ArrayList<>();
+	
+	
+	public WeaponListener() {
+		main.getServer().getScheduler().runTaskTimer(main, () -> {
+			Iterator<MinePredicate> mines = this.mines.iterator();
+			while(mines.hasNext()) {
+				MinePredicate mine = mines.next();
+				Location loc = mine.getLocation();
+				Player miner = mine.getMiner();
+				if(!MINE.isParentOf(loc.getBlock()) && !CLAYMORE.isParentOf(loc.getBlock())) {
+					mines.remove();
+				} else {
+					if(!loc.getWorld().getNearbyEntities(loc, 1, 1, 1, mine).isEmpty()) {
+						mines.remove();
+						loc.getBlock().setType(Material.AIR);
+						if(mine.isInstant()) {
+							mine.getLocation().getWorld().createExplosion(mine.getLocation(), 5.0f, false, true, mine.getMiner());
+						} else {
+							TNTPrimed tnt = (TNTPrimed) loc.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
+							tnt.setFuseTicks(5);
+							tnt.setYield(5.0f);
+							tnt.setIsIncendiary(false);
+							tnt.setVelocity(new Vector(0, 0.4, 0));
+							tnt.setSource(miner);
+						}
+					}
+				}
+			}
+		}, 20, 1);
+	}
+	
+	
+	
+	@EventHandler
+	public void onPlaceMine(BlockPlaceEvent e) {
+		if(MINE.isParentOf(e.getBlock()) || CLAYMORE.isParentOf(e.getBlock())) {
+			this.mines.add(new MinePredicate(e.getBlock().getLocation(), e.getPlayer(), CLAYMORE.isParentOf(e.getBlock())));
+		}
+	}
+	
+	
+	@EventHandler
+	public void onActivateMine(PlayerInteractEvent e) {
+		if((e.getAction() == Action.PHYSICAL && MINE.isParentOf(e.getClickedBlock())) || 
+				(e.getAction() == Action.RIGHT_CLICK_BLOCK && CLAYMORE.isParentOf(e.getClickedBlock()))) {
+			Iterator<MinePredicate> mines = this.mines.iterator();
+			while(mines.hasNext()) {
+				MinePredicate mine = mines.next();
+				if(mine.getLocation().equals(e.getClickedBlock().getLocation())) {
+					if(mine.test(e.getPlayer())) {
+						mine.getLocation().getWorld().createExplosion(mine.getLocation(), 5.0f, false, true, mine.getMiner());
+						mines.remove();
+					}
+					return;
+				}
+			}
+		}
+	}
+	
 	
 	@EventHandler
 	public void onShoot(PlayerInteractEvent e) {
@@ -153,19 +221,35 @@ public class WeaponListener implements Listener {
 	
 	@EventHandler
 	public void onHit(ProjectileHitEvent e) {
-		Projectile ball = e.getEntity();
-		ProjectileSource shooter = ball.getShooter();
-		if(shooter != null && shooter instanceof Player && ball.getType() == EntityType.SNOWBALL && ball.hasMetadata("bomb-type")) {
-			int bombType = ball.getMetadata("bomb-type").get(0).asInt();
-			if(bombType == 0) {
-				TNTPrimed tnt = (TNTPrimed) ball.getWorld().spawnEntity(ball.getLocation(), EntityType.PRIMED_TNT);
-				tnt.setFuseTicks(30);
-				tnt.setYield(4.0f);
-				tnt.setIsIncendiary(false);
-				tnt.setSource((Player) shooter);
-			} else if(bombType == 1) {
-				final int task = this.createSmoke(ball.getLocation(), 5., 100);
-				Bukkit.getScheduler().runTaskLater(Main.i, () -> Bukkit.getScheduler().cancelTask(task), 20*10);
+		Projectile proj = e.getEntity();
+		ProjectileSource shooter = proj.getShooter();
+		if(shooter != null && shooter instanceof Player) {
+			Player p = (Player) shooter;
+			if(proj.getType() == EntityType.SNOWBALL && proj.hasMetadata("bomb-type")) {
+				int bombType = proj.getMetadata("bomb-type").get(0).asInt();
+				if(bombType == 0) {
+					TNTPrimed tnt = (TNTPrimed) proj.getWorld().spawnEntity(proj.getLocation(), EntityType.PRIMED_TNT);
+					tnt.setFuseTicks(30);
+					tnt.setYield(3.0f);
+					tnt.setIsIncendiary(false);
+					tnt.setSource(p);
+				} else if(bombType == 1) {
+					final int task = this.createSmoke(proj.getLocation(), 5., 100);
+					Bukkit.getScheduler().runTaskLater(Main.i, () -> Bukkit.getScheduler().cancelTask(task), 20*10);
+				}
+			} else if(proj instanceof Arrow) {
+				if(e.getHitBlock() != null && e.getHitBlock().getType().toString().contains("GLASS")) {
+					e.getHitBlock().setType(Material.AIR);
+				} else if(e.getHitEntity() != null && e.getHitEntity().getType() == EntityType.PLAYER) {
+					Arrow arrow = (Arrow) proj;
+					Player hit = (Player) e.getHitEntity();
+					if(proj.getLocation().distance(hit.getEyeLocation()) <= 0.25) {
+						if(hit.getInventory().getHelmet() != null && hit.getInventory().getHelmet().getType() != Material.AIR) {
+							arrow.setCritical(true);
+							p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -187,7 +271,7 @@ public class WeaponListener implements Listener {
 	}
 	
 	private int createSmoke(Location loc, double radius, int n) {
-		return Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.i, () -> {
+		return main.getServer().getScheduler().scheduleSyncRepeatingTask(main, () -> {
 			for(int i = 0; i < n; i++) {
 				double r = radius * Math.sqrt(Math.random());
 				double theta = 2 * Math.PI * Math.random();

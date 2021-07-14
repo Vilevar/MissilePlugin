@@ -129,7 +129,7 @@ public class LauncherBlockListener implements Listener {
 						launcher.setOwner(Bukkit.getPlayer(sm.getOwner()));
 						return;
 					}
-					if(CustomElementManager.BALLISTIC_MISSILE.isParentOf(is) && inv.getItem(4)==null) {
+					if(/*CustomElementManager.BALLISTIC_MISSILE.isParentOf(is) && */inv.getItem(4)==null) { // TODO
 						ItemStack i = is.clone();
 						is.setAmount(is.getAmount()-1);
 						p.getInventory().setItem(slot, is.getAmount() > 0 ? is : null);

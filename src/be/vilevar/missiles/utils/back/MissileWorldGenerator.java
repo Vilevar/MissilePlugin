@@ -1,4 +1,4 @@
-package be.vilevar.missiles.utils;
+package be.vilevar.missiles.utils.back;
 
 public class MissileWorldGenerator {
 

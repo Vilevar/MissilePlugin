@@ -1,8 +1,7 @@
 package be.vilevar.missiles.mcelements;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
+import static be.vilevar.missiles.Main.round;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -36,7 +35,6 @@ public class RangefinderListener implements Listener {
 	private ArrayList<UUID> zooming = new ArrayList<>();
 	private ScoreboardManager manager;
 	private Scoreboard mainSB;
-	private MathContext ctx = new MathContext(5, RoundingMode.HALF_UP);
 	
 	public RangefinderListener() {
 		this.manager = Bukkit.getScoreboardManager();
@@ -115,14 +113,14 @@ public class RangefinderListener implements Listener {
 			distXZ = obj.getScore("§6Distance XZ; §enull");
 		} else {
 			world = obj.getScore("§dWorld : §e"+target.getWorld().getName());
-			x = obj.getScore("§dX : §e"+this.round(target.getX()));
-			y = obj.getScore("§dY : §e"+this.round(target.getY()));
-			z = obj.getScore("§dZ : §e"+this.round(target.getZ()));
+			x = obj.getScore("§dX : §e"+round(target.getX()));
+			y = obj.getScore("§dY : §e"+round(target.getY()));
+			z = obj.getScore("§dZ : §e"+round(target.getZ()));
 			try {
-				dist = obj.getScore("§dDistance: §e"+this.round(target.distance(current)));
+				dist = obj.getScore("§dDistance: §e"+round(target.distance(current)));
 				Location xzTarget = target.clone();
 				xzTarget.setY(current.getY());
-				distXZ = obj.getScore("§dDistance XZ: §e"+this.round(xzTarget.distance(current)));
+				distXZ = obj.getScore("§dDistance XZ: §e"+round(xzTarget.distance(current)));
 			} catch (Exception e) {
 				dist = obj.getScore("§dDistance: §enull");
 				distXZ = obj.getScore("§6Distance XZ; §enull");
@@ -135,10 +133,6 @@ public class RangefinderListener implements Listener {
 		z.setScore(2);
 		dist.setScore(1);
 		distXZ.setScore(0);
-	}
-	
-	private double round(double d) {
-		return new BigDecimal(d, ctx).doubleValue();
 	}
 	
 	@EventHandler

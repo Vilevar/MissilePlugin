@@ -1,164 +1,111 @@
 package be.vilevar.missiles.mcelements.data;
 
-import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.data.persistanttype.BallisticMissilePersistantDataType;
-import be.vilevar.missiles.missile.BalisticMissile;
-import be.vilevar.missiles.utils.ParticleEffect;
+import be.vilevar.missiles.missile.BallisticMissile;
+import be.vilevar.missiles.missile.ballistic.MissileStage;
 
 public class BallisticMissileData implements Cloneable {
 	
-	public static final float defaultExplosionPower = 10;
-	public static final double defaultWeight = 1;
-	public static final double defaultRotatingForce = 100;
-	public static final double defaultRange = 300;
-	public static final float defaultSpeed = 20;
-	public static final double defaultFlightHeight = 200;
-	public static final double defaultDetectorDistance = 0;
+	public static final int[] neededFuel = {18, 2, 1};
 	
-	
-	
-	private float explosionPower;
-	private double weight;
-	private double rotatingForce;
-	private double range;
-	private float speed;
-	private double flightHeight;
-	private double detectDist;
-	
-	private double minRotatingForce, maxRotatingForce;
-	private double minRange;
-	private double minSpeed;
-	
-	public BallisticMissileData(float explosionPower, double weight, double rotatingForce, double range, float speed, double flightHeight,
-			double detectDist) {
-		this.explosionPower = explosionPower;
-		this.weight = weight;
-		this.rotatingForce = rotatingForce;
-		this.range = range;
-		this.speed = speed;
-		this.flightHeight = flightHeight;
-		this.detectDist = detectDist;
-		this.setMinRotatingForce();
-		this.setMaxRotatingForce();
-		this.setMinRange();
-		this.setMinSpeed();
-	}
-
-	public float getExplosionPower() {
-		return explosionPower;
-	}
-
-	public void setExplosionPower(float explosionPower) {
-		this.explosionPower = explosionPower;
-	}
-
-	public double getWeight() {
-		return weight;
-	}
-
-	public void setWeight(double weight) {
-		this.weight = weight;
-		this.setMinRotatingForce();
-		this.setMaxRotatingForce();
-		this.setMinRange();
-		this.setMinSpeed();
-	}
-	
-	public double getRotatingForce() {
-		return rotatingForce;
-	}
-
-	public void setRotatingForce(double rotatingForce) {
-		this.rotatingForce = rotatingForce;
-		this.setMinRange();
-		this.setMinSpeed();
-	}
-
-	public double getRange() {
-		return range;
-	}
-
-	public void setRange(double range) {
-		this.range = range;
-	}
-
-	public float getSpeed() {
-		return speed;
-	}
-
-	public void setSpeed(float speed) {
-		this.speed = speed;
-		this.setMinRotatingForce();
-		this.setMaxRotatingForce();
-		this.setMinRange();
-	}
-
-	public double getFlightHeight() {
-		return flightHeight;
-	}
-
-	public void setFlightHeight(double flightHeight) {
-		this.flightHeight = flightHeight;
-		this.setMinRotatingForce();
-	}
-	
-	public double getDetectorDistance() {
-		return this.detectDist;
-	}
-	
-	public void setDetectorDistance(double distance) {
-		this.detectDist = Math.min(10, Math.max(0, distance));
-	}
+	private int stages;
+	private int[] impulses;
+	private int[] nFuels;
+	private int[] ejects;
+	private MIRVData warhead;
 	
 
-	
-	
-	public double getMinRotatingForce() {
-		return minRotatingForce;
-	}
-
-	public double getMaxRotatingForce() {
-		return maxRotatingForce;
-	}
-
-	public double getMinRange() {
-		return minRange;
-	}
-
-	public double getMinSpeed() {
-		return minSpeed;
-	}
-
-	
-	
-	private void setMinRotatingForce() {
-		this.minRotatingForce = (this.weight * this.speed * this.speed) / (flightHeight - 4);
-	}
-
-	private void setMaxRotatingForce() {
-		this.maxRotatingForce = this.weight * this.speed * this.speed;
-	}
-
-	private void setMinRange() {
-		double a = 1.1 * this.weight * this.speed * this.speed;
-		this.minRange = (a / this.rotatingForce) + (a / (this.rotatingForce + (BalisticMissile.GRAVITY * this.weight)));
-	}
-
-	private void setMinSpeed() {
-		this.minSpeed = Math.sqrt(this.rotatingForce / this.weight);
+	public BallisticMissileData(int stages, int[] impulses, int[] nFuels, int[] ejects, MIRVData warhead) {
+		this.stages = stages;
+		this.impulses = impulses;
+		this.nFuels = nFuels;
+		this.ejects = ejects;
+		this.warhead = warhead;
 	}
 	
+	public int getStages() {
+		return stages;
+	}
 	
-	public BalisticMissile toBalisticMissile(Location loc) {
-		return new BalisticMissile(ParticleEffect.FLAME, explosionPower, weight, rotatingForce, range, speed, flightHeight, detectDist, loc);
+	public int getImpulse(int stage) {
+		return impulses[stage];
+	}
+	
+	public void setImpulse(int stage, int impulse) {
+		this.impulses[stage] = impulse;
+	}
+	
+	public int getNFuel(int stage) {
+		return nFuels[stage];
+	}
+	
+	public int getMaxFuel(int stage) {
+		return neededFuel[stage];
+	}
+	
+	public void setNFuel(int stage, int nFuel) {
+		this.nFuels[stage] = nFuel;
+	}
+	
+	public int getEject(int stage) {
+		return ejects[stage];
+	}
+	
+	public void setEject(int stage, int eject) {
+		this.ejects[stage] = eject;
+	}
+	
+	public MIRVData getWarhead() {
+		return warhead;
+	}
+	
+	public void setWarhead(MIRVData warhead) {
+		this.warhead = warhead;
+	}
+	
+	public boolean isReady() {
+		if(this.stages > 0 && this.stages < 4 && this.warhead != null) {
+			for(int i = 0; i < this.stages; i++) {
+				if(this.impulses[i] <= 0 || this.ejects[i] <= 0 || this.nFuels[i] != neededFuel[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public BallisticMissile toBallisticMissile() {
+		if(!this.isReady()) {
+			return null;
+		}
+		MissileStage[] stages = new MissileStage[this.stages];
+		for(int i = 0; i < this.stages; i++) {
+			stages[i] = MissileStage.createStage(i + 1, this.impulses[i], this.ejects[i]);
+		}
+		return new BallisticMissile(stages, this.warhead.toMIRV());
 	}
 	
 	public ItemStack toItemStack() {
-		ItemStack is = CustomElementManager.BALLISTIC_MISSILE.create();
+		ItemStack is;
+		switch(stages) {
+		case 1:
+			is = CustomElementManager.SRBM.create();
+			break;
+		case 2:
+			is = CustomElementManager.MRBM.create();
+			break;
+		case 3:
+			is = CustomElementManager.ICBM.create();
+			break;
+		default: 
+			is = null;
+		}
+		
 		ItemMeta im = is.getItemMeta();
 		im.getPersistentDataContainer().set(BallisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
 				BallisticMissilePersistantDataType.BALLISTIC_MISSILE, this);
@@ -168,16 +115,28 @@ public class BallisticMissileData implements Cloneable {
 	
 	@Override
 	public BallisticMissileData clone() {
-		return new BallisticMissileData(explosionPower, weight, rotatingForce, range, speed, flightHeight, this.detectDist);
+		return new BallisticMissileData(this.stages, this.impulses, this.nFuels, this.ejects, this.warhead);
 	}
 	
 	
 	public static BallisticMissileData getBallisticMissileData(ItemStack is) {
-		if(is!=null && CustomElementManager.BALLISTIC_MISSILE.isParentOf(is)) {
+		if(is == null) {
+			return null;
+		} else if(CustomElementManager.SRBM.isParentOf(is)) {
 			ItemMeta im = is.getItemMeta();
 			return im.getPersistentDataContainer().getOrDefault(BallisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
-					BallisticMissilePersistantDataType.BALLISTIC_MISSILE, new BallisticMissileData(defaultExplosionPower, defaultWeight, 
-							defaultRotatingForce, defaultRange, defaultSpeed, defaultFlightHeight, defaultDetectorDistance));
+					BallisticMissilePersistantDataType.BALLISTIC_MISSILE, 
+					new BallisticMissileData(1, new int[1], new int[1], new int[1], null));
+		} else if(CustomElementManager.MRBM.isParentOf(is)) {
+			ItemMeta im = is.getItemMeta();
+			return im.getPersistentDataContainer().getOrDefault(BallisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
+					BallisticMissilePersistantDataType.BALLISTIC_MISSILE, 
+					new BallisticMissileData(2, new int[2], new int[2], new int[2], null));
+		} else if(CustomElementManager.ICBM.isParentOf(is)) {
+			ItemMeta im = is.getItemMeta();
+			return im.getPersistentDataContainer().getOrDefault(BallisticMissilePersistantDataType.BALLISTIC_MISSILE_KEY,
+					BallisticMissilePersistantDataType.BALLISTIC_MISSILE, 
+					new BallisticMissileData(3, new int[3], new int[3], new int[3], null));
 		}
 		return null;
 	}

@@ -1,5 +1,8 @@
 package be.vilevar.missiles.mcelements;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -8,6 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -16,20 +23,38 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.mcelements.crafting.CraftingTableListener;
+import be.vilevar.missiles.mcelements.artillery.Howitzer;
+import be.vilevar.missiles.mcelements.artillery.HowitzerBlockListener;
 import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
+import be.vilevar.missiles.mcelements.crafting.MissileCraftingTableListener;
+import be.vilevar.missiles.mcelements.crafting.RVCraftBlock;
+import be.vilevar.missiles.mcelements.crafting.RVCraftingTableListener;
 import be.vilevar.missiles.mcelements.launcher.LauncherBlockListener;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
-import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
-import be.vilevar.missiles.mcelements.radar.RadarBlockListener;
+import be.vilevar.missiles.mcelements.merchant.MerchantListener;
 import be.vilevar.missiles.mcelements.weapons.Weapon;
 import be.vilevar.missiles.mcelements.weapons.WeaponListener;
 
 public class CustomElementManager implements Listener {
 
-	public static final CustomItem 	RANGEFINDER = new CustomItem(Material.GLOWSTONE_DUST, 1, "Rangefinder"),
-									FUEL = new CustomItem(Material.GLOWSTONE_DUST, 2, "Fuel"),
-									BALLISTIC_MISSILE = new CustomItem(Material.GLOWSTONE_DUST, 3, "Ballistic missile");
+	public static final CustomItem 	RANGEFINDER = new CustomItem(Material.GLOWSTONE_DUST, 1, "Rangefinder");
+	
+	public static final CustomItem	ENGINE_1 = new CustomItem(Material.GLOWSTONE_DUST, 10, "Engine 1"),
+									ENGINE_2 = new CustomItem(Material.GLOWSTONE_DUST, 11, "Engine 2"),
+									ENGINE_3 = new CustomItem(Material.GLOWSTONE_DUST, 12, "Engine 3");
+	
+	public static final CustomItem	FUEL_1 = new CustomItem(Material.GLOWSTONE_DUST, 15, "Fuel 1"),
+									FUEL_2 = new CustomItem(Material.GLOWSTONE_DUST, 16, "Fuel 2"),
+									FUEL_3 = new CustomItem(Material.GLOWSTONE_DUST, 17, "Fuel 3");
+	
+	public static final CustomItem	SRBM = new CustomItem(Material.GLOWSTONE_DUST, 20, "SRBM"),
+									MRBM = new CustomItem(Material.GLOWSTONE_DUST, 21, "MRBM"),
+									ICBM = new CustomItem(Material.GLOWSTONE_DUST, 22, "ICBM");
+	
+	public static final CustomItem	REENTRY_VEHICLE = new CustomItem(Material.GLOWSTONE_DUST, 25, "Reentry Vehicle"),
+									A_BOMB = new CustomItem(Material.GLOWSTONE_DUST, 26, "A-Bomb"),
+									H_BOMB = new CustomItem(Material.GLOWSTONE_DUST, 27, "H-Bomb"),
+									MIRV = new CustomItem(Material.GLOWSTONE_DUST, 28, "MIRV");
 	
 	public static final Weapon	SNIPER = new Weapon(
 										new CustomItem(Material.IRON_HOE, 1, "Barrett .50"), new CustomItem(Material.GLOWSTONE_DUST, 4, "Barrett Ammo"),
@@ -64,57 +89,125 @@ public class CustomElementManager implements Listener {
 										3.f, 0.5f,
 										Sound.ENTITY_GHAST_DEATH, 1.f, 1.f);
 	
+	public static final CustomBlock	MINE = new CustomBlock(Material.CRIMSON_PRESSURE_PLATE, "Mine");
+	public static final CustomBlock	CLAYMORE = new CustomBlock(Material.STONE_BUTTON, "Claymore");
+	
 	public static final CustomItem	BOMB = new CustomItem(Material.SNOWBALL, 1, "Bomb"),
 									SMOKE_BOMB = new CustomItem(Material.SNOWBALL, 2, "Smoke Bomb");
 	
-	public static final CustomBlock	MISSILE_RADAR = new CustomBlock(Material.RED_NETHER_BRICKS, "Missile Radar"),
-									MISSILE_LAUNCHER = new CustomBlock(Material.NETHER_QUARTZ_ORE, "Missile Launcher"),
-									MISSILE_CRAFT = new CustomBlock(Material.NETHERRACK, "Missile Crafter");
+	public static final CustomBlock	MISSILE_LAUNCHER = new CustomBlock(Material.NETHER_QUARTZ_ORE, "Missile Launcher"),
+									MISSILE_CRAFT = new CustomBlock(Material.NETHERRACK, "Missile Crafter"),
+									RV_CRAFT = new CustomBlock(Material.NETHER_GOLD_ORE, "Reentry Vehicle Crafter"),
+									RADAR = new CustomBlock(Material.RED_NETHER_BRICKS, "Radar");
+	
+	public static final CustomBlock HOWITZER = new CustomBlock(Material.NETHER_BRICK_STAIRS, "Howitzer");
+	
+	public static final CustomItem 	SMALL_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 8, "Small Shell"),
+									BIG_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 9, "Big Shell");
+//									REMOTE_CONTROL = new CustomItem(Material.IRON_HOE, 5, "Howitzer Remote Control");
+	
+	public static final CustomItem 	WEATHER_FORECASTER = new CustomItem(Material.IRON_HOE, 6, "Weather Forecaster");
+	
+	private Main main;
 	
 	private ItemStack unusedSlot;
 	
-	private RadarBlockListener radar;
 	private LauncherBlockListener launcher;
-	private CraftingTableListener craft;
+	private MissileCraftingTableListener craft;
+	private RVCraftingTableListener mirv;
+	private HowitzerBlockListener howitzer;
 	
 	private WeaponListener weapons;
 	
+	private ArrayList<UUID> ids = new ArrayList<>();
+	
 	
 	public CustomElementManager(Main pl, PluginManager pm) {
+		this.main = pl;
+		
 		this.unusedSlot = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
 		ItemMeta im = this.unusedSlot.getItemMeta();
 		im.setDisplayName("§cSlot inutilisé");
 		this.unusedSlot.setItemMeta(im);
 		
-		this.radar = new RadarBlockListener(this.unusedSlot);
-		pm.registerEvents(this.radar, pl);
-		
 		this.launcher = new LauncherBlockListener(this.unusedSlot);
 		pm.registerEvents(this.launcher, pl);
 		
-		this.craft = new CraftingTableListener(this.unusedSlot);
+		this.craft = new MissileCraftingTableListener(this.unusedSlot);
 		pm.registerEvents(this.craft, pl);
+		
+		this.mirv = new RVCraftingTableListener(this.unusedSlot);
+		pm.registerEvents(this.mirv, pl);
+		
+		this.howitzer = new HowitzerBlockListener(this.unusedSlot);
+		pm.registerEvents(this.howitzer, pl);
 		
 		pm.registerEvents(new RangefinderListener(), pl);
 		
 		this.weapons = new WeaponListener();
 		pm.registerEvents(this.weapons, pl);
+		
+		pm.registerEvents(new MerchantListener(), pl);
 	}
 	
+	
+	@EventHandler
+	public void onPlace(BlockPlaceEvent e) {
+		Block block = e.getBlock();
+		if (CustomElementManager.MISSILE_LAUNCHER.isParentOf(block)) {
+			MissileLauncherBlock.launchers.add(new MissileLauncherBlock(block.getLocation()));
+		} else
+		if (CustomElementManager.MISSILE_CRAFT.isParentOf(block)) {
+			MissileCraftBlock.crafts.add(new MissileCraftBlock(block.getLocation()));
+		} else
+		if(CustomElementManager.RV_CRAFT.isParentOf(block)) {
+			RVCraftBlock.crafts.add(new RVCraftBlock(block.getLocation()));
+		} else
+		if(CustomElementManager.HOWITZER.isParentOf(block)) {
+			Howitzer.howitzers.add(new Howitzer(block));
+//		} else
+//		if(CustomElementManager.RADAR.isParentOf(block)) {
+//			Radar.radars.add(new Radar(block.getLocation(), e.getPlayer()));
+		}
+	}
+
+	@EventHandler
+	public void onBreak(BlockBreakEvent e) {
+		this.blockBreak(e.getBlock());
+	}
+
+	@EventHandler
+	public void onExplosionByEntity(EntityExplodeEvent e) {
+		e.blockList().forEach(block -> this.blockBreak(block));
+	}
+	
+	@EventHandler
+	public void onExplosionByBlock(BlockExplodeEvent e) {
+		e.blockList().forEach(block -> this.blockBreak(block));
+	}
+
+	private void blockBreak(Block block) {
+		if (CustomElementManager.MISSILE_LAUNCHER.isParentOf(block)) {
+			MissileLauncherBlock.checkDestroy(block.getLocation());
+		} else
+		if (CustomElementManager.MISSILE_CRAFT.isParentOf(block)) {
+			MissileCraftBlock.checkDestroy(block.getLocation());
+		} else
+		if(CustomElementManager.RV_CRAFT.isParentOf(block)) {
+			RVCraftBlock.checkDestroy(block.getLocation());
+		} else
+		if(CustomElementManager.HOWITZER.isParentOf(block)) {
+			Howitzer.checkDestroy(block.getLocation());
+		}
+	}
 	
 	
 	@EventHandler
 	public void onInteract(PlayerInteractEvent e) {
 		Block block = e.getClickedBlock();
-		if(e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.getPlayer().isSneaking()) {
-			if(MISSILE_RADAR.isParentOf(block)) {
-				MissileRadarBlock radar = MissileRadarBlock.getRadarAt(block.getLocation());
-				if(radar!=null && !radar.isOpen()) {
-					this.radar.openRadarInventory(radar, e.getPlayer());
-					e.setCancelled(true);
-				}
-				return;
-			}else
+		if(e.getAction() == Action.RIGHT_CLICK_BLOCK && !e.getPlayer().isSneaking() && !ids.contains(e.getPlayer().getUniqueId())) {
+			ids.add(e.getPlayer().getUniqueId());
+			main.getServer().getScheduler().runTaskLater(main, () -> ids.remove(e.getPlayer().getUniqueId()), 1);
 			if(MISSILE_LAUNCHER.isParentOf(block)) {
 				MissileLauncherBlock launcher = MissileLauncherBlock.getLauncherAt(block.getLocation());
 				if(launcher!=null && !launcher.isOpen()) {
@@ -122,12 +215,25 @@ public class CustomElementManager implements Listener {
 					e.setCancelled(true);
 				}
 				return;
-			}else
+			} else
 			if(MISSILE_CRAFT.isParentOf(block)) {
 				MissileCraftBlock craft = MissileCraftBlock.getCraftAt(block.getLocation());
 				if(craft != null && !craft.isOpen()) {
 					this.craft.openCraftTable(craft, e.getPlayer());
 					e.setCancelled(true);
+				}
+			} else 
+			if(RV_CRAFT.isParentOf(block)) {
+				RVCraftBlock craft = RVCraftBlock.getCraftAt(block.getLocation());
+				if(craft != null && !craft.isOpen()) {
+					this.mirv.openCraftTable(craft, e.getPlayer());
+					e.setCancelled(true);
+				}
+			} else
+			if(HOWITZER.isParentOf(block)) {
+				Howitzer howitzer = Howitzer.getHowitzerAt(block.getLocation());
+				if(howitzer != null) {
+					this.howitzer.onClick(howitzer, e);
 				}
 			}
 		}
@@ -137,28 +243,32 @@ public class CustomElementManager implements Listener {
 	public void onCloseInventory(InventoryCloseEvent e) {
 		if(e.getPlayer() instanceof Player) {
 			Player p = (Player) e.getPlayer();
-			if(this.radar.getRadarInventories().containsKey(p.getUniqueId())) {
-				Pair<Inventory, MissileRadarBlock> pair = this.radar.getRadarInventories().get(p.getUniqueId());
-				MissileRadarBlock radar = pair.getRight();
-				ItemStack compass = pair.getLeft().getItem(8);
-				if(compass != null) radar.getLocation().getWorld().dropItem(radar.getLocation(), compass);
-				radar.setOpen(false);
-				this.radar.getRadarInventories().remove(p.getUniqueId());
-				return;
-			}else
 			if(this.launcher.getLauncherInventories().containsKey(p.getUniqueId())) {
 				Pair<Inventory, MissileLauncherBlock> pair = this.launcher.getLauncherInventories().get(p.getUniqueId());
 				MissileLauncherBlock launcher = pair.getRight();
 				launcher.setOpen(false);
 				this.launcher.getLauncherInventories().remove(p.getUniqueId());
 				return;
-			}else
+			} else
 			if(this.craft.getCraftInventories().containsKey(p.getUniqueId())) {
 				Pair<Inventory, MissileCraftBlock> pair = this.craft.getCraftInventories().get(p.getUniqueId());
 				MissileCraftBlock craft = pair.getRight();
-				craft.setOpen(false);
-				craft.destroy(false);
+				craft.setOpen(null);
 				this.craft.getCraftInventories().remove(p.getUniqueId());
+				return;
+			} else
+			if(this.mirv.getCraftInventories().containsKey(p.getUniqueId())) {
+				Pair<Inventory, RVCraftBlock> pair = this.mirv.getCraftInventories().get(p.getUniqueId());
+				RVCraftBlock craft = pair.getRight();
+				craft.setOpen(null);
+				this.mirv.getCraftInventories().remove(p.getUniqueId());
+				return;
+			} else
+			if(this.howitzer.getHowitzerInventories().containsKey(p.getUniqueId())) {
+				Pair<Inventory, Howitzer> pair = this.howitzer.getHowitzerInventories().get(p.getUniqueId());
+				Howitzer howitzer = pair.getRight();
+				howitzer.setOpen(null);
+				this.howitzer.getHowitzerInventories().remove(p.getUniqueId());
 				return;
 			}
 		}

@@ -6,17 +6,17 @@ import java.util.Iterator;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import be.vilevar.missiles.mcelements.data.BallisticMissileData;
+import be.vilevar.missiles.mcelements.data.MIRVData;
 
-public class MissileCraftBlock {
+public class RVCraftBlock {
 
-	public static final ArrayList<MissileCraftBlock> crafts = new ArrayList<>();
+	public static final ArrayList<RVCraftBlock> crafts = new ArrayList<>();
 	
 	private final Location location;
-	private BallisticMissileData missile;
+	private MIRVData mirv;
 	private Player open;
 	
-	public MissileCraftBlock(Location loc) {
+	public RVCraftBlock(Location loc) {
 		this.location = loc;
 	}
 	
@@ -24,12 +24,12 @@ public class MissileCraftBlock {
 		return this.location;
 	}
 	
-	public BallisticMissileData getMissile() {
-		return missile;
+	public MIRVData getMIRV() {
+		return mirv;
 	}
 	
-	public void setMissile(BallisticMissileData missile) {
-		this.missile = missile;
+	public void setMIRV(MIRVData mirv) {
+		this.mirv = mirv;
 	}
 	
 	public boolean isOpen() {
@@ -45,8 +45,8 @@ public class MissileCraftBlock {
 	
 	public void destroy() {
 		crafts.remove(this);
-		if(missile != null)
-			location.getWorld().dropItem(location, missile.toItemStack());
+		if(mirv != null)
+			location.getWorld().dropItem(location, mirv.toItem());
 		if(open != null)
 			open.closeInventory();
 	}
@@ -55,9 +55,9 @@ public class MissileCraftBlock {
 	
 	
 	public static void checkDestroy(Location loc) {
-		Iterator<MissileCraftBlock> it = crafts.iterator();
+		Iterator<RVCraftBlock> it = crafts.iterator();
 		while(it.hasNext()) {
-			MissileCraftBlock craft = it.next();
+			RVCraftBlock craft = it.next();
 			if(craft.getLocation().equals(loc)) {
 				it.remove();
 				craft.destroy();
@@ -66,8 +66,8 @@ public class MissileCraftBlock {
 		}
 	}
 	
-	public static MissileCraftBlock getCraftAt(Location loc) {
-		for(MissileCraftBlock craft : crafts) {
+	public static RVCraftBlock getCraftAt(Location loc) {
+		for(RVCraftBlock craft : crafts) {
 			if(craft.getLocation().equals(loc)) {
 				return craft;
 			}

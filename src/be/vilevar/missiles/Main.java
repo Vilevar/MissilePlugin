@@ -4,30 +4,25 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -46,10 +41,11 @@ import org.bukkit.util.Vector;
 import be.vilevar.missiles.game.Game;
 import be.vilevar.missiles.game.GameListener;
 import be.vilevar.missiles.mcelements.CustomElementManager;
-import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
-import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
-import be.vilevar.missiles.mcelements.radar.MissileRadarBlock;
+import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
 import be.vilevar.missiles.mcelements.weapons.Weapon;
+import be.vilevar.missiles.missile.ballistic.explosives.ExplosiveManager;
+import be.vilevar.missiles.missile.ballistic.explosives.NuclearExplosive;
+import be.vilevar.missiles.missile.ballistic.explosives.ThermonuclearExplosive;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class Main extends JavaPlugin implements Listener {
@@ -61,19 +57,21 @@ public class Main extends JavaPlugin implements Listener {
 	public static Main i;
 
 	private CustomElementManager custom;
-
+	
+	private WorldManager wm;
+	
 	private Scoreboard scoreboard;
 	private Team communism;
 	private Team capitalism;
 	
 	private Game game;
 
-	private HashMap<UUID, Horse> horses = new HashMap<>();
-
 	@Override
 	public void onEnable() {
 		i = this;
 
+		this.wm = new WorldManager(this, this.getServer().getWorlds().get(0));
+		
 		this.scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
 		this.communism = this.scoreboard.getTeam("Communisme");
 		if (this.communism == null)
@@ -91,76 +89,61 @@ public class Main extends JavaPlugin implements Listener {
 		getCommand("missile").setExecutor(this);
 		getCommand("discharge").setExecutor(this);
 		getCommand("horse").setExecutor(this);
-		getCommand("ladder").setExecutor(this);
-		getCommand("chest").setExecutor(this);
 		getCommand("outpost").setExecutor(this);
 		getCommand("setoutpost").setExecutor(this);
 		getCommand("base").setExecutor(this);
+		getCommand("merchant").setExecutor(this);
+		
+		getServer().getScheduler().scheduleSyncRepeatingTask(i, () -> {
+			for(WeaponsMerchant merchant : WeaponsMerchant.getMerchants()) {
+				merchant.addMoney(10);
+			}
+		}, 200, 200);
+		
+		ExplosiveManager.startScheduler(this);
 	}
 
 	@Override
 	public void onDisable() {
 		if(game != null)
 			game.stop(null, false);
+		WeaponsMerchant.killMerchants();
+	}
+	
+	public WorldManager getWorldManager() {
+		return wm;
 	}
 	
 	@EventHandler
 	public void onClick(PlayerInteractEvent e) {
-		if (e.getItem() != null && CustomElementManager.FUEL.isParentOf(e.getItem())) {
-			e.setCancelled(true);
-		}
 		if (e.getItem() != null && e.getItem().getType() == Material.BOOK && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
-			e.getPlayer().getInventory().addItem(CustomElementManager.SNIPER.createItem(),
-					CustomElementManager.SNIPER.getAmmunition().create(), CustomElementManager.PISTOL.createItem(),
-					CustomElementManager.PISTOL.getAmmunition().create(), CustomElementManager.MACHINE_GUN.createItem(),
-					CustomElementManager.MACHINE_GUN.getAmmunition().create(),
+			e.getPlayer().getInventory().addItem(
+					CustomElementManager.SNIPER.createItem(), CustomElementManager.SNIPER.getAmmunition().create(),
+					CustomElementManager.PISTOL.createItem(), CustomElementManager.PISTOL.getAmmunition().create(),
+					CustomElementManager.MACHINE_GUN.createItem(), CustomElementManager.MACHINE_GUN.getAmmunition().create(),
 					CustomElementManager.SHOTGUN.createItem(), CustomElementManager.SHOTGUN.getAmmunition().create(),
 					CustomElementManager.BOMB.create(), CustomElementManager.SMOKE_BOMB.create(),
-					CustomElementManager.BALLISTIC_MISSILE.create(), CustomElementManager.FUEL.create(),
-					CustomElementManager.RANGEFINDER.create());
+					CustomElementManager.SRBM.create(), CustomElementManager.MRBM.create(), CustomElementManager.ICBM.create(),
+					CustomElementManager.RANGEFINDER.create(),
+					CustomElementManager.WEATHER_FORECASTER.create(),
+					CustomElementManager.SMALL_SHELL.create(), CustomElementManager.BIG_SHELL.create());
+//					CustomElementManager.REMOTE_CONTROL.create());
 			if(e.getPlayer().isSneaking())
 				e.getPlayer().getWorld().createExplosion(e.getPlayer().getLocation(), 5.f);
 		}
-	}
-
-	@EventHandler
-	public void onPlace(BlockPlaceEvent e) {
-		Block block = e.getBlock();
-		if (CustomElementManager.MISSILE_RADAR.isParentOf(block)) {
-			MissileRadarBlock.radars.add(new MissileRadarBlock(block.getLocation()));
-		}
-		if (CustomElementManager.MISSILE_LAUNCHER.isParentOf(block)) {
-			MissileLauncherBlock.launchers.add(new MissileLauncherBlock(block.getLocation()));
-		}
-		if (CustomElementManager.MISSILE_CRAFT.isParentOf(block)) {
-			MissileCraftBlock.crafts.add(new MissileCraftBlock(block.getLocation()));
-		}
-	}
-
-	@EventHandler
-	public void onBreak(BlockBreakEvent e) {
-		this.blockBreak(e.getBlock());
-	}
-
-	@EventHandler
-	public void onExplosionByEntity(EntityExplodeEvent e) {
-		e.blockList().forEach(block -> this.blockBreak(block));
-	}
-	
-	@EventHandler
-	public void onExplosionByBlock(BlockExplodeEvent e) {
-		e.blockList().forEach(block -> this.blockBreak(block));
-	}
-
-	private void blockBreak(Block block) {
-		if (CustomElementManager.MISSILE_RADAR.isParentOf(block)) {
-			MissileRadarBlock.checkDestroy(block.getLocation());
-		}
-		if (CustomElementManager.MISSILE_LAUNCHER.isParentOf(block)) {
-			MissileLauncherBlock.checkDestroy(block.getLocation());
-		}
-		if (CustomElementManager.MISSILE_CRAFT.isParentOf(block)) {
-			MissileCraftBlock.checkDestroy(block.getLocation());
+		if (e.getItem() != null && e.getItem().getType() == Material.STICK && e.getPlayer().getGameMode() == GameMode.CREATIVE && e.getClickedBlock() != null) {
+//			new BallisticMissile(new MissileStage[] {
+//					MissileStage.createStage(1, 205, 400)
+//			}, new ReentryVehicle[] {
+//					new ReentryVehicle(0, 0)
+//			}).launch(e.getPlayer(), new Location(e.getPlayer().getWorld(), 0, 30, 0), 0, Math.toRadians(40));
+			
+//			e.getClickedBlock().getWorld().createExplosion(e.getClickedBlock().getLocation(), 200, true, true, e.getPlayer());
+			e.setCancelled(true);
+			if(e.getAction() == Action.RIGHT_CLICK_BLOCK)
+				new NuclearExplosive(this, 2000000, 50, 20).explode(e.getClickedBlock().getLocation(), e.getPlayer());
+			else
+				new ThermonuclearExplosive(this, 8000000, 75, 40).explode(e.getClickedBlock().getLocation(), e.getPlayer());
 		}
 	}
 
@@ -208,42 +191,13 @@ public class Main extends JavaPlugin implements Listener {
 					if (im instanceof Damageable) {
 						Damageable dam = (Damageable) im;
 						dam.setDamage(is.getType().getMaxDurability());
+						is.setItemMeta(im);
+						p.getInventory().setItemInMainHand(is);
 						p.sendMessage("§6Arme déchargée.");
 					} else {
 						p.sendMessage("§6Cette arme a munitions infinies.");
 					}
 				}
-				return true;
-			} else if (command.getName().equals("horse")) {
-				Horse horse = this.horses.get(p.getUniqueId());
-				if (horse != null && !horse.isDead()) {
-					horse.teleport(p.getLocation());
-				} else {
-					horse = p.getWorld().spawn(p.getLocation(), Horse.class);
-					if (this.capitalism.hasEntry(p.getName())) {
-						horse.setColor(Horse.Color.CREAMY);
-						horse.setStyle(Horse.Style.WHITE_DOTS);
-					} else if (this.communism.hasEntry(p.getName())) {
-						horse.setColor(Horse.Color.DARK_BROWN);
-						horse.setStyle(Horse.Style.BLACK_DOTS);
-					} else {
-						horse.setColor(Horse.Color.BLACK);
-						horse.setStyle(Horse.Style.NONE);
-					}
-					horse.setJumpStrength(1.5);
-					horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.75);
-					horse.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(30);
-					horse.setHealth(30);
-					horse.setTamed(true);
-					horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
-					this.horses.put(p.getUniqueId(), horse);
-				}
-				return true;
-			} else if (command.getName().equals("ladder")) {
-				p.getInventory().addItem(new ItemStack(Material.LADDER, 64));
-				return true;
-			} else if (command.getName().equals("chest")) {
-				p.getInventory().addItem(new ItemStack(Material.CHEST));
 				return true;
 			} else if (command.getName().equals("base")) {
 				if(game != null) {
@@ -284,6 +238,9 @@ public class Main extends JavaPlugin implements Listener {
 					p.sendMessage("§cPas de partie en cours.");
 				}
 				return true;
+			} else if (command.getName().equals("merchant")) {
+				Team team = communism.hasEntry(p.getName()) ? communism : capitalism.hasEntry(p.getName()) ? capitalism : null;
+				new WeaponsMerchant(team, p.getLocation());
 			}
 		} else {
 			if (command.getName().equals("missile")) {
@@ -360,6 +317,7 @@ public class Main extends JavaPlugin implements Listener {
 		this.game = null;
 	}
 
+	
 	public static Vector rotate(Vector v, Location loc) {
 		double yaw = toRadians(loc.getYaw());
 		double pitch = toRadians(loc.getPitch());
@@ -387,4 +345,16 @@ public class Main extends JavaPlugin implements Listener {
 		return v.setX(x).setY(y);
 	}
 
+	public static int clamp(int min, int max, int value) {
+		return Math.max(min, Math.min(max, value));
+	}
+	
+	public static double clamp(double min, double max, double value) {
+		return Math.max(min, Math.min(max, value));
+	}
+	
+	private static final MathContext mc = new MathContext(5, RoundingMode.HALF_UP);
+	public static double round(double a) {
+		return new BigDecimal(a, mc).doubleValue();
+	}
 }

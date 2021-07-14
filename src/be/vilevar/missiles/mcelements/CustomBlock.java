@@ -49,6 +49,6 @@ public class CustomBlock {
 	}
 	
 	public boolean isParentOf(Block block) {
-		return block.getType() == material;
+		return block != null && block.getType() == material;
 	}
 }

@@ -10,13 +10,11 @@ commands:
   description: Discharge your gun
  horse:
   description: Give an horse
- ladder:
-  description: Give ladders
- chest:
-  description: Give a chest
  outpost:
   description: Teleport to the outpost of your team
  setoutpost:
   description: Set the outpost your team s outpost at your position
  base:
   description: Teleport to your team s banner
+ merchant:
+  description: TEE
