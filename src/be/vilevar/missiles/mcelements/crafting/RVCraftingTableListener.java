@@ -101,9 +101,6 @@ public class RVCraftingTableListener implements Listener {
 						return;
 					} else {
 						if(slot % 9 == 3) {
-							// TODO Be aware if there is no mirv there
-							System.out.println(is);
-							
 							int rvID = slot / 9;
 							
 							MIRVData rv = new MIRVData(1, new int[] {mirv.getAltitude(rvID)}, new int[1], new int[1], 
@@ -114,39 +111,34 @@ public class RVCraftingTableListener implements Listener {
 							mirv.setAltitude(rvID, 0);
 							this.updateCraftInventory(craft, inv);
 						} else if(slot % 9 == 4) {
-							this.inversePitch(mirv, slot / 9);
-							this.updateCraftInventory(craft, inv);
-						} else if(slot % 9 == 5) {
-							this.addPitch(mirv, slot / 9, e.getAction() == InventoryAction.PICKUP_ALL ? 1 : -1);
-							this.updateCraftInventory(craft, inv);
-						} else if(slot % 9 == 7) {
 							this.inverseYaw(mirv, slot / 9);
 							this.updateCraftInventory(craft, inv);
-						} else if(slot % 9 == 8) {
+						} else if(slot % 9 == 5) {
 							this.addYaw(mirv, slot / 9, e.getAction() == InventoryAction.PICKUP_ALL ? 1 : -1);
+							this.updateCraftInventory(craft, inv);
+						} else if(slot % 9 == 7) {
+							this.inversePitch(mirv, slot / 9);
+							this.updateCraftInventory(craft, inv);
+						} else if(slot % 9 == 8) {
+							this.addPitch(mirv, slot / 9, e.getAction() == InventoryAction.PICKUP_ALL ? 1 : -1);
 							this.updateCraftInventory(craft, inv);
 						}
 						return;
 					}
 				} else {
 					if(mirv == null) {
-						System.out.println("a");
 						mirv = MIRVData.getMIRVData(is);
-						System.out.println("a");
 						if(mirv != null) {
-							System.out.println("a");
 							ItemStack iss = is.clone();
 							is.setAmount(is.getAmount() - 1);
 							p.getInventory().setItem(slot, is);
 							p.updateInventory();
 							
-							System.out.println("a");
 							iss.setAmount(1);
 							inv.setItem(19, iss);
 							craft.setMIRV(mirv);
 							this.updateCraftInventory(craft, inv);
 						}
-						System.out.println("b");
 						return;
 					} else if(mirv.getMIRVs() == 1) {
 						if(mirv.getExplosive(0) == null) {
@@ -184,10 +176,8 @@ public class RVCraftingTableListener implements Listener {
 	}
 
 	private void updateCraftInventory(RVCraftBlock craft, Inventory inv) {
-		System.out.println("a");
 		MIRVData mirv = craft.getMIRV();
 		if(mirv == null) {
-			System.out.println("c");
 			for(int i = 0; i < 5; i++) {
 				int a = 9*i;
 				inv.setItem(a + 3, this.craftItemBarrier);
@@ -199,7 +189,6 @@ public class RVCraftingTableListener implements Listener {
 			
 			inv.setItem(19, null);
 		} else if(mirv.getMIRVs() == 1) {
-			System.out.println("d");
 			// Background
 			for(int i = 4; i < 9; i++) {
 				for(int j = 0; j < 2; j++) {
@@ -208,13 +197,11 @@ public class RVCraftingTableListener implements Listener {
 					inv.setItem(raw + i + 27, this.unusedSlot);
 				}
 			}
-			System.out.println("1");
 			inv.setItem(19, CustomElementManager.REENTRY_VEHICLE.create());
 			inv.setItem(22, this.unusedSlot);
 			inv.setItem(26, this.unusedSlot);
 			// Items
 			inv.setItem(21, mirv.getExplosive(0) == null ? null : mirv.getExplosive(0).toItem());
-			System.out.println("1");
 			
 			ItemStack yH = new ItemStack(Material.ENDER_PEARL);
 			ItemMeta im = yH.getItemMeta();
@@ -237,12 +224,10 @@ public class RVCraftingTableListener implements Listener {
 			im.setCustomModelData(unity + 1);
 			yU.setItemMeta(im);
 			
-			System.out.println("1");
 			inv.setItem(23, yH);
 			inv.setItem(24, yD);
 			inv.setItem(25, yU);
 		} else {
-			System.out.println("e");
 			// Background
 			for(int i = 0; i < 5; i++) {
 				inv.setItem(9*i + 6, this.unusedSlot);
@@ -252,23 +237,9 @@ public class RVCraftingTableListener implements Listener {
 			for(int i = 0; i < 5; i++) {
 				inv.setItem(9*i + 3, mirv.getExplosive(i) == null ? null : mirv.getExplosive(i).toItem());
 				
-				ItemStack pitchS = new ItemStack(Material.ENDER_PEARL);
-				ItemMeta im = pitchS.getItemMeta();
-				boolean minus = Math.signum(mirv.getPitch(i)) == -1;
-				im.setDisplayName("§6"+(minus ? "-" : "+"));
-				im.setCustomModelData(minus ? 11 : 12);
-				pitchS.setItemMeta(im);
-				
-				ItemStack pitchU = new ItemStack(Material.ENDER_PEARL);
-				im = pitchU.getItemMeta();
-				int pitch = Math.abs(mirv.getPitch(i));
-				im.setDisplayName("§6"+pitch+"° Pitch");
-				im.setCustomModelData(pitch + 1);
-				pitchU.setItemMeta(im);
-				
 				ItemStack yawS = new ItemStack(Material.ENDER_PEARL);
-				im = pitchS.getItemMeta();
-				minus = Math.signum(mirv.getYaw(i)) == -1;
+				ItemMeta im = yawS.getItemMeta();
+				boolean minus = Math.signum(mirv.getYaw(i)) == -1;
 				im.setDisplayName("§6"+(minus ? "-" : "+"));
 				im.setCustomModelData(minus ? 11 : 12);
 				yawS.setItemMeta(im);
@@ -280,10 +251,24 @@ public class RVCraftingTableListener implements Listener {
 				im.setCustomModelData(yaw + 1);
 				yawU.setItemMeta(im);
 				
-				inv.setItem(9*i + 4, pitchS);
-				inv.setItem(9*i + 5, pitchU);
-				inv.setItem(9*i + 7, yawS);
-				inv.setItem(9*i + 8, yawU);
+				ItemStack pitchS = new ItemStack(Material.ENDER_PEARL);
+				im = pitchS.getItemMeta();
+				minus = Math.signum(mirv.getPitch(i)) == -1;
+				im.setDisplayName("§6"+(minus ? "-" : "+"));
+				im.setCustomModelData(minus ? 11 : 12);
+				pitchS.setItemMeta(im);
+				
+				ItemStack pitchU = new ItemStack(Material.ENDER_PEARL);
+				im = pitchU.getItemMeta();
+				int pitch = Math.abs(mirv.getPitch(i));
+				im.setDisplayName("§6"+pitch+"° Pitch");
+				im.setCustomModelData(pitch + 1);
+				pitchU.setItemMeta(im);
+				
+				inv.setItem(9*i + 4, yawS);
+				inv.setItem(9*i + 5, yawU);
+				inv.setItem(9*i + 7, pitchS);
+				inv.setItem(9*i + 8, pitchU);
 			}
 		}
 	}

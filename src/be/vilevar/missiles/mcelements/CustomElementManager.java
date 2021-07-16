@@ -232,7 +232,7 @@ public class CustomElementManager implements Listener {
 			} else
 			if(HOWITZER.isParentOf(block)) {
 				Howitzer howitzer = Howitzer.getHowitzerAt(block.getLocation());
-				if(howitzer != null) {
+				if(howitzer != null && !howitzer.isOpen()) {
 					this.howitzer.onClick(howitzer, e);
 				}
 			}
@@ -246,7 +246,7 @@ public class CustomElementManager implements Listener {
 			if(this.launcher.getLauncherInventories().containsKey(p.getUniqueId())) {
 				Pair<Inventory, MissileLauncherBlock> pair = this.launcher.getLauncherInventories().get(p.getUniqueId());
 				MissileLauncherBlock launcher = pair.getRight();
-				launcher.setOpen(false);
+				launcher.setOpen(null);
 				this.launcher.getLauncherInventories().remove(p.getUniqueId());
 				return;
 			} else

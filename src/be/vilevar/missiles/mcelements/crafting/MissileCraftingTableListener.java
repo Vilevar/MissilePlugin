@@ -112,13 +112,10 @@ public class MissileCraftingTableListener implements Listener {
 					if(missile == null) {
 						missile = BallisticMissileData.getBallisticMissileData(is);
 						if(missile != null) {
-							ItemStack iss = is.clone();
 							is.setAmount(is.getAmount() - 1);
 							p.getInventory().setItem(slot, is);
 							p.updateInventory();
 							
-							iss.setAmount(1);
-							inv.setItem(19, iss);
 							craft.setMissile(missile);
 							this.updateCraftInventory(craft, inv);
 						}
@@ -186,6 +183,7 @@ public class MissileCraftingTableListener implements Listener {
 			inv.setItem(3, craftItemBarrier);
 			inv.setItem(12, craftItemBarrier);
 			inv.setItem(13, craftItemBarrier);
+			inv.setItem(19, null);
 			inv.setItem(30, craftItemBarrier);
 			inv.setItem(31, craftItemBarrier);
 			inv.setItem(39, craftItemBarrier);
@@ -193,6 +191,7 @@ public class MissileCraftingTableListener implements Listener {
 		} else {
 			BallisticMissileData missile = craft.getMissile();
 			inv.setItem(3, missile.getWarhead() == null ? null : missile.getWarhead().toItem());
+			inv.setItem(19, missile.toItemStack());
 			inv.setItem(39, this.convertEjectToItem(missile.getEject(0)));
 			inv.setItem(40, this.convertImpulseToItem(missile.getImpulse(0), missile.getNFuel(0)));
 			if(missile.getStages() > 1) {

@@ -64,12 +64,21 @@ public class MIRVData {
 	}
 	
 	public boolean isReadyForMissile() {
-		for(Explosive e : this.explosives) {
-			if(e != null) {
-				return true;
+		boolean hasExplosive = false;
+		for(int i = 0; i < this.mirvs; i++) {
+			if(this.getExplosive(i) != null) {
+				hasExplosive = true;
+				int pitch = this.getPitch(i);
+				int yaw = this.getYaw(i);
+				
+				for(int j = i + 1; j < this.mirvs; j++) {
+					if(this.getPitch(j) == pitch && this.getYaw(j) == yaw && this.getExplosive(j) != null) {
+						return false;
+					}
+				}
 			}
 		}
-		return false;
+		return hasExplosive;
 	}
 	
 	public void saveIn(ByteBuf buffer) {

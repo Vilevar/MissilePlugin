@@ -7,7 +7,9 @@ import static java.lang.Math.toRadians;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -16,17 +18,13 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -44,8 +42,6 @@ import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
 import be.vilevar.missiles.mcelements.weapons.Weapon;
 import be.vilevar.missiles.missile.ballistic.explosives.ExplosiveManager;
-import be.vilevar.missiles.missile.ballistic.explosives.NuclearExplosive;
-import be.vilevar.missiles.missile.ballistic.explosives.ThermonuclearExplosive;
 import be.vilevar.missiles.utils.ParticleEffect;
 
 public class Main extends JavaPlugin implements Listener {
@@ -88,7 +84,6 @@ public class Main extends JavaPlugin implements Listener {
 		pm.registerEvents(new GameListener(), this);
 		getCommand("missile").setExecutor(this);
 		getCommand("discharge").setExecutor(this);
-		getCommand("horse").setExecutor(this);
 		getCommand("outpost").setExecutor(this);
 		getCommand("setoutpost").setExecutor(this);
 		getCommand("base").setExecutor(this);
@@ -139,23 +134,12 @@ public class Main extends JavaPlugin implements Listener {
 //			}).launch(e.getPlayer(), new Location(e.getPlayer().getWorld(), 0, 30, 0), 0, Math.toRadians(40));
 			
 //			e.getClickedBlock().getWorld().createExplosion(e.getClickedBlock().getLocation(), 200, true, true, e.getPlayer());
-			e.setCancelled(true);
-			if(e.getAction() == Action.RIGHT_CLICK_BLOCK)
-				new NuclearExplosive(this, 2000000, 50, 20).explode(e.getClickedBlock().getLocation(), e.getPlayer());
-			else
-				new ThermonuclearExplosive(this, 8000000, 75, 40).explode(e.getClickedBlock().getLocation(), e.getPlayer());
+//			e.setCancelled(true);
+//			if(e.getAction() == Action.RIGHT_CLICK_BLOCK)
+//				new NuclearExplosive(this, 2000000, 50, 20).explode(e.getClickedBlock().getLocation(), e.getPlayer());
+//			else
+//				new ThermonuclearExplosive(this, 8000000, 75, 40).explode(e.getClickedBlock().getLocation(), e.getPlayer());
 		}
-	}
-
-	@EventHandler
-	public void onPortal(PortalCreateEvent e) {
-		e.setCancelled(true);
-	}
-
-	@EventHandler
-	public void onEntitySpawn(EntitySpawnEvent e) {
-		if (e.getEntityType() == EntityType.SLIME)
-			e.setCancelled(true);
 	}
 
 	@EventHandler
@@ -254,6 +238,10 @@ public class Main extends JavaPlugin implements Listener {
 				if(online.size() < 2) {
 					sender.sendMessage("§cPas assez de joueurs.");
 					return true;
+				} else {
+					ArrayList<? extends Player> test = new ArrayList<>(online);
+					Collections.shuffle(test);
+					online = test;
 				}
 				
 				ItemStack pickaxe = new ItemStack(Material.DIAMOND_PICKAXE);
@@ -273,6 +261,7 @@ public class Main extends JavaPlugin implements Listener {
 							this.communism.addEntry(p.getName());
 						}
 					}
+					
 					p.getInventory().clear();
 					p.getInventory().addItem(pickaxe, helmet, chestplate, leggings, boots, beef, obsidian);
 					p.getEnderChest().clear();
