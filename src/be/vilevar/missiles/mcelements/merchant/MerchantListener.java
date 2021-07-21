@@ -57,7 +57,7 @@ public class MerchantListener implements Listener {
 				} else {
 					merchant.close();
 					Main.i.getServer().getScheduler().runTaskLater(Main.i, () -> {
-						if(merchant.open(e.getPlayer())) {
+						if(merchant.open((Player) e.getPlayer())) {
 							view.setStage(merchant.getOpenStage());
 						} else {
 							openMerchant.remove(id);

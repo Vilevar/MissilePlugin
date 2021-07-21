@@ -43,8 +43,9 @@ public class MissileCraftBlock {
 	
 	
 	
-	public void destroy() {
-		crafts.remove(this);
+	public void destroy(boolean remove) {
+		if(remove)
+			crafts.remove(this);
 		if(missile != null)
 			location.getWorld().dropItem(location, missile.toItemStack());
 		if(open != null)
@@ -60,7 +61,7 @@ public class MissileCraftBlock {
 			MissileCraftBlock craft = it.next();
 			if(craft.getLocation().equals(loc)) {
 				it.remove();
-				craft.destroy();
+				craft.destroy(false);
 				return;
 			}
 		}

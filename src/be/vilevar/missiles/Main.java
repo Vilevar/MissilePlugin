@@ -1,15 +1,13 @@
 package be.vilevar.missiles;
 
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-import static java.lang.Math.toRadians;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -25,6 +23,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -34,12 +33,15 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
-import org.bukkit.util.Vector;
 
+import be.vilevar.missiles.defense.Defender;
+import be.vilevar.missiles.defense.defender.PlayerDefender;
+import be.vilevar.missiles.defense.defender.TeamDefender;
 import be.vilevar.missiles.game.Game;
 import be.vilevar.missiles.game.GameListener;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
+import be.vilevar.missiles.mcelements.radar.Radar;
 import be.vilevar.missiles.mcelements.weapons.Weapon;
 import be.vilevar.missiles.missile.ballistic.explosives.ExplosiveManager;
 import be.vilevar.missiles.utils.ParticleEffect;
@@ -52,6 +54,8 @@ public class Main extends JavaPlugin implements Listener {
 
 	public static Main i;
 
+	private HashMap<UUID, PlayerDefender> players = new HashMap<>();
+	
 	private CustomElementManager custom;
 	
 	private WorldManager wm;
@@ -89,13 +93,12 @@ public class Main extends JavaPlugin implements Listener {
 		getCommand("base").setExecutor(this);
 		getCommand("merchant").setExecutor(this);
 		
-		getServer().getScheduler().scheduleSyncRepeatingTask(i, () -> {
-			for(WeaponsMerchant merchant : WeaponsMerchant.getMerchants()) {
-				merchant.addMoney(10);
-			}
-		}, 200, 200);
-		
+		Radar.createCheckMissileScheduler(this);
 		ExplosiveManager.startScheduler(this);
+		
+		for(Player p : getServer().getOnlinePlayers()) {
+			players.put(p.getUniqueId(), new PlayerDefender(p));
+		}
 	}
 
 	@Override
@@ -107,6 +110,12 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public WorldManager getWorldManager() {
 		return wm;
+	}
+	
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		if(!players.containsKey(e.getPlayer().getUniqueId()))
+			players.put(e.getPlayer().getUniqueId(), new PlayerDefender(e.getPlayer()));
 	}
 	
 	@EventHandler
@@ -185,12 +194,22 @@ public class Main extends JavaPlugin implements Listener {
 				return true;
 			} else if (command.getName().equals("base")) {
 				if(game != null) {
-					Team team = communism.hasEntry(p.getName()) ? communism : capitalism.hasEntry(p.getName()) ? capitalism : null;
-					Location banner;
-					if(team != null && (banner = game.getBanner(team)) != null) {
-						p.teleport(banner);
+					TeamDefender team = communism.hasEntry(p.getName()) ? game.getTeamCommunism()
+							:capitalism.hasEntry(p.getName()) ? game.getTeamCapitalism() : null;
+					if(team != null) {
+						if(team.getMerchant() != null) {
+							p.teleport(team.getMerchant().getLocation());
+						} else {
+							Location loc = p.getLocation();
+							for(int i = -1; i <= 1; i++) {
+								for(int j = -1; j <= 1; j++) {
+									loc.clone().add(i, -1, j).getBlock().setType(Material.BEDROCK);
+								}
+							}
+							team.setMerchant(new WeaponsMerchant(team, loc));
+						}
 					} else {
-						p.sendMessage("§cVous n'êtes pas membre d'une équipe ayant placé sa bannière.");
+						p.sendMessage("§cVous n'êtes pas membre d'une équipe.");
 					}
 				} else {
 					p.sendMessage("§cPas de partie en cours.");
@@ -198,10 +217,10 @@ public class Main extends JavaPlugin implements Listener {
 				return true;
 			} else if (command.getName().equals("outpost")) {
 				if(game != null) {
-					Team team = communism.hasEntry(p.getName()) ? communism : capitalism.hasEntry(p.getName()) ? capitalism : null;
-					Location outpost;
-					if(team != null && (outpost = game.getOutpost(team)) != null) {
-						p.teleport(outpost);
+					TeamDefender team = communism.hasEntry(p.getName()) ? game.getTeamCommunism()
+							:capitalism.hasEntry(p.getName()) ? game.getTeamCapitalism() : null;
+					if(team != null && team.getOutpost() != null) {
+						p.teleport(team.getOutpost());
 					} else {
 						p.sendMessage("§cVous n'êtes pas membre d'une équipe ayant un avant-poste.");
 					}
@@ -211,9 +230,10 @@ public class Main extends JavaPlugin implements Listener {
 				return true;
 			} else if (command.getName().equals("setoutpost")) {
 				if(game != null) {
-					Team team = communism.hasEntry(p.getName()) ? communism : capitalism.hasEntry(p.getName()) ? capitalism : null;
+					TeamDefender team = communism.hasEntry(p.getName()) ? game.getTeamCommunism()
+							:capitalism.hasEntry(p.getName()) ? game.getTeamCapitalism() : null;
 					if(team != null) {
-						game.setOutpost(team, p.getLocation());
+						team.setOutpost(p.getLocation());
 						p.sendMessage("§6Avant-poste §aplacé§6 à votre position.");
 					} else {
 						p.sendMessage("§cVous n'êtes pas membre d'une équipe.");
@@ -222,9 +242,8 @@ public class Main extends JavaPlugin implements Listener {
 					p.sendMessage("§cPas de partie en cours.");
 				}
 				return true;
-			} else if (command.getName().equals("merchant")) {
-				Team team = communism.hasEntry(p.getName()) ? communism : capitalism.hasEntry(p.getName()) ? capitalism : null;
-				new WeaponsMerchant(team, p.getLocation());
+			} else if (command.getName().equals("merchant") && this.game == null) {
+				new WeaponsMerchant(this.getDefender(p), p.getLocation());
 			}
 		} else {
 			if (command.getName().equals("missile")) {
@@ -246,12 +265,7 @@ public class Main extends JavaPlugin implements Listener {
 				
 				ItemStack pickaxe = new ItemStack(Material.DIAMOND_PICKAXE);
 				pickaxe.addEnchantment(Enchantment.DIG_SPEED, 4);
-				ItemStack helmet = new ItemStack(Material.IRON_HELMET);
-				ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE);
-				ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
-				ItemStack boots = new ItemStack(Material.IRON_BOOTS);
-				ItemStack beef = new ItemStack(Material.COOKED_BEEF, 64);
-				ItemStack obsidian = new ItemStack(Material.OBSIDIAN, 16);
+				ItemStack beef = new ItemStack(Material.COOKED_BEEF, 10);
 				
 				for(Player p : online) {
 					if(!this.communism.hasEntry(p.getName()) && !this.capitalism.hasEntry(p.getName())) {
@@ -263,7 +277,7 @@ public class Main extends JavaPlugin implements Listener {
 					}
 					
 					p.getInventory().clear();
-					p.getInventory().addItem(pickaxe, helmet, chestplate, leggings, boots, beef, obsidian);
+					p.getInventory().addItem(pickaxe, beef);
 					p.getEnderChest().clear();
 					p.setGameMode(GameMode.SURVIVAL);
 				}
@@ -272,6 +286,8 @@ public class Main extends JavaPlugin implements Listener {
 					sender.sendMessage("§cLes équipes ne sont pas bien réparties.");
 					return true;
 				}
+				
+				WeaponsMerchant.killMerchants();
 				
 				this.game = new Game();
 				this.game.prepare();
@@ -305,34 +321,52 @@ public class Main extends JavaPlugin implements Listener {
 	public void resetGame() {
 		this.game = null;
 	}
+	
+	public Defender getDefender(Player p) {
+		if(this.game != null) {
+			if(this.communism.hasEntry(p.getName())) {
+				return this.game.getTeamCommunism();
+			} else if(this.capitalism.hasEntry(p.getName())) {
+				return this.game.getTeamCapitalism();
+			}
+		}
+		PlayerDefender def = this.players.get(p.getUniqueId());
+		if(def != null) {
+			return def;
+		} else {
+			def = new PlayerDefender(p);
+			this.players.put(p.getUniqueId(), def);
+			return def;
+		}
+	}
 
 	
-	public static Vector rotate(Vector v, Location loc) {
-		double yaw = toRadians(loc.getYaw());
-		double pitch = toRadians(loc.getPitch());
-		v = rotateAboutX(v, pitch);
-		v = rotateAboutY(v, -yaw);
-		// v = rotateAboutZ(v, pitch);
-		return v;
-	}
-
-	public static Vector rotateAboutX(Vector v, double a) {
-		double y = cos(a) * v.getY() - sin(a) * v.getZ();
-		double z = sin(a) * v.getY() + cos(a) * v.getZ();
-		return v.setY(y).setZ(z);
-	}
-
-	public static Vector rotateAboutY(Vector v, double b) {
-		double x = cos(b) * v.getX() + sin(b) * v.getZ();
-		double z = -sin(b) * v.getX() + cos(b) * v.getZ();
-		return v.setX(x).setZ(z);
-	}
-
-	public static Vector rotateAboutZ(Vector v, double c) {
-		double x = cos(c) * v.getX() - sin(c) * v.getY();
-		double y = sin(c) * v.getX() + cos(c) * v.getY();
-		return v.setX(x).setY(y);
-	}
+//	public static Vector rotate(Vector v, Location loc) {
+//		double yaw = toRadians(loc.getYaw());
+//		double pitch = toRadians(loc.getPitch());
+//		v = rotateAboutX(v, pitch);
+//		v = rotateAboutY(v, -yaw);
+//		// v = rotateAboutZ(v, pitch);
+//		return v;
+//	}
+//
+//	public static Vector rotateAboutX(Vector v, double a) {
+//		double y = cos(a) * v.getY() - sin(a) * v.getZ();
+//		double z = sin(a) * v.getY() + cos(a) * v.getZ();
+//		return v.setY(y).setZ(z);
+//	}
+//
+//	public static Vector rotateAboutY(Vector v, double b) {
+//		double x = cos(b) * v.getX() + sin(b) * v.getZ();
+//		double z = -sin(b) * v.getX() + cos(b) * v.getZ();
+//		return v.setX(x).setZ(z);
+//	}
+//
+//	public static Vector rotateAboutZ(Vector v, double c) {
+//		double x = cos(c) * v.getX() - sin(c) * v.getY();
+//		double y = sin(c) * v.getX() + cos(c) * v.getY();
+//		return v.setX(x).setY(y);
+//	}
 
 	public static int clamp(int min, int max, int value) {
 		return Math.max(min, Math.min(max, value));

@@ -16,7 +16,7 @@ public class RecipeAdvancement extends MerchantRecipe {
 	
 	public RecipeAdvancement(RecipeAdvancement[] previous, ResearchRecipe recipe, DevelopmentRecipe[] development) {
 		super(recipe.getResult(), 1);
-		this.addIngredient(recipe.getPrice());
+		this.setIngredients(recipe.getPrice());
 		
 		this.previous = previous;
 		this.development = development;
@@ -128,8 +128,8 @@ public class RecipeAdvancement extends MerchantRecipe {
 						new DevelopmentRecipe(CustomElementManager.A_BOMB.create(), 5)}),
 		
 		ABM = new RecipeAdvancement(new RecipeAdvancement[] {RADAR, SRBM}, new ResearchRecipe("ABM", 10), new DevelopmentRecipe[] {
-						new DevelopmentRecipe(new ItemStack(Material.HAY_BLOCK), 5) // TODO
-		}),
+						new DevelopmentRecipe(CustomElementManager.ABM_LAUNCHER.create(), 5),
+						new DevelopmentRecipe(CustomElementManager.ABM.create(), 3)}),
 		
 		MRBM = new RecipeAdvancement(new RecipeAdvancement[] {SRBM}, new ResearchRecipe("MRBM", 10), new DevelopmentRecipe[] {
 						new DevelopmentRecipe(CustomElementManager.MRBM.create(), 5)}),

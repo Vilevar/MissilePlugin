@@ -8,8 +8,6 @@ commands:
   description: launch the game
  discharge:
   description: Discharge your gun
- horse:
-  description: Give an horse
  outpost:
   description: Teleport to the outpost of your team
  setoutpost:

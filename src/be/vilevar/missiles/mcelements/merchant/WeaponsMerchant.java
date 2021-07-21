@@ -25,9 +25,9 @@ import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
-import org.bukkit.scoreboard.Team;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 
 public class WeaponsMerchant {
@@ -59,7 +59,7 @@ public class WeaponsMerchant {
 	private Merchant research = main.getServer().createMerchant("§2Recherche");
 	private Merchant development = main.getServer().createMerchant("§1Développement");
 	private Merchant utilitaries = main.getServer().createMerchant("§eUtilitaires");
-	private Team team;
+	private Defender defender;
 	private Villager villager;
 	private Location loc;
 	private int money;
@@ -67,16 +67,16 @@ public class WeaponsMerchant {
 	
 	private ItemStack utilitariesItem, researchItem, developmentItem, moneyItem;
 	
-	public WeaponsMerchant(Team team, Location loc) {
+	public WeaponsMerchant(Defender defender, Location loc) {
 		this.canResearch.addAll(Arrays.asList(PISTOL, TNT, ENGINE_1, PROPELLANT_1, RADAR, HOWITZER));
 		
 		this.updateResearchMerchant();
 		
 		this.development.setRecipes(new ArrayList<>());
 		
-		this.utilitaries.setRecipes(this.getUtilitaries(team));
+		this.utilitaries.setRecipes(this.getUtilitaries(defender));
 		
-		this.team = team;
+		this.defender = defender;
 		this.villager = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
 		this.villager.setAI(false);
 		this.villager.setGravity(false);
@@ -90,16 +90,19 @@ public class WeaponsMerchant {
 		this.utilitariesItem = new ItemStack(Material.STICK);
 		ItemMeta im = utilitariesItem.getItemMeta();
 		im.setDisplayName("§eUtilitaires");
+		im.setCustomModelData(1);
 		utilitariesItem.setItemMeta(im);
 		
 		this.researchItem = new ItemStack(Material.STICK);
 		im = researchItem.getItemMeta();
 		im.setDisplayName("§2Recherche");
+		im.setCustomModelData(2);
 		researchItem.setItemMeta(im);
 		
 		this.developmentItem = new ItemStack(Material.STICK);
 		im = developmentItem.getItemMeta();
 		im.setDisplayName("§1Développement");
+		im.setCustomModelData(3);
 		developmentItem.setItemMeta(im);
 		
 		merchants.add(this);
@@ -112,9 +115,10 @@ public class WeaponsMerchant {
 	}
 	
 	public boolean canBeHurtBy(Player p) {
-		if(team != null && team.hasEntry(p.getName())) {
+		if(this.defender.equals(this.main.getDefender(p)) || (main.getGame() != null && !main.getGame().isStarted())) {
 			return false;
 		}
+		
 		this.testLocation();
 		if(p.getLocation().distance(loc) < 7) {
 			return false;
@@ -126,8 +130,8 @@ public class WeaponsMerchant {
 		return loc;
 	}
 	
-	public boolean open(HumanEntity p) {
-		if(open != null || (team != null && !team.hasEntry(p.getName())))
+	public boolean open(Player p) {
+		if(open != null || !this.defender.equals(this.main.getDefender(p)))
 			return false;
 		
 		p.openInventory(this.createMenuInventory());
@@ -249,7 +253,7 @@ public class WeaponsMerchant {
 	}
 
 	
-	private ArrayList<MerchantRecipe> getUtilitaries(Team team) {
+	private ArrayList<MerchantRecipe> getUtilitaries(Defender defender) {
 		ArrayList<MerchantRecipe> utilitaries = new ArrayList<>(Arrays.asList(
 				new DevelopmentRecipe(new ItemStack(Material.OBSIDIAN, 32), 5),
 				new DevelopmentRecipe(CustomElementManager.RANGEFINDER.create(), 2)));
@@ -290,7 +294,6 @@ public class WeaponsMerchant {
 		utilitaries.add(new DevelopmentRecipe(is, 20));
 		
 		utilitaries.addAll(Arrays.asList(
-				new DevelopmentRecipe(new ItemStack(Material.CHEST), 1),
 				new DevelopmentRecipe(new ItemStack(Material.IRON_HELMET), 2),
 				new DevelopmentRecipe(new ItemStack(Material.IRON_CHESTPLATE), 2),
 				new DevelopmentRecipe(new ItemStack(Material.IRON_LEGGINGS), 2),

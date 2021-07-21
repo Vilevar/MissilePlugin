@@ -23,6 +23,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.mcelements.abm.ABMLBlockListener;
+import be.vilevar.missiles.mcelements.abm.ABMLauncher;
 import be.vilevar.missiles.mcelements.artillery.Howitzer;
 import be.vilevar.missiles.mcelements.artillery.HowitzerBlockListener;
 import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
@@ -32,6 +34,8 @@ import be.vilevar.missiles.mcelements.crafting.RVCraftingTableListener;
 import be.vilevar.missiles.mcelements.launcher.LauncherBlockListener;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.merchant.MerchantListener;
+import be.vilevar.missiles.mcelements.radar.Radar;
+import be.vilevar.missiles.mcelements.radar.RadarBlockListener;
 import be.vilevar.missiles.mcelements.weapons.Weapon;
 import be.vilevar.missiles.mcelements.weapons.WeaponListener;
 
@@ -49,7 +53,8 @@ public class CustomElementManager implements Listener {
 	
 	public static final CustomItem	SRBM = new CustomItem(Material.GLOWSTONE_DUST, 20, "SRBM"),
 									MRBM = new CustomItem(Material.GLOWSTONE_DUST, 21, "MRBM"),
-									ICBM = new CustomItem(Material.GLOWSTONE_DUST, 22, "ICBM");
+									ICBM = new CustomItem(Material.GLOWSTONE_DUST, 22, "ICBM"),
+									ABM = new CustomItem(Material.GLOWSTONE_DUST, 23, "ABM");
 	
 	public static final CustomItem	REENTRY_VEHICLE = new CustomItem(Material.GLOWSTONE_DUST, 25, "Reentry Vehicle"),
 									A_BOMB = new CustomItem(Material.GLOWSTONE_DUST, 26, "A-Bomb"),
@@ -98,7 +103,8 @@ public class CustomElementManager implements Listener {
 	public static final CustomBlock	MISSILE_LAUNCHER = new CustomBlock(Material.NETHER_QUARTZ_ORE, "Missile Launcher"),
 									MISSILE_CRAFT = new CustomBlock(Material.NETHERRACK, "Missile Crafter"),
 									RV_CRAFT = new CustomBlock(Material.NETHER_GOLD_ORE, "Reentry Vehicle Crafter"),
-									RADAR = new CustomBlock(Material.RED_NETHER_BRICKS, "Radar");
+									RADAR = new CustomBlock(Material.RED_NETHER_BRICKS, "Radar"),
+									ABM_LAUNCHER = new CustomBlock(Material.BLACKSTONE, "ABM Launcher");
 	
 	public static final CustomBlock HOWITZER = new CustomBlock(Material.NETHER_BRICK_STAIRS, "Howitzer");
 	
@@ -116,6 +122,8 @@ public class CustomElementManager implements Listener {
 	private MissileCraftingTableListener craft;
 	private RVCraftingTableListener mirv;
 	private HowitzerBlockListener howitzer;
+	private RadarBlockListener radar;
+	private ABMLBlockListener abm;
 	
 	private WeaponListener weapons;
 	
@@ -142,6 +150,12 @@ public class CustomElementManager implements Listener {
 		this.howitzer = new HowitzerBlockListener(this.unusedSlot);
 		pm.registerEvents(this.howitzer, pl);
 		
+		this.radar = new RadarBlockListener(this.unusedSlot);
+		pm.registerEvents(this.radar, pl);
+		
+		this.abm = new ABMLBlockListener(this.unusedSlot);
+		pm.registerEvents(this.abm, pl);
+		
 		pm.registerEvents(new RangefinderListener(), pl);
 		
 		this.weapons = new WeaponListener();
@@ -165,9 +179,12 @@ public class CustomElementManager implements Listener {
 		} else
 		if(CustomElementManager.HOWITZER.isParentOf(block)) {
 			Howitzer.howitzers.add(new Howitzer(block));
-//		} else
-//		if(CustomElementManager.RADAR.isParentOf(block)) {
-//			Radar.radars.add(new Radar(block.getLocation(), e.getPlayer()));
+		} else
+		if(CustomElementManager.RADAR.isParentOf(block)) {
+			Radar.radars.add(new Radar(block.getLocation(), this.main.getDefender(e.getPlayer())));
+		} else
+		if(CustomElementManager.ABM_LAUNCHER.isParentOf(block)) {
+			ABMLauncher.launchers.add(new ABMLauncher(block.getLocation(), this.main.getDefender(e.getPlayer())));
 		}
 	}
 
@@ -187,17 +204,23 @@ public class CustomElementManager implements Listener {
 	}
 
 	private void blockBreak(Block block) {
-		if (CustomElementManager.MISSILE_LAUNCHER.isParentOf(block)) {
+		if (MISSILE_LAUNCHER.isParentOf(block)) {
 			MissileLauncherBlock.checkDestroy(block.getLocation());
 		} else
-		if (CustomElementManager.MISSILE_CRAFT.isParentOf(block)) {
+		if (MISSILE_CRAFT.isParentOf(block)) {
 			MissileCraftBlock.checkDestroy(block.getLocation());
 		} else
-		if(CustomElementManager.RV_CRAFT.isParentOf(block)) {
+		if(RV_CRAFT.isParentOf(block)) {
 			RVCraftBlock.checkDestroy(block.getLocation());
 		} else
-		if(CustomElementManager.HOWITZER.isParentOf(block)) {
+		if(HOWITZER.isParentOf(block)) {
 			Howitzer.checkDestroy(block.getLocation());
+		} else
+		if(RADAR.isParentOf(block)) {
+			Radar.checkDestroy(block.getLocation());
+		} else
+		if(ABM_LAUNCHER.isParentOf(block)) {
+			ABMLauncher.checkDestroy(block.getLocation());
 		}
 	}
 	
@@ -235,6 +258,18 @@ public class CustomElementManager implements Listener {
 				if(howitzer != null && !howitzer.isOpen()) {
 					this.howitzer.onClick(howitzer, e);
 				}
+			} else
+			if(RADAR.isParentOf(block)) {
+				Radar radar = Radar.getRadarAt(block.getLocation());
+				if(radar != null && !radar.isOpen()) {
+					this.radar.openRadarInventory(radar, e.getPlayer());
+				}
+			} else
+			if(ABM_LAUNCHER.isParentOf(block)) {
+				ABMLauncher launcher = ABMLauncher.getLauncherAt(block.getLocation());
+				if(launcher != null && launcher.isOpen()) {
+					this.abm.openLauncherInventory(launcher, e.getPlayer());
+				}
 			}
 		}
 	}
@@ -243,32 +278,47 @@ public class CustomElementManager implements Listener {
 	public void onCloseInventory(InventoryCloseEvent e) {
 		if(e.getPlayer() instanceof Player) {
 			Player p = (Player) e.getPlayer();
-			if(this.launcher.getLauncherInventories().containsKey(p.getUniqueId())) {
-				Pair<Inventory, MissileLauncherBlock> pair = this.launcher.getLauncherInventories().get(p.getUniqueId());
+			UUID id = p.getUniqueId();
+			if(this.launcher.getLauncherInventories().containsKey(id)) {
+				Pair<Inventory, MissileLauncherBlock> pair = this.launcher.getLauncherInventories().get(id);
 				MissileLauncherBlock launcher = pair.getRight();
 				launcher.setOpen(null);
-				this.launcher.getLauncherInventories().remove(p.getUniqueId());
+				this.launcher.getLauncherInventories().remove(id);
 				return;
 			} else
-			if(this.craft.getCraftInventories().containsKey(p.getUniqueId())) {
+			if(this.craft.getCraftInventories().containsKey(id)) {
 				Pair<Inventory, MissileCraftBlock> pair = this.craft.getCraftInventories().get(p.getUniqueId());
 				MissileCraftBlock craft = pair.getRight();
 				craft.setOpen(null);
-				this.craft.getCraftInventories().remove(p.getUniqueId());
+				this.craft.getCraftInventories().remove(id);
 				return;
 			} else
-			if(this.mirv.getCraftInventories().containsKey(p.getUniqueId())) {
-				Pair<Inventory, RVCraftBlock> pair = this.mirv.getCraftInventories().get(p.getUniqueId());
+			if(this.mirv.getCraftInventories().containsKey(id)) {
+				Pair<Inventory, RVCraftBlock> pair = this.mirv.getCraftInventories().get(id);
 				RVCraftBlock craft = pair.getRight();
 				craft.setOpen(null);
-				this.mirv.getCraftInventories().remove(p.getUniqueId());
+				this.mirv.getCraftInventories().remove(id);
 				return;
 			} else
-			if(this.howitzer.getHowitzerInventories().containsKey(p.getUniqueId())) {
-				Pair<Inventory, Howitzer> pair = this.howitzer.getHowitzerInventories().get(p.getUniqueId());
+			if(this.howitzer.getHowitzerInventories().containsKey(id)) {
+				Pair<Inventory, Howitzer> pair = this.howitzer.getHowitzerInventories().get(id);
 				Howitzer howitzer = pair.getRight();
 				howitzer.setOpen(null);
-				this.howitzer.getHowitzerInventories().remove(p.getUniqueId());
+				this.howitzer.getHowitzerInventories().remove(id);
+				return;
+			} else
+			if(this.radar.getRadarInventories().containsKey(id)) {
+				Pair<Inventory, Radar> pair = this.radar.getRadarInventories().get(id);
+				Radar radar = pair.getRight();
+				radar.setOpen(null);
+				this.radar.getRadarInventories().remove(id);
+				return;
+			} else
+			if(this.abm.getLauncherInventories().containsKey(id)) {
+				Pair<Inventory, ABMLauncher> pair = this.abm.getLauncherInventories().get(id);
+				ABMLauncher launcher = pair.getRight();
+				launcher.setOpen(null);
+				this.abm.getLauncherInventories().remove(id);
 				return;
 			}
 		}

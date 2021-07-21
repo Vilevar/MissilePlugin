@@ -210,11 +210,11 @@ public class MissileCraftingTableListener implements Listener {
 			return null;
 		}
 		switch(impulse) {
-		case 205:
-			return CustomElementManager.FUEL_1.create(count);
 		case 210:
-			return CustomElementManager.FUEL_2.create(count);
+			return CustomElementManager.FUEL_1.create(count);
 		case 215:
+			return CustomElementManager.FUEL_2.create(count);
+		case 220:
 			return CustomElementManager.FUEL_3.create(count);
 		default:
 			return null;
@@ -236,11 +236,11 @@ public class MissileCraftingTableListener implements Listener {
 	
 	private int getImpulseFrom(ItemStack is) {
 		if(CustomElementManager.FUEL_1.isParentOf(is)) {
-			return 205;
-		} else if(CustomElementManager.FUEL_2.isParentOf(is)) {
 			return 210;
-		} else if(CustomElementManager.FUEL_3.isParentOf(is)) {
+		} else if(CustomElementManager.FUEL_2.isParentOf(is)) {
 			return 215;
+		} else if(CustomElementManager.FUEL_3.isParentOf(is)) {
+			return 220;
 		}
 		return 0;
 	}

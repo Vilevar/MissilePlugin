@@ -4,11 +4,13 @@ import static java.lang.Math.cos;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -21,6 +23,8 @@ import be.vilevar.missiles.utils.Vec3d;
 
 public class ReentryVehicle {
 
+	public static final ArrayList<ReentryVehicle> air = new ArrayList<>();
+	
 	private double surface = 0.981;
 	private double cd = 0.176;
 	private double mass = 10;
@@ -33,6 +37,12 @@ public class ReentryVehicle {
 	
 	private WorldManager wm = Main.i.getWorldManager();
 	private double dt = 0.01;
+	
+	private int id;
+	private Vec3d pos;
+	private Vec3d velocity;
+	private Location loc;
+	private boolean exploded = false;
 	
 	public ReentryVehicle(double theta, double psi, Explosive explosive, int yExplosion) {
 		theta = -theta;
@@ -97,6 +107,8 @@ public class ReentryVehicle {
 	}
 	
 	private void airReentry(Player launcher, Vec3d x, Vec3d v) {
+		air.add(this);
+		
 		x = x.clone();
 		v = v.clone();
 		
@@ -104,7 +116,7 @@ public class ReentryVehicle {
 		System.out.println(v);
 		
 		int count = 0;
-		HashMap<Integer, Vec3d> positions = new HashMap<>();
+		HashMap<Integer, Pair<Vec3d, Vec3d>> states = new HashMap<>();
 		
 		World world = launcher.getWorld();
 		double forceCoef = -0.5 * this.surface * this.cd * wm.getAirDensity(world);
@@ -119,46 +131,70 @@ public class ReentryVehicle {
 			v.add(dv);
 			x.add(v.clone().multiply(dt));
 			
-			positions.put(count++, x.clone());
+			states.put(count++, Pair.of(x.clone(), v.clone()));
 		}
 		
 		System.out.println("MIRV will explode at "+x+" "+v);
 		
 		final Vec3d finalX = x;
 		
-		new BukkitRunnable() {
+		this.id = new BukkitRunnable() {
 			private int i;
 			
 			@Override
 			public void run() {
-				if(!positions.isEmpty()) {
-					for(double t = 0; t < 0.05 && !positions.isEmpty(); t += dt) {
-						Vec3d x = positions.get(i);
-						positions.remove(i++);
+				if(!states.isEmpty()) {
+					for(double t = 0; t < 0.05 && !states.isEmpty(); t += dt) {
+						Pair<Vec3d, Vec3d> state = states.get(i);
+						Vec3d x = state.getLeft();
+						states.remove(i++);
 						
-						Location loc = new Location(world, x.getX(), x.getZ(), x.getY());
+						loc = new Location(world, x.getX(), x.getZ(), x.getY());
 						Material block = loc.getBlock().getType();
 						if(block != Material.AIR && block != Material.VOID_AIR) {
 							ReentryVehicle.this.explode(launcher, loc);
 							this.cancel();
-							positions.clear();
+							states.clear();
 							return;
 						}
 						Main.display(ParticleEffect.FLAME, loc);
+						
+						pos = x;
+						velocity = state.getRight();
 					}
 				} else {
 					ReentryVehicle.this.explode(launcher, new Location(world, finalX.getX(), finalX.getZ(), finalX.getY()));
 					this.cancel();
 				}
 			}
-		}.runTaskTimer(Main.i, 1, 1);
+		}.runTaskTimer(Main.i, 1, 1).getTaskId();
 	}
 	
 	public void explode(Player launcher, Location loc) {
 		ExplosiveManager.addDetonation(new Detonation(this.explosive, loc, launcher));
-		launcher.sendMessage(loc.toString());
-		// world.createExplosion(loc, this.shell.getPower(), this.shell.setFire(), true, this.gunner);
-		// this.gunner.sendMessage("§6Obus explosé à §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
+		launcher.sendMessage("§6MIRV atterrie en §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
+		air.remove(this);
+		this.exploded = true;
+	}
+	
+	public int getId() {
+		return id;
+	}
+	
+	public Vec3d getPosition() {
+		return pos;
+	}
+	
+	public Vec3d getVelocity() {
+		return velocity;
+	}
+	
+	public Location getLocation() {
+		return loc;
+	}
+	
+	public boolean isExploded() {
+		return exploded;
 	}
 	
 	private double[][] makeMatrix(Vec3d vector) {

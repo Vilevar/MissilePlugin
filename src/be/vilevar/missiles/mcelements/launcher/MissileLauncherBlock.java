@@ -110,7 +110,8 @@ public class MissileLauncherBlock {
 	
 	
 	public void destroy(boolean remove) {
-		if(remove) launchers.remove(this);
+		if(remove)
+			launchers.remove(this);
 		if(missileData != null)
 			this.location.getWorld().dropItem(this.location, this.missileData.toItemStack());
 		if(isOpen != null)
