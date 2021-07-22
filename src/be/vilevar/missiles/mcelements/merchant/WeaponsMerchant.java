@@ -24,10 +24,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
+import be.vilevar.missiles.game.Game;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 
 public class WeaponsMerchant {
@@ -63,9 +67,10 @@ public class WeaponsMerchant {
 	private Villager villager;
 	private Location loc;
 	private int money;
+	private WeaponsMerchant enemy;
 	private WeaponsMerchantStage open;
 	
-	private ItemStack utilitariesItem, researchItem, developmentItem, moneyItem;
+	private ItemStack utilitariesItem, researchItem, developmentItem, attackItem, healthItem, moneyItem;
 	
 	public WeaponsMerchant(Defender defender, Location loc) {
 		this.canResearch.addAll(Arrays.asList(PISTOL, TNT, ENGINE_1, PROPELLANT_1, RADAR, HOWITZER));
@@ -85,25 +90,35 @@ public class WeaponsMerchant {
 		this.loc = loc;
 		
 		
-		this.moneyItem = new ItemStack(Material.EMERALD);
-		
-		this.utilitariesItem = new ItemStack(Material.STICK);
+		this.utilitariesItem = new ItemStack(Material.DIAMOND_PICKAXE);
 		ItemMeta im = utilitariesItem.getItemMeta();
 		im.setDisplayName("§eUtilitaires");
-		im.setCustomModelData(1);
 		utilitariesItem.setItemMeta(im);
 		
-		this.researchItem = new ItemStack(Material.STICK);
+		this.researchItem = new ItemStack(Material.BREWING_STAND);
 		im = researchItem.getItemMeta();
 		im.setDisplayName("§2Recherche");
-		im.setCustomModelData(2);
 		researchItem.setItemMeta(im);
 		
-		this.developmentItem = new ItemStack(Material.STICK);
+		this.developmentItem = new ItemStack(Material.ANVIL);
 		im = developmentItem.getItemMeta();
 		im.setDisplayName("§1Développement");
 		im.setCustomModelData(3);
 		developmentItem.setItemMeta(im);
+		
+		this.attackItem = new ItemStack(Material.IRON_SWORD);
+		Game game = main.getGame();
+		if(game != null) {
+			this.enemy = game.getTeamCapitalism().equals(this.defender) ? game.getTeamCommunism().getMerchant()
+					: game.getTeamCapitalism().getMerchant();
+		}
+		
+		this.healthItem = new ItemStack(Material.POTION);
+		PotionMeta potion = (PotionMeta) this.healthItem.getItemMeta();
+		potion.setBasePotionData(new PotionData(PotionType.REGEN));
+		this.healthItem.setItemMeta(potion);
+		
+		this.moneyItem = new ItemStack(Material.EMERALD);
 		
 		merchants.add(this);
 	}
@@ -200,6 +215,23 @@ public class WeaponsMerchant {
 		return money;
 	}
 	
+	public ItemStack updateAttackItem() {
+		if(this.enemy != null) {
+			ItemMeta im = this.attackItem.getItemMeta();
+			im.setDisplayName("§6Il reste §c"+Main.round(this.enemy.villager.getHealth())+" PV§6 à mettre.");
+			this.attackItem.setItemMeta(im);
+			return this.attackItem;
+		}
+		return null;
+	}
+	
+	public ItemStack updateHealthItem() {
+		ItemMeta im = this.healthItem.getItemMeta();
+		im.setDisplayName("§6"+Main.round(this.villager.getHealth())+" §dPV");
+		this.healthItem.setItemMeta(im);
+		return this.healthItem;
+	}
+	
 	public ItemStack updateMoneyItem() {
 		ItemMeta im = this.moneyItem.getItemMeta();
 		im.setDisplayName("§6"+money+" §aÉmeraude");
@@ -210,11 +242,13 @@ public class WeaponsMerchant {
 	private Inventory createMenuInventory() {
 		Inventory inv = main.getServer().createInventory(villager, 9, "§eMenu");
 		
-		inv.setItem(8, this.updateMoneyItem());
-		
 		inv.setItem(2, this.utilitariesItem);
 		inv.setItem(3, this.researchItem);
 		inv.setItem(4, this.developmentItem);
+		
+		inv.setItem(6, this.updateAttackItem());
+		inv.setItem(7, this.updateHealthItem());
+		inv.setItem(8, this.updateMoneyItem());
 		
 		return inv;
 	}
@@ -255,8 +289,8 @@ public class WeaponsMerchant {
 	
 	private ArrayList<MerchantRecipe> getUtilitaries(Defender defender) {
 		ArrayList<MerchantRecipe> utilitaries = new ArrayList<>(Arrays.asList(
-				new DevelopmentRecipe(new ItemStack(Material.OBSIDIAN, 32), 5),
-				new DevelopmentRecipe(CustomElementManager.RANGEFINDER.create(), 2)));
+				new DevelopmentRecipe(new ItemStack(Material.OBSIDIAN, 32), 64),
+				new DevelopmentRecipe(CustomElementManager.RANGEFINDER.create(), 5)));
 		
 		ItemStack is = new ItemStack(Material.HORSE_SPAWN_EGG);
 		SpawnEggMeta horse = (SpawnEggMeta) is.getItemMeta();
@@ -267,25 +301,25 @@ public class WeaponsMerchant {
 				new DevelopmentRecipe(new ItemStack(Material.CHEST), 1),
 				new DevelopmentRecipe(new ItemStack(Material.LADDER, 32), 2),
 				
-				new DevelopmentRecipe(new ItemStack(Material.COOKED_BEEF, 10), 2),
-				new DevelopmentRecipe(new ItemStack(Material.GOLDEN_APPLE), 2),
-				new DevelopmentRecipe(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE), 2),
+				new DevelopmentRecipe(new ItemStack(Material.COOKED_BEEF, 5), 1),
+				new DevelopmentRecipe(new ItemStack(Material.GOLDEN_APPLE), 10),
+				new DevelopmentRecipe(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE), 30),
 				
-				new DevelopmentRecipe(new ItemStack(Material.IRON_SWORD), 2),
-				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_SWORD), 2),
-				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_AXE), 2)));
+				new DevelopmentRecipe(new ItemStack(Material.IRON_SWORD), 5),
+				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_SWORD), 7),
+				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_AXE), 8)));
 		
 		is = new ItemStack(Material.IRON_PICKAXE);
 		ItemMeta im = is.getItemMeta();
 		im.addEnchant(Enchantment.DIG_SPEED, 6, true);
 		is.setItemMeta(im);
-		utilitaries.add(new DevelopmentRecipe(is, 20));
+		utilitaries.add(new DevelopmentRecipe(is, 15));
 		
 		is = new ItemStack(Material.IRON_AXE);
 		im = is.getItemMeta();
 		im.addEnchant(Enchantment.DIG_SPEED, 6, true);
 		is.setItemMeta(im);
-		utilitaries.add(new DevelopmentRecipe(is, 20));
+		utilitaries.add(new DevelopmentRecipe(is, 10));
 		
 		is = new ItemStack(Material.DIAMOND_PICKAXE);
 		im = is.getItemMeta();
@@ -294,20 +328,20 @@ public class WeaponsMerchant {
 		utilitaries.add(new DevelopmentRecipe(is, 20));
 		
 		utilitaries.addAll(Arrays.asList(
-				new DevelopmentRecipe(new ItemStack(Material.IRON_HELMET), 2),
-				new DevelopmentRecipe(new ItemStack(Material.IRON_CHESTPLATE), 2),
-				new DevelopmentRecipe(new ItemStack(Material.IRON_LEGGINGS), 2),
-				new DevelopmentRecipe(new ItemStack(Material.IRON_BOOTS), 2),
+				new DevelopmentRecipe(new ItemStack(Material.IRON_HELMET), 5),
+				new DevelopmentRecipe(new ItemStack(Material.IRON_CHESTPLATE), 10),
+				new DevelopmentRecipe(new ItemStack(Material.IRON_LEGGINGS), 7),
+				new DevelopmentRecipe(new ItemStack(Material.IRON_BOOTS), 5),
 				
-				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_HELMET), 2),
-				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_CHESTPLATE), 2),
-				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_LEGGINGS), 2),
-				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_BOOTS), 2),
+				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_HELMET), 10),
+				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_CHESTPLATE), 20),
+				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_LEGGINGS), 15),
+				new DevelopmentRecipe(new ItemStack(Material.DIAMOND_BOOTS), 10),
 				
-				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_HELMET), 2),
-				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_CHESTPLATE), 2),
-				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_LEGGINGS), 2),
-				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_BOOTS), 2)));
+				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_HELMET), 20),
+				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_CHESTPLATE), 50),
+				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_LEGGINGS), 30),
+				new DevelopmentRecipe(new ItemStack(Material.NETHERITE_BOOTS), 20)));
 		
 		return utilitaries;
 	}

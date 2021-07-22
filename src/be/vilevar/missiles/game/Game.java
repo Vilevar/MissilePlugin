@@ -112,7 +112,10 @@ public class Game {
 		double x = loc.getX() + dist * Math.cos(angle);
 		double z = loc.getZ() + dist * Math.sin(angle);
 		
-		defender.sendMessage("§6Activité ennemie détectée proche de §ax="+Main.round(x)+"§6, §az="+Main.round(z)+"§6.");
+		Location def = defender.getMerchant().getLocation();
+		double distance = Main.round(Math.sqrt(Math.pow(x - def.getX(), 2) + Math.pow(z - def.getZ(), 2)));
+		
+		defender.sendMessage("§6Activité ennemie détectée proche de §ax="+Main.round(x)+"§6, §az="+Main.round(z)+"§6 (§c"+distance+"m§6).");
 	}
 
 }

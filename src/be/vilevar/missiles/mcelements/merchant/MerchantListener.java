@@ -91,6 +91,10 @@ public class MerchantListener implements Listener {
 					merchant.openDevelopment(p);
 					view.setStage(merchant.getOpenStage());
 					break;
+				case 6:
+					break; // Attack item
+				case 7:
+					break; // Health item
 				case 8:
 					int availableMoney = Math.min(merchant.getMoney(), 64);
 					ItemStack is = new ItemStack(Material.EMERALD, availableMoney);
@@ -123,6 +127,8 @@ public class MerchantListener implements Listener {
 						e.setCancelled(true);
 					}
 				}
+				merchant.updateHealthItem();
+				merchant.updateAttackItem();
 			}
 		}
 	}

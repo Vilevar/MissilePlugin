@@ -11,5 +11,12 @@ public class DevelopmentRecipe extends MerchantRecipe {
 		this.setExperienceReward(false);
 		this.addIngredient(new ItemStack(Material.EMERALD, price));
 	}
+	
+	public DevelopmentRecipe(ItemStack result, int block, int emerald) {
+		super(result, Integer.MAX_VALUE);
+		this.setExperienceReward(false);
+		this.addIngredient(new ItemStack(Material.EMERALD_BLOCK, block));
+		this.addIngredient(new ItemStack(Material.EMERALD, emerald));
+	}
 
 }
