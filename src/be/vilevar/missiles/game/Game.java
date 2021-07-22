@@ -11,6 +11,12 @@ import be.vilevar.missiles.defense.defender.TeamDefender;
 import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
 
 public class Game {
+	
+	private static final String capitalistHorse = "{Variant:513,Health:30,Attributes:[{Name:\"horse.jump_strength\",Base:1.5f},"
+										+ "{Name:\"generic.movement_speed\",Base:0.8f},{Name:\"generic.max_health\",Base:30F}]}",
+								communistHorse = "{Variant:768,Health:30,Attributes:[{Name:\"horse.jump_strength\",Base:1.5f},"
+										+ "{Name:\"generic.movement_speed\",Base:0.8f},{Name:\"generic.max_health\",Base:30F}]}";
+	
 
 	private Main main = Main.i;
 	private TeamDefender communism;
@@ -20,8 +26,8 @@ public class Game {
 	private int task;
 
 	public Game() {
-		this.communism = new TeamDefender(main.getCommunism());
-		this.capitalism = new TeamDefender(main.getCapitalism());
+		this.communism = new TeamDefender(main.getCommunism(), communistHorse);
+		this.capitalism = new TeamDefender(main.getCapitalism(), capitalistHorse);
 	}
 
 	public void prepare() {

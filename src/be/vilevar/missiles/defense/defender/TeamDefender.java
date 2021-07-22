@@ -15,19 +15,22 @@ public class TeamDefender implements Defender {
 	
 	private final Team team;
 	private final String displayName;
+	private final String horse;
 	
 	private final DefenseNetwork[] networks = new DefenseNetwork[10];
 	
 	private WeaponsMerchant merchant;
 	private Location outpost;
 	
-	public TeamDefender(Team team) {
+	public TeamDefender(Team team, String horse) {
 		this.team = team;
 		this.displayName = this.team.getColor() + this.team.getDisplayName();
 		
 		for(int i = 0; i < 10; i++) {
 			this.networks[i] = new DefenseNetwork(this, i);
 		}
+		
+		this.horse = horse;
 	}
 	
 	public Team getTeam() {
@@ -36,6 +39,11 @@ public class TeamDefender implements Defender {
 	
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	@Override
+	public String getHorseTag() {
+		return horse;
 	}
 	
 	public WeaponsMerchant getMerchant() {

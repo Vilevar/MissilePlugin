@@ -7,6 +7,9 @@ import be.vilevar.missiles.defense.DefenseNetwork;
 
 public class PlayerDefender implements Defender {
 
+	private static final String horse = "{Variant:260,Health:30,Attributes:[{Name:\"horse.jump_strength\",Base:1.5f},"
+			+ "{Name:\"generic.movement_speed\",Base:0.8f},{Name:\"generic.max_health\",Base:30F}]}";
+	
 	private final Player p;
 	private final DefenseNetwork[] networks = new DefenseNetwork[10];
 	
@@ -28,4 +31,8 @@ public class PlayerDefender implements Defender {
 			p.sendMessage(message);
 	}
 
+	@Override
+	public String getHorseTag() {
+		return horse;
+	}
 }

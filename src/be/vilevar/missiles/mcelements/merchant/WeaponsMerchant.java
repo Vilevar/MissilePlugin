@@ -13,6 +13,7 @@ import java.util.Arrays;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -25,14 +26,17 @@ import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
+
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.game.Game;
 import be.vilevar.missiles.mcelements.CustomElementManager;
+import net.minecraft.server.v1_16_R3.MojangsonParser;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 
 public class WeaponsMerchant {
 
@@ -293,8 +297,18 @@ public class WeaponsMerchant {
 				new DevelopmentRecipe(CustomElementManager.RANGEFINDER.create(), 5)));
 		
 		ItemStack is = new ItemStack(Material.HORSE_SPAWN_EGG);
-		SpawnEggMeta horse = (SpawnEggMeta) is.getItemMeta();
-		is.setItemMeta(horse);
+		try {
+			net.minecraft.server.v1_16_R3.ItemStack nmsIs = CraftItemStack.asNMSCopy(is);
+			NBTTagCompound tagCompound = nmsIs.getTag();
+			if(tagCompound == null) {
+				tagCompound = new NBTTagCompound();
+			}
+			tagCompound.set("EntityTag", MojangsonParser.parse(this.defender.getHorseTag()));
+			nmsIs.setTag(tagCompound);
+			is = CraftItemStack.asBukkitCopy(nmsIs);
+		} catch (CommandSyntaxException e) {
+			e.printStackTrace();
+		}
 		utilitaries.add(new DevelopmentRecipe(is, 20));
 		
 		utilitaries.addAll(Arrays.asList(
