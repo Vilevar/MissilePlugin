@@ -128,12 +128,12 @@ public class LauncherBlockListener implements Listener {
 	
 	
 	private void updateLauncherInventory(MissileLauncherBlock launcher, Inventory inv) {
-		if(!launcher.canLaunchMissile()) {
+		if(launcher.getMissileData() == null) {
 			inv.setItem(0, null);
 			inv.setItem(1, this.cantFireItem);
 		} else {
 			inv.setItem(0, launcher.getMissileData().toItemStack());
-			inv.setItem(1, this.fireItem);
+			inv.setItem(1, launcher.canLaunchMissile() ? this.fireItem : this.cantFireItem);
 		}
 		
 		// Yaw
