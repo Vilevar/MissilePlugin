@@ -167,7 +167,7 @@ public class ThermonuclearExplosive implements Explosive {
 				for(double z = -radius; z <= radius; z++) {
 					Location fire = loc.clone().add(x, y, z);
 					if(fire.getBlock().getType() == Material.AIR && fire.distanceSquared(loc) <= R &&
-							fire.clone().add(0, -1, 0).getBlock().getType() != Material.AIR) {
+							fire.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
 						onFire.add(fire.getBlock());
 					}
 				}

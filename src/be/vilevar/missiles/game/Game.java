@@ -73,7 +73,7 @@ public class Game {
 						this.communism.getMerchant().addMoney(20);
 						this.capitalism.getMerchant().addMoney(20);
 					}, 400, 400);
-				}, 6100);
+				}, 6200);
 			}
 		}, 18100);
 	}

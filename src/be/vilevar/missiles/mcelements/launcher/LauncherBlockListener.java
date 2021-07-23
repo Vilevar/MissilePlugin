@@ -33,7 +33,8 @@ public class LauncherBlockListener implements Listener {
 		this.cantFireItem = new ItemStack(Material.RED_WOOL);
 		ItemMeta im = this.cantFireItem.getItemMeta();
 		im.setDisplayName("§cImpossible de tirer");
-		im.setLore(Arrays.asList("§6Vous devez placer un missile (prêt)", "pour pouvoir en tirer en."));
+		im.setLore(Arrays.asList("§6Vous devez placer un missile (prêt)", "§6pour pouvoir en tirer en.",
+				"§cEt il faut que la partie soit commencée (s'il y en a)."));
 		this.cantFireItem.setItemMeta(im);
 		
 		this.fireItem = new ItemStack(Material.LIME_WOOL);
@@ -84,9 +85,10 @@ public class LauncherBlockListener implements Listener {
 						this.updateLauncherInventory(launcher, inv);
 					} else if(slot == 1) {
 						if(launcher.canLaunchMissile()) {
-							launcher.launchMissile();
+							if(launcher.launchMissile()) {
+								p.sendMessage(this.fired);
+							}
 							this.updateLauncherInventory(launcher, inv);
-							p.sendMessage(this.fired);
 						} else {
 							p.sendMessage(this.noMissile);
 						}
@@ -126,7 +128,7 @@ public class LauncherBlockListener implements Listener {
 	
 	
 	private void updateLauncherInventory(MissileLauncherBlock launcher, Inventory inv) {
-		if(launcher.getMissileData() == null) {
+		if(!launcher.canLaunchMissile()) {
 			inv.setItem(0, null);
 			inv.setItem(1, this.cantFireItem);
 		} else {

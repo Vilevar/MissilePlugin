@@ -3,7 +3,6 @@ package be.vilevar.missiles.mcelements.launcher;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,11 +21,12 @@ public class MissileLauncherBlock {
 	private static final double smokeProgress = Math.PI/32;
 	
 	
+	private Main main = Main.i;
 	
 	private final Location location;
 	private BallisticMissileData missileData;
-	private int pitch;
-	private int yaw;
+	private int pitch = 45;
+	private int yaw = 0;
 	private BukkitTask smokeTask;
 	private Player isOpen;
 	
@@ -75,37 +75,43 @@ public class MissileLauncherBlock {
 	
 	
 	public boolean canLaunchMissile() {
+		if(this.main.getGame() != null && !this.main.getGame().isStarted()) {
+			return false;
+		}
 		return this.smokeTask == null && this.missileData != null;
 	}
 	
-	public void launchMissile() {
+	public boolean launchMissile() {
 		Location loc = this.location.clone().add(0.5, 1, 0.5);
-		this.missileData.toBallisticMissile().launch(this.isOpen, loc, Math.toRadians(yaw), Math.toRadians(pitch));
-		this.missileData = null;
-		
-		loc.add(0, -1, 0);
-		this.smokeTask = Bukkit.getScheduler().runTaskTimer(Main.i, new Runnable() {
-			private double r = 0;
+		if(this.missileData.toBallisticMissile().launch(this.isOpen, loc, Math.toRadians(yaw), Math.toRadians(pitch))) {
+			this.missileData = null;
 			
-			@Override
-			public void run() {
-				if(r > 3) {
-					smokeTask.cancel();
-					smokeTask = null;
-					return;
-				}
-				for(int j = 0; j < 5 && r <= 3; j++, r += 0.1) {
-					double y = r < 2 ? -Math.sqrt(smokeRadius - Math.pow(r-smokeCenter, 2)) + smokeCenter : 0;
-					for(double i = 0; i < smokeMax; i+=smokeProgress) {
-						double x = r*Math.cos(i);
-						double z = r*Math.sin(i);
-						loc.add(x, y, z);
-						ParticleEffect.SMOKE_NORMAL.display(0, 0, 0, 0, 1, loc, loc.getWorld().getPlayers());
-						loc.subtract(x, y, z);
+			loc.add(0, -1, 0);
+			this.smokeTask = this.main.getServer().getScheduler().runTaskTimer(this.main, new Runnable() {
+				private double r = 0;
+				
+				@Override
+				public void run() {
+					if(r > 3) {
+						smokeTask.cancel();
+						smokeTask = null;
+						return;
+					}
+					for(int j = 0; j < 5 && r <= 3; j++, r += 0.1) {
+						double y = r < 2 ? -Math.sqrt(smokeRadius - Math.pow(r-smokeCenter, 2)) + smokeCenter : 0;
+						for(double i = 0; i < smokeMax; i+=smokeProgress) {
+							double x = r*Math.cos(i);
+							double z = r*Math.sin(i);
+							loc.add(x, y, z);
+							ParticleEffect.SMOKE_NORMAL.display(0, 0, 0, 0, 1, loc, loc.getWorld().getPlayers());
+							loc.subtract(x, y, z);
+						}
 					}
 				}
-			}
-		}, 3, 1);
+			}, 3, 1);
+			return true;
+		}
+		return false;
 	}
 	
 	

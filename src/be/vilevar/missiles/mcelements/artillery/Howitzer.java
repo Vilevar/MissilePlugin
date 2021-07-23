@@ -158,6 +158,13 @@ public class Howitzer {
 	}
 	
 	
+	public boolean canFire() {
+		if(this.main.getGame() != null && !this.main.getGame().isStarted()) {
+			return false;
+		}
+		return this.shell != null;
+	}
+	
 	
 	public void fire(Player gunner) {
 		new ShellPath(gunner.getWorld(), this.shell, new Vec3d(firedLoc.getX(), firedLoc.getZ(), firedLoc.getY()),

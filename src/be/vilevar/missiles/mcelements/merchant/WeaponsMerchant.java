@@ -33,6 +33,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
+import be.vilevar.missiles.defense.defender.TeamDefender;
 import be.vilevar.missiles.game.Game;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import net.minecraft.server.v1_16_R3.MojangsonParser;
@@ -71,12 +72,14 @@ public class WeaponsMerchant {
 	private Villager villager;
 	private Location loc;
 	private int money;
-	private WeaponsMerchant enemy;
+	private TeamDefender enemy;
 	private WeaponsMerchantStage open;
 	
 	private ItemStack utilitariesItem, researchItem, developmentItem, attackItem, healthItem, moneyItem;
 	
 	public WeaponsMerchant(Defender defender, Location loc) {
+		this.defender = defender;
+		
 		this.canResearch.addAll(Arrays.asList(PISTOL, TNT, ENGINE_1, PROPELLANT_1, RADAR, HOWITZER));
 		
 		this.updateResearchMerchant();
@@ -85,7 +88,6 @@ public class WeaponsMerchant {
 		
 		this.utilitaries.setRecipes(this.getUtilitaries(defender));
 		
-		this.defender = defender;
 		this.villager = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
 		this.villager.setAI(false);
 		this.villager.setGravity(false);
@@ -113,8 +115,7 @@ public class WeaponsMerchant {
 		this.attackItem = new ItemStack(Material.IRON_SWORD);
 		Game game = main.getGame();
 		if(game != null) {
-			this.enemy = game.getTeamCapitalism().equals(this.defender) ? game.getTeamCommunism().getMerchant()
-					: game.getTeamCapitalism().getMerchant();
+			this.enemy = game.getTeamCapitalism().equals(this.defender) ? game.getTeamCommunism() : game.getTeamCapitalism();
 		}
 		
 		this.healthItem = new ItemStack(Material.POTION);
@@ -222,7 +223,7 @@ public class WeaponsMerchant {
 	public ItemStack updateAttackItem() {
 		if(this.enemy != null) {
 			ItemMeta im = this.attackItem.getItemMeta();
-			im.setDisplayName("§6Il reste §c"+Main.round(this.enemy.villager.getHealth())+" PV§6 à mettre.");
+			im.setDisplayName("§6Il reste §c"+Main.round(this.enemy.getMerchant().villager.getHealth())+" PV§6 à mettre.");
 			this.attackItem.setItemMeta(im);
 			return this.attackItem;
 		}

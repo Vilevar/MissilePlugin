@@ -44,7 +44,7 @@ public class HowitzerBlockListener implements Listener {
 		this.cantFire = new ItemStack(Material.RED_WOOL);
 		im = this.cantFire.getItemMeta();
 		im.setDisplayName("§6Vous ne pouvez ouvrir le feu");
-		im.setLore(Arrays.asList("§cIl faut que l'obusier soit chargé"));
+		im.setLore(Arrays.asList("§cIl faut que l'obusier soit chargé", "§cEt que la partie soit commencée (s'il y en a)."));
 		this.cantFire.setItemMeta(im);
 	}
 	
@@ -130,8 +130,9 @@ public class HowitzerBlockListener implements Listener {
 							this.setFireItem(inv, howitzer);
 						}
 					} else if(slot == 5) {
-						if(is.equals(fire)) {
+						if(is.equals(fire) && howitzer.canFire()) {
 							howitzer.fire(p);
+							inv.setItem(0, null);
 						}
 						this.setFireItem(inv, howitzer);
 					}
@@ -218,7 +219,7 @@ public class HowitzerBlockListener implements Listener {
 	
 	
 	private void setFireItem(Inventory inv, Howitzer howitzer) {
-		inv.setItem(5, howitzer.getShell() == null ? this.cantFire : this.fire);
+		inv.setItem(5, !howitzer.canFire() ? this.cantFire : this.fire);
 	}
 	
 	private void setPitchItems(Inventory inv, Howitzer howitzer) {

@@ -10,9 +10,11 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -20,7 +22,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -135,7 +140,15 @@ public class Main extends JavaPlugin implements Listener {
 			if(e.getPlayer().isSneaking())
 				e.getPlayer().getWorld().createExplosion(e.getPlayer().getLocation(), 5.f);
 		}
-		if (e.getItem() != null && e.getItem().getType() == Material.STICK && e.getPlayer().getGameMode() == GameMode.CREATIVE && e.getClickedBlock() != null) {
+		if (e.getItem() != null && e.getItem().getType() == Material.STICK && e.getPlayer().getGameMode() == GameMode.CREATIVE && e.getAction() == Action.LEFT_CLICK_AIR) {
+//			for(Chunk chunk : e.getPlayer().getWorld().getLoadedChunks()) {
+//				for(BlockState state : chunk.getTileEntities()) {
+//					if(!state.getType().toString().contains("SIGN")) {
+//						e.getPlayer().sendMessage(state.getType().toString());
+//						state.getBlock().setType(Material.AIR);
+//					}
+//				}
+//			}
 //			new BallisticMissile(new MissileStage[] {
 //					MissileStage.createStage(1, 205, 400)
 //			}, new ReentryVehicle[] {
@@ -162,6 +175,13 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		}
 	}
+	
+//	@EventHandler
+//	public void onSpawn(CreatureSpawnEvent e) {
+//		if(e.getSpawnReason() == SpawnReason.NATURAL) {
+//			System.out.println(e.getEntity()+" spawned !!!!");
+//		}
+//	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockPhysics(BlockFadeEvent e) {
@@ -206,7 +226,7 @@ public class Main extends JavaPlugin implements Listener {
 									loc.clone().add(i, -1, j).getBlock().setType(Material.BEDROCK);
 								}
 							}
-							team.setMerchant(new WeaponsMerchant(team, loc));
+							team.setMerchant(new WeaponsMerchant(team, loc.getBlock().getLocation().add(0.5, 0, 0.5)));
 						}
 					} else {
 						p.sendMessage("§cVous n'êtes pas membre d'une équipe.");
