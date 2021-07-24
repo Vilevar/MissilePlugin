@@ -18,17 +18,20 @@ import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -118,6 +121,31 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	@EventHandler
+	public void onload(ChunkLoadEvent e) {
+		Chunk c = e.getChunk();
+		
+		if(game == null) {
+			for(BlockState state : c.getTileEntities()) {
+				if(!state.getType().toString().contains("SIGN")) {
+					state.getBlock().setType(Material.AIR);
+				}
+			}
+		} else {
+			for(BlockState state : c.getTileEntities()) {
+				if(!state.getType().toString().contains("SIGN") && state.getType() != Material.CHEST) {
+					state.getBlock().setType(Material.AIR);
+				}
+			}
+		}
+		
+		for(Entity ent : c.getEntities()) {
+			if(ent.getType() != EntityType.PLAYER && (ent.getType() != EntityType.VILLAGER || WeaponsMerchant.getMerchant((Villager) ent) == null)) {
+				ent.remove();
+			}
+		}
+	}
+	
+	@EventHandler
 	public void onJoin(PlayerJoinEvent e) {
 		if(!players.containsKey(e.getPlayer().getUniqueId()))
 			players.put(e.getPlayer().getUniqueId(), new PlayerDefender(e.getPlayer()));
@@ -141,26 +169,7 @@ public class Main extends JavaPlugin implements Listener {
 				e.getPlayer().getWorld().createExplosion(e.getPlayer().getLocation(), 5.f);
 		}
 		if (e.getItem() != null && e.getItem().getType() == Material.STICK && e.getPlayer().getGameMode() == GameMode.CREATIVE && e.getAction() == Action.LEFT_CLICK_AIR) {
-//			for(Chunk chunk : e.getPlayer().getWorld().getLoadedChunks()) {
-//				for(BlockState state : chunk.getTileEntities()) {
-//					if(!state.getType().toString().contains("SIGN")) {
-//						e.getPlayer().sendMessage(state.getType().toString());
-//						state.getBlock().setType(Material.AIR);
-//					}
-//				}
-//			}
-//			new BallisticMissile(new MissileStage[] {
-//					MissileStage.createStage(1, 205, 400)
-//			}, new ReentryVehicle[] {
-//					new ReentryVehicle(0, 0)
-//			}).launch(e.getPlayer(), new Location(e.getPlayer().getWorld(), 0, 30, 0), 0, Math.toRadians(40));
 			
-//			e.getClickedBlock().getWorld().createExplosion(e.getClickedBlock().getLocation(), 200, true, true, e.getPlayer());
-//			e.setCancelled(true);
-//			if(e.getAction() == Action.RIGHT_CLICK_BLOCK)
-//				new NuclearExplosive(this, 2000000, 50, 20).explode(e.getClickedBlock().getLocation(), e.getPlayer());
-//			else
-//				new ThermonuclearExplosive(this, 8000000, 75, 40).explode(e.getClickedBlock().getLocation(), e.getPlayer());
 		}
 	}
 
@@ -176,12 +185,12 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-//	@EventHandler
-//	public void onSpawn(CreatureSpawnEvent e) {
-//		if(e.getSpawnReason() == SpawnReason.NATURAL) {
-//			System.out.println(e.getEntity()+" spawned !!!!");
+	@EventHandler
+	public void onSpawn(CreatureSpawnEvent e) {
+//		if(e.getSpawnReason() == SpawnReason.NATURAL || e.getSpawnReason() == SpawnReason.SPAWNER) {
+		getServer().broadcastMessage(e.getEntity()+" spawned !!!! "+e.getSpawnReason());
 //		}
-//	}
+	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockPhysics(BlockFadeEvent e) {

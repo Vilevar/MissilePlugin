@@ -66,7 +66,7 @@ public class Radar {
 		
 		for(ReentryVehicle rv : ReentryVehicle.air) {
 			Location loc = rv.getLocation();
-			if(loc.distanceSquared(this.loc) <= sRange) {
+			if(loc != null && loc.distanceSquared(this.loc) <= sRange) {
 				Target target = this.network.getTarget(rv);
 				
 				if(this.sound  && !this.isSounding) {

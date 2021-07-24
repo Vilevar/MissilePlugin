@@ -5,7 +5,7 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -115,8 +115,8 @@ public class ReentryVehicle {
 		System.out.println("AIR "+x);
 		System.out.println(v);
 		
-		int count = 0;
-		HashMap<Integer, Pair<Vec3d, Vec3d>> states = new HashMap<>();
+		ArrayList<Pair<Vec3d, Vec3d>> states = new ArrayList<>();
+		Iterator<Pair<Vec3d, Vec3d>> it;
 		
 		World world = launcher.getWorld();
 		double forceCoef = -0.5 * this.surface * this.cd * wm.getAirDensity(world);
@@ -131,8 +131,9 @@ public class ReentryVehicle {
 			v.add(dv);
 			x.add(v.clone().multiply(dt));
 			
-			states.put(count++, Pair.of(x.clone(), v.clone()));
+			states.add(Pair.of(x.clone(), v.clone()));
 		}
+		it = states.iterator();
 		
 		System.out.println("MIRV will explode at "+x+" "+v);
 		
@@ -143,18 +144,16 @@ public class ReentryVehicle {
 			
 			@Override
 			public void run() {
-				if(!states.isEmpty()) {
-					for(double t = 0; t < 0.05 && !states.isEmpty(); t += dt) {
+				if(it.hasNext()) {
+					for(double t = 0; t < 0.05 && !it.hasNext(); t += dt) {
 						Pair<Vec3d, Vec3d> state = states.get(i);
 						Vec3d x = state.getLeft();
-						states.remove(i++);
 						
 						loc = new Location(world, x.getX(), x.getZ(), x.getY());
 						Material block = loc.getBlock().getType();
 						if(block != Material.AIR && block != Material.VOID_AIR) {
 							ReentryVehicle.this.explode(launcher, loc);
 							this.cancel();
-							states.clear();
 							return;
 						}
 						Main.display(ParticleEffect.FLAME, loc);

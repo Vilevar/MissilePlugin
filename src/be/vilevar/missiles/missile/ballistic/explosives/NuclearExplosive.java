@@ -148,11 +148,11 @@ public class NuclearExplosive implements Explosive {
 		if(this.energy > 0) {
 			scheduler.runTaskLater(main, () -> {
 				double radius = this.radius + Math.pow(Math.log(1 + this.energy) / 2, 2);
-				System.out.println(radius);
 				double R = radius * radius;
 				Location l = loc.clone().add(0, 1, 0);
 				
 //				List<Block> fires = new ArrayList<>();
+				int count = 0;
 				for(double x = -radius; x <= radius; x++) {
 					for(double z = -radius; z <= radius; z++) {
 						Location fire = l.clone().add(x, 0, z);
@@ -160,9 +160,12 @@ public class NuclearExplosive implements Explosive {
 						if(distSquare <= R && distSquare > this.Radius && fire.getBlock().getType() == Material.AIR) {
 //							fires.add(fire.getBlock());
 							fire.getBlock().setType(Material.FIRE);
+							count++;
 						}
 					}
 				}
+				
+				System.out.println("Fire radius : "+radius+" -> blocks="+count);
 				
 //				scheduler.runTaskLater(main, () -> {
 //					for(Block fire : fires) {

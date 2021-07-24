@@ -6,7 +6,8 @@ import static java.lang.Math.min;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,8 +17,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.WorldManager;
-import be.vilevar.missiles.missile.ballistic.ReentryVehicle;
 import be.vilevar.missiles.missile.ballistic.MissileStage;
+import be.vilevar.missiles.missile.ballistic.ReentryVehicle;
 import be.vilevar.missiles.utils.ParticleEffect;
 import be.vilevar.missiles.utils.Vec3d;
 
@@ -79,13 +80,13 @@ public class BallisticMissile {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				int count = 0;
-				HashMap<Integer, Vec3d> positions = new HashMap<>();
+				ArrayList<Vec3d> positions = new ArrayList<>();
+				Iterator<Vec3d> it;
 				
 				Vec3d x = new Vec3d(loc.getX() + 0.5, loc.getZ() + 0.5, loc.getY() + 1);
 				Vec3d v = new Vec3d(0, 0, 0);
 				
-				positions.put(count++, x.clone());
+				positions.add(x.clone());
 				
 				Vec3d ejection = BallisticMissile.this.defaultEjection;
 				
@@ -107,26 +108,24 @@ public class BallisticMissile {
 					v.add(dv);
 					x.add(v.clone().multiply(dt));
 					
-					positions.put(count++, x.clone());
+					positions.add(x.clone());
 				} while(v.getZ() > 0);
 				
 				final Vec3d finalX = x;
 				final Vec3d finalV = v;
 				
-				System.out.println("launch "+positions.size()+" mirv at "+x+" "+v+" after "+(count * dt));
-				
+				System.out.println("launch "+positions.size()+" mirv at "+x+" "+v+" after "+(positions.size() * dt));
+				it = positions.iterator();
 				
 				// Run synchronously the path
 				new BukkitRunnable() {
-					private int i;
 					private World world = launcher.getWorld();
 					
 					@Override
 					public void run() {
-						if(!positions.isEmpty()) {
-							for(double t = 0; t < 0.05 && !positions.isEmpty(); t += dt) {
-								Vec3d x = positions.get(i);
-								positions.remove(i++);
+						if(it.hasNext()) {
+							for(double t = 0; t < 0.05 && it.hasNext(); t += dt) {
+								Vec3d x = it.next();
 								if(x.getZ() <= 256) {
 									Location loc = new Location(world, x.getX(), x.getZ(), x.getY());
 									Material block = loc.getBlock().getType();
@@ -134,7 +133,6 @@ public class BallisticMissile {
 										for(ReentryVehicle mirv : BallisticMissile.this.mirv) {
 											mirv.explode(launcher, loc);
 										}
-										positions.clear();
 										this.cancel();
 										return;
 									} else {

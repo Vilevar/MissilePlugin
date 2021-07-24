@@ -1,6 +1,7 @@
 package be.vilevar.missiles.artillery;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,9 +22,11 @@ public class ShellPath extends BukkitRunnable {
 	private Shell shell;
 	private Player gunner;
 	
-	private int count;
-	private HashMap<Integer, Vec3d> locs = new HashMap<>();
-	private int i;
+//	private int count; TODO Test this artillery algorithm
+//	private HashMap<Integer, Vec3d> locs = new HashMap<>();
+//	private int i;
+	private ArrayList<Vec3d> locs = new ArrayList<>();
+	private Iterator<Vec3d> it;
 	
 	public ShellPath(World world, Shell shell, Vec3d x, double theta, double psi, Player gunner) {
 		this.world = world;
@@ -32,7 +35,8 @@ public class ShellPath extends BukkitRunnable {
 		
 		Vec3d v = new Vec3d(Math.cos(theta)*Math.cos(psi), Math.cos(theta)*Math.sin(psi), Math.sin(theta)).multiply(shell.getV0());
 		
-		locs.put(count++, x.clone());
+//		locs.put(count++, x.clone());
+		locs.add(x.clone());
 		double forceCoef = -0.5 * shell.getS() * shell.getCd() * wm.getAirDensity(world);
 		while(x.getZ() >= 0) {
 			Vec3d force = v.clone().subtract(wm.getWind(world));
@@ -43,22 +47,25 @@ public class ShellPath extends BukkitRunnable {
 			v.add(dv);
 			x.add(averageV.multiply(dt));
 			
-			locs.put(count++, x.clone());
+//			locs.put(count++, x.clone());
+			locs.add(x.clone());
 		}
+		
+		this.it = locs.iterator();
 	}
 	
 	@Override
 	public void run() {
-		if(!locs.isEmpty()) {
-			for(double t = 0; t < 0.05 && !locs.isEmpty(); t += dt) {
-				Vec3d x = locs.get(i);
-				locs.remove(i++);
+		if(it.hasNext()) {
+			for(double t = 0; t < 0.05 && it.hasNext(); t += dt) {
+				Vec3d x = it.next();
+//				it.remove();
 				Location loc = new Location(world, x.getX(), x.getZ(), x.getY());
 				if(loc.getBlock().getType().isSolid() || loc.getBlock().getType() == Material.LAVA) {
 					world.createExplosion(loc, this.shell.getPower(), this.shell.setFire(), true, this.gunner);
 					this.gunner.sendMessage("§6Obus explosé à §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
 					this.cancel();
-					locs.clear();
+					return;
 				}
 				Main.display(ParticleEffect.FLAME, loc);
 			}

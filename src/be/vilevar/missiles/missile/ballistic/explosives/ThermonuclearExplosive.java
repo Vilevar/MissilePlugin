@@ -158,7 +158,6 @@ public class ThermonuclearExplosive implements Explosive {
 			radius = 1.5 * this.radius;
 		}
 		
-		System.out.println(radius);
 		double R = radius * radius;
 		
 		List<Block> onFire = new ArrayList<>();
@@ -173,7 +172,7 @@ public class ThermonuclearExplosive implements Explosive {
 				}
 			}
 		}
-		System.out.println("Fire : "+onFire.size());
+		System.out.println("Fire radius : "+radius+" -> blocks="+onFire.size());
 		
 		scheduler.runTaskLater(main, () -> {
 			for(Block fire : onFire) {
