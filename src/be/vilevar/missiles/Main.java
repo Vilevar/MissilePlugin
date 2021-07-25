@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -21,7 +22,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -124,22 +124,12 @@ public class Main extends JavaPlugin implements Listener {
 	public void onload(ChunkLoadEvent e) {
 		Chunk c = e.getChunk();
 		
-		if(game == null) {
-			for(BlockState state : c.getTileEntities()) {
-				if(!state.getType().toString().contains("SIGN")) {
-					state.getBlock().setType(Material.AIR);
-				}
-			}
-		} else {
-			for(BlockState state : c.getTileEntities()) {
-				if(!state.getType().toString().contains("SIGN") && state.getType() != Material.CHEST) {
-					state.getBlock().setType(Material.AIR);
-				}
-			}
+		for(BlockState state : c.getTileEntities()) {
+			state.getBlock().setType(Material.AIR);
 		}
 		
 		for(Entity ent : c.getEntities()) {
-			if(ent.getType() != EntityType.PLAYER && (ent.getType() != EntityType.VILLAGER || WeaponsMerchant.getMerchant((Villager) ent) == null)) {
+			if(ent.getType() != EntityType.PLAYER) {
 				ent.remove();
 			}
 		}
@@ -169,7 +159,26 @@ public class Main extends JavaPlugin implements Listener {
 				e.getPlayer().getWorld().createExplosion(e.getPlayer().getLocation(), 5.f);
 		}
 		if (e.getItem() != null && e.getItem().getType() == Material.STICK && e.getPlayer().getGameMode() == GameMode.CREATIVE && e.getAction() == Action.LEFT_CLICK_AIR) {
-			
+			List<EntityType> ents = new ArrayList<>();
+			e.getPlayer().sendMessage(e.getPlayer().getWorld().getEntities().size()+"");
+			for(Entity ent : e.getPlayer().getWorld().getEntities()) {
+				if(!ents.contains(ent.getType())) {
+					ents.add(ent.getType());
+					e.getPlayer().sendMessage(ent.getType()+" "+ent.getLocation());
+				}
+				if(ent.getType() != EntityType.PLAYER)
+					ent.remove();
+			}
+			List<Material> mat = new ArrayList<>();
+			for(Chunk c : e.getPlayer().getWorld().getLoadedChunks()) {
+				for(BlockState bs : c.getTileEntities()) {
+					if(!mat.contains(bs.getType())) {
+						mat.add(bs.getType());
+						e.getPlayer().sendMessage(bs.getType()+" "+bs.getLocation());
+					}
+					bs.getBlock().setType(Material.AIR);
+				}
+			}
 		}
 	}
 
