@@ -64,6 +64,12 @@ public class DefenseNetwork {
 	
 	public void notifyDefense(Target target) {
 		for(ABMLauncher launcher : this.abms) {
+			/*
+			if(launcher.countABM() > 0) {
+				launcher.tryToShoot(target);
+				break;
+			}
+			*/
 			launcher.tryToShoot(target);
 		}
 	}

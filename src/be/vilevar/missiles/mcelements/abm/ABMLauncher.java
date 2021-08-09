@@ -40,7 +40,7 @@ public class ABMLauncher {
 		for(int i = 0; i < abms.length; i++) {
 			ABM abm = abms[i];
 			if(abm != null) {
-				abm.shoot(target, this.messageInter);
+				abm.shoot(target, this, this.messageInter);
 				abms[i] = null;
 				if(this.messageSend) {
 					this.def.sendMessage("§5[§a"+channel+":"+this.id+
@@ -66,6 +66,15 @@ public class ABMLauncher {
 	
 	public void setABM(int id, ABM abm) {
 		this.abms[id] = abm;
+	}
+
+	public int countABM() {
+		int n = 0;
+		for(int i = 0; i < abms.length; i++) {
+			if(abms[i] != null)
+				n += 1;
+		}
+		return n;
 	}
 	
 	public int getChannel() {
@@ -150,5 +159,13 @@ public class ABMLauncher {
 			}
 		}
 		return null;
+	}
+
+	public Location getLocation() {
+		return this.loc;
+	}
+
+	public Defender getDefender() {
+		return this.def;
 	}
 }

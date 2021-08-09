@@ -4,15 +4,15 @@ author: Vilevar
 main: be.vilevar.missiles.Main
 api-version: 1.16
 commands:
- missile:
-  description: launch the game
- discharge:
-  description: Discharge your gun
- outpost:
-  description: Teleport to the outpost of your team
- setoutpost:
-  description: Set the outpost your team s outpost at your position
- base:
-  description: Teleport to your team s banner
- merchant:
-  description: TEE
+    missile:
+        description: launch the game
+    discharge:
+        description: Discharge your gun
+    outpost:
+        description: Teleport to the outpost of your team
+    setoutpost:
+        description: Set the outpost your team s outpost at your position
+    base:
+        description: Teleport to your team s banner
+    merchant:
+        description: TEE

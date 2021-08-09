@@ -13,6 +13,7 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.WorldManager;
@@ -39,10 +40,13 @@ public class ReentryVehicle {
 	private double dt = 0.01;
 	
 	private int id;
+	private BukkitTask runnable;
 	private Vec3d pos;
 	private Vec3d velocity;
 	private Location loc;
 	private boolean exploded = false;
+
+	private Player launcher;
 	
 	public ReentryVehicle(double theta, double psi, Explosive explosive, int yExplosion) {
 		theta = -theta;
@@ -75,6 +79,7 @@ public class ReentryVehicle {
 	}
 	
 	public void launch(Player launcher, Vec3d x, Vec3d v) {
+		this.launcher = launcher;
 		x = x.clone();
 		v = v.clone().matrixProduct(this.matrixProduct(this.makeMatrix(v), matrix));
 		
@@ -139,7 +144,7 @@ public class ReentryVehicle {
 		
 		final Vec3d finalX = x;
 		
-		this.id = new BukkitRunnable() {
+		this.runnable = new BukkitRunnable() {
 			private int i;
 			
 			@Override
@@ -153,7 +158,6 @@ public class ReentryVehicle {
 						Material block = loc.getBlock().getType();
 						if(block != Material.AIR && block != Material.VOID_AIR) {
 							ReentryVehicle.this.explode(launcher, loc);
-							this.cancel();
 							return;
 						}
 						Main.display(ParticleEffect.FLAME, loc);
@@ -163,13 +167,18 @@ public class ReentryVehicle {
 					}
 				} else {
 					ReentryVehicle.this.explode(launcher, new Location(world, finalX.getX(), finalX.getZ(), finalX.getY()));
-					this.cancel();
 				}
 			}
-		}.runTaskTimer(Main.i, 1, 1).getTaskId();
+		}.runTaskTimer(Main.i, 1, 1);
+		this.id = runnable.getTaskId();
 	}
 	
+	public void explode(Location loc) {
+		this.explode(this.launcher, loc);
+	}
+
 	public void explode(Player launcher, Location loc) {
+		this.runnable.cancel();
 		ExplosiveManager.addDetonation(new Detonation(this.explosive, loc, launcher));
 		launcher.sendMessage("§6MIRV atterrie en §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
 		air.remove(this);
