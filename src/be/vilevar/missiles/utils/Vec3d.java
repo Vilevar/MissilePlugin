@@ -1,10 +1,19 @@
 package be.vilevar.missiles.utils;
 
+import org.bukkit.Location;
+import org.bukkit.World;
+
 public class Vec3d implements Cloneable {
 	
 	private double x;
 	private double y;
 	private double z;
+	
+	public Vec3d(Location loc) {
+		this.x = loc.getX();
+		this.y = loc.getZ();
+		this.z = loc.getY();
+	}
 	
 	public Vec3d(double x, double y, double z) {
 		this.x = x;
@@ -130,6 +139,10 @@ public class Vec3d implements Cloneable {
 		return this;
 	}
 
+	public Location toLocation(World world) {
+		return new Location(world, this.x, this.z, this.y);
+	}
+	
 	@Override
 	public Vec3d clone() {
 		return new Vec3d(x, y, z);

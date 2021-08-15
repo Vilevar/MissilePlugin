@@ -27,7 +27,7 @@ public class NuclearExplosive implements Explosive {
 	private final BukkitScheduler scheduler;
 	
 	private double energy;
-	private boolean isDone;
+	private boolean isDone = true;
 	
 	public NuclearExplosive(Main main, double energy, double radius, double height) {
 		this.main = main;
@@ -42,6 +42,8 @@ public class NuclearExplosive implements Explosive {
 
 	@Override
 	public void explode(Location loc, Player damager) {
+		this.isDone = false;
+		
 		// Crater
 		List<Block> crater = new ArrayList<>();
 		for(double y = 0; y >= -height; y--) {
@@ -198,6 +200,11 @@ public class NuclearExplosive implements Explosive {
 		}, 120);
 	}
 
+	@Override
+	public void explodeByInterception(Location loc, Player damager) {
+		loc.getWorld().createExplosion(loc, 100, true, true, damager);
+	}
+	
 	@Override
 	public boolean isDone() {
 		return isDone;

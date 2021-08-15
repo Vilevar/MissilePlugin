@@ -5,13 +5,13 @@ import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.WorldManager;
-import be.vilevar.missiles.utils.ParticleEffect;
 import be.vilevar.missiles.utils.Vec3d;
 
 public class ShellPath extends BukkitRunnable {
@@ -60,14 +60,14 @@ public class ShellPath extends BukkitRunnable {
 			for(double t = 0; t < 0.05 && it.hasNext(); t += dt) {
 				Vec3d x = it.next();
 //				it.remove();
-				Location loc = new Location(world, x.getX(), x.getZ(), x.getY());
+				Location loc = x.toLocation(world);
 				if(loc.getBlock().getType().isSolid() || loc.getBlock().getType() == Material.LAVA) {
 					world.createExplosion(loc, this.shell.getPower(), this.shell.setFire(), true, this.gunner);
 					this.gunner.sendMessage("§6Obus explosé à §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
 					this.cancel();
 					return;
 				}
-				Main.display(ParticleEffect.FLAME, loc);
+				Main.display(Particle.FLAME, loc);
 			}
 		} else {
 			this.cancel();

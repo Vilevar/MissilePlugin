@@ -11,13 +11,14 @@ import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.defense.DefenseNetwork;
 import be.vilevar.missiles.defense.Target;
+import be.vilevar.missiles.mcelements.ElectricBlock;
 import be.vilevar.missiles.missile.ballistic.ReentryVehicle;
 
-public class Radar {
+public class Radar implements ElectricBlock {
 
 	public static final ArrayList<Radar> radars = new ArrayList<>();
-	private static final int area = 7;
-	private static final double range = 500;
+	private static final int area = 5;
+	private static final double range = 300;
 	private static final double sRange = range * range;
 	
 	private Main main = Main.i;
@@ -33,6 +34,8 @@ public class Radar {
 	private boolean send;
 	
 	private boolean isSounding;
+	
+	private long offTime;
 	
 	private Player open;
 	
@@ -50,8 +53,9 @@ public class Radar {
 	public boolean isEffective() {
 		for(int i = -area; i <= area; i++) {
 			for(int j = -area; j <= area; j++) {
-				Location block = this.loc.clone().add(i, j, i == 0 & j == 0 ? 1 : 0);
+				Location block = this.loc.clone().add(i, i == 0 & j == 0 ? 1 : 0, j);
 				if(block.getBlock().getLightFromSky() != 15) {
+					System.out.println(block+" radar out");
 					return this.isEffective = false;
 				}
 			}
@@ -60,7 +64,7 @@ public class Radar {
 	}
 	
 	public void checkMissiles() {
-		if(((test++) % 60 == 0 && !this.isEffective()) || !this.isEffective) {
+		if(this.getTimeOut() > 0 || ((test++) % 4 == 0 && !this.isEffective()) || !this.isEffective) {
 			return;
 		}
 		
@@ -81,7 +85,6 @@ public class Radar {
 				}
 				if(this.send && !target.isABMLaunched()) {
 					this.network.notifyDefense(target);
-					target.ABMLaunched();
 				}
 			}
 		}
@@ -127,6 +130,20 @@ public class Radar {
 	public void setSend(boolean send) {
 		this.send = send;
 	}
+	
+	@Override
+	public int getTimeOut() {
+		int time = (int) (this.offTime - System.currentTimeMillis());
+		if(time <= 0) {
+			return 0;
+		}
+		return time;
+	}
+	
+	@Override
+	public void addTimeOut(long time) {
+		this.offTime = System.currentTimeMillis() + this.getTimeOut() + time; 
+	}
 
 	public Location getLocation() {
 		return loc;
@@ -146,7 +163,7 @@ public class Radar {
 	
 	
 	
-	public static void checkDestroy(Location loc) {
+	public static boolean checkDestroy(Location loc) {
 		Iterator<Radar> it = radars.iterator();
 		while(it.hasNext()) {
 			Radar radar = it.next();
@@ -154,9 +171,11 @@ public class Radar {
 				it.remove();
 				if(radar.open != null)
 					radar.open.closeInventory();
-				return;
+				radar.network.delRadar(radar);
+				return radar.getTimeOut() == 0;
 			}
 		}
+		return true;
 	}
 	
 	public static Radar getRadarAt(Location loc) {
@@ -174,6 +193,6 @@ public class Radar {
 			for(Radar radar : radars) {
 				radar.checkMissiles();
 			}
-		}, 20, 10);
+		}, 20, 5);
 	}
 }

@@ -14,7 +14,7 @@ public class TraditionalExplosive implements Explosive {
 	private final Main main;
 	private final float power;
 	
-	private boolean isDone;
+	private boolean isDone = true;
 	
 	public TraditionalExplosive(Main main, float power) {
 		this.main = main;
@@ -23,6 +23,8 @@ public class TraditionalExplosive implements Explosive {
 
 	@Override
 	public void explode(Location loc, Player damager) {
+		this.isDone = false;
+		
 		loc.getWorld().createExplosion(loc, power, true, true, damager);
 		main.getServer().getScheduler().runTaskLater(main, () -> {
 			this.isDone = true;

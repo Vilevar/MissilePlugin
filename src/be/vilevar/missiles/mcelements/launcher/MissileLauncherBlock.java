@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.mcelements.ElectricBlock;
 import be.vilevar.missiles.mcelements.data.BallisticMissileData;
-import be.vilevar.missiles.utils.ParticleEffect;
 
-public class MissileLauncherBlock {
+public class MissileLauncherBlock implements ElectricBlock {
 
 	public static final ArrayList<MissileLauncherBlock> launchers = new ArrayList<>();
 	private static final double smokeCenter = 5 / (4 - 2*Math.sqrt(2));
@@ -27,7 +28,11 @@ public class MissileLauncherBlock {
 	private BallisticMissileData missileData;
 	private int pitch = 45;
 	private int yaw = 0;
+	
+	private long offTime;
+	
 	private BukkitTask smokeTask;
+	
 	private Player isOpen;
 	
 	public MissileLauncherBlock(Location location) {
@@ -63,6 +68,20 @@ public class MissileLauncherBlock {
 		this.yaw = yaw;
 	}
 	
+	@Override
+	public int getTimeOut() {
+		int time = (int) (this.offTime - System.currentTimeMillis());
+		if(time <= 0) {
+			return 0;
+		}
+		return time;
+	}
+	
+	@Override
+	public void addTimeOut(long time) {
+		this.offTime = System.currentTimeMillis() + this.getTimeOut() + time; 
+	}
+	
 	
 	
 	public boolean isOpen() {
@@ -83,7 +102,7 @@ public class MissileLauncherBlock {
 	
 	public boolean launchMissile() {
 		Location loc = this.location.clone().add(0.5, 1, 0.5);
-		if(this.missileData.toBallisticMissile().launch(this.isOpen, loc, Math.toRadians(yaw), Math.toRadians(pitch))) {
+		if(this.missileData.toBallisticMissile().launch(this.isOpen, loc.clone(), Math.toRadians(yaw), Math.toRadians(pitch))) {
 			this.missileData = null;
 			
 			loc.add(0, -1, 0);
@@ -103,7 +122,7 @@ public class MissileLauncherBlock {
 							double x = r*Math.cos(i);
 							double z = r*Math.sin(i);
 							loc.add(x, y, z);
-							ParticleEffect.SMOKE_NORMAL.display(0, 0, 0, 0, 1, loc, loc.getWorld().getPlayers());
+							Main.display(Particle.SMOKE_LARGE, loc);
 							loc.subtract(x, y, z);
 						}
 					}
@@ -115,13 +134,18 @@ public class MissileLauncherBlock {
 	}
 	
 	
-	public void destroy(boolean remove) {
+	public boolean destroy(boolean remove) {
 		if(remove)
 			launchers.remove(this);
-		if(missileData != null)
+		
+		boolean drops = this.getTimeOut() == 0;
+		
+		if(missileData != null && drops)
 			this.location.getWorld().dropItem(this.location, this.missileData.toItemStack());
 		if(isOpen != null)
 			this.isOpen.closeInventory();
+		
+		return drops;
 	}
 	
 	
@@ -133,16 +157,16 @@ public class MissileLauncherBlock {
 	
 	
 	
-	public static void checkDestroy(Location loc) {
+	public static boolean checkDestroy(Location loc) {
 		Iterator<MissileLauncherBlock> it = launchers.iterator();
 		while(it.hasNext()) {
 			MissileLauncherBlock launcher = it.next();
 			if(launcher.getLocation().equals(loc)) {
 				it.remove();
-				launcher.destroy(false);
-				return;
+				return launcher.destroy(false);
 			}
 		}
+		return true;
 	}
 	
 	public static MissileLauncherBlock getLauncherAt(Location loc) {

@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -19,7 +20,6 @@ import be.vilevar.missiles.Main;
 import be.vilevar.missiles.WorldManager;
 import be.vilevar.missiles.missile.ballistic.MissileStage;
 import be.vilevar.missiles.missile.ballistic.ReentryVehicle;
-import be.vilevar.missiles.utils.ParticleEffect;
 import be.vilevar.missiles.utils.Vec3d;
 
 public class BallisticMissile {
@@ -61,8 +61,9 @@ public class BallisticMissile {
 	
 	public boolean launch(Player launcher, Location loc, double yaw, double pitch) {
 		Location test = loc.clone();
-		for(int i = test.getBlockY(); i < 255; i++) {
-			if(test.add(0, 1, 0).getBlock().getType() != Material.AIR) {
+		for(int i = test.getBlockY(); i < 226; i++) {
+			Material m = test.add(0, 1, 0).getBlock().getType();
+			if(m != Material.AIR && m != Material.VOID_AIR) {
 				launcher.sendMessage("§cLe missile n'a pas accès au ciel. "+test+" "+test.getBlock().getType());
 				return false;
 			}
@@ -83,7 +84,7 @@ public class BallisticMissile {
 				ArrayList<Vec3d> positions = new ArrayList<>();
 				Iterator<Vec3d> it;
 				
-				Vec3d x = new Vec3d(loc.getX() + 0.5, loc.getZ() + 0.5, loc.getY() + 1);
+				Vec3d x = new Vec3d(loc);
 				Vec3d v = new Vec3d(0, 0, 0);
 				
 				positions.add(x.clone());
@@ -127,16 +128,17 @@ public class BallisticMissile {
 							for(double t = 0; t < 0.05 && it.hasNext(); t += dt) {
 								Vec3d x = it.next();
 								if(x.getZ() <= 256) {
-									Location loc = new Location(world, x.getX(), x.getZ(), x.getY());
+									Location loc = x.toLocation(world);
 									Material block = loc.getBlock().getType();
 									if(block.isSolid() || block == Material.LAVA) {
+										System.out.println("COLLISION "+loc);
 										for(ReentryVehicle mirv : BallisticMissile.this.mirv) {
-											mirv.explode(launcher, loc);
+											mirv.intercepted(launcher, loc);
 										}
 										this.cancel();
 										return;
 									} else {
-										Main.display(ParticleEffect.FLAME, loc);
+										Main.display(Particle.FLAME, loc);
 									}
 								}
 							}

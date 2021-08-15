@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Stairs;
@@ -13,9 +14,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.artillery.ShellPath;
 import be.vilevar.missiles.artillery.Shell;
-import be.vilevar.missiles.utils.ParticleEffect;
+import be.vilevar.missiles.artillery.ShellPath;
 import be.vilevar.missiles.utils.Vec3d;
 
 public class Howitzer {
@@ -167,7 +167,7 @@ public class Howitzer {
 	
 	
 	public void fire(Player gunner) {
-		new ShellPath(gunner.getWorld(), this.shell, new Vec3d(firedLoc.getX(), firedLoc.getZ(), firedLoc.getY()),
+		new ShellPath(gunner.getWorld(), this.shell, new Vec3d(this.firedLoc),
 				this.getPitch(), this.getYaw(), gunner).runTaskTimer(main, 1, 1);
 		this.shell = null;
 		gunner.getWorld().playSound(this.firedLoc, BOOM, 4.f, 1.f);
@@ -178,7 +178,7 @@ public class Howitzer {
 					for(double p = 0; p <= 2*Math.PI; p += Math.PI/8.0) {
 						Location particle = this.particleLoc.clone().add(
 								new Vector(Math.cos(t)*Math.sin(p), Math.sin(t), Math.cos(t)*Math.cos(p)).multiply(r));
-						Main.display(ParticleEffect.SMOKE_NORMAL, particle);
+						Main.display(Particle.SMOKE_NORMAL, particle);
 					}
 				}
 			}

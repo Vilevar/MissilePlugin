@@ -53,6 +53,10 @@ public class WorldManager {
 		}, 12000, 12000);
 		this.updateToWeatherCondition(world);
 	}
+	
+	public double getGravityConstant() {
+		return g;
+	}
 
 	public Vec3d getG() {
 		return G;

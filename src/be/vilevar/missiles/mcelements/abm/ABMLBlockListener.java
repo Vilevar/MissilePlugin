@@ -1,5 +1,6 @@
 package be.vilevar.missiles.mcelements.abm;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -63,11 +64,11 @@ public class ABMLBlockListener implements Listener {
 				int slot = e.getSlot();
 				
 				e.setCancelled(true);
-				if (is == null)
+				if (is == null || launcher.getTimeOut() > 0)
 					return;
 				
 				if(inv.equals(e.getClickedInventory())) {
-					if(slot == 1) {
+					if(slot == 2) {
 						launcher.setChannel(Main.clamp(0, 9, launcher.getChannel() + (e.getAction() == InventoryAction.PICKUP_ALL ? 1 : -1)));
 						this.updateLauncherInventoryChannel(launcher, inv);
 					} else if(slot == 3) {
@@ -109,6 +110,12 @@ public class ABMLBlockListener implements Listener {
 		ItemMeta im = is.getItemMeta();
 		im.setDisplayName("§6Canal n°§c" + launcher.getChannel()+" §5("+launcher.getId()+")");
 		im.setCustomModelData(launcher.getChannel() + 1);
+		
+		int offTime = launcher.getTimeOut();
+		if(offTime != 0) {
+			im.setLore(Arrays.asList("§cDéfense ABM §4neutralisée§c pendant §4"+offTime+"ms"));
+		}
+		
 		is.setItemMeta(im);
 		
 		inv.setItem(2, is);

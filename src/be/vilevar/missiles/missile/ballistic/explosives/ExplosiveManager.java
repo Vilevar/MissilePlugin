@@ -26,7 +26,7 @@ public class ExplosiveManager {
 		} else if(!waiting.isEmpty()) {
 			current = waiting.get(0);
 			waiting.remove(0);
-			current.getExplosive().explode(current.getLoc(), current.getDamager());
+			current.getExplosive().explode(current.getLoc(), current.getDamager(), current.isIntercepted());
 		}
 	}
 }

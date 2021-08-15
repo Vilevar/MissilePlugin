@@ -19,6 +19,7 @@ import be.vilevar.missiles.Main;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.data.MIRVData;
 import be.vilevar.missiles.missile.ballistic.Explosive;
+import be.vilevar.missiles.missile.ballistic.explosives.EMPExplosive;
 import be.vilevar.missiles.missile.ballistic.explosives.NuclearExplosive;
 import be.vilevar.missiles.missile.ballistic.explosives.ThermonuclearExplosive;
 import be.vilevar.missiles.missile.ballistic.explosives.TraditionalExplosive;
@@ -305,6 +306,8 @@ public class RVCraftingTableListener implements Listener {
 			return new NuclearExplosive(Main.i, 2000000, 50, 20);
 		} else if(CustomElementManager.H_BOMB.isParentOf(is)) {
 			return new ThermonuclearExplosive(Main.i, 8000000, 75, 40);
+		} else if(CustomElementManager.E_BOMB.isParentOf(is)) {
+			return new EMPExplosive(1200000);
 		}
 		return null;
 	}

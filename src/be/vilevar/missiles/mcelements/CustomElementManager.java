@@ -59,7 +59,8 @@ public class CustomElementManager implements Listener {
 	public static final CustomItem	REENTRY_VEHICLE = new CustomItem(Material.GLOWSTONE_DUST, 25, "Reentry Vehicle"),
 									A_BOMB = new CustomItem(Material.GLOWSTONE_DUST, 26, "A-Bomb"),
 									H_BOMB = new CustomItem(Material.GLOWSTONE_DUST, 27, "H-Bomb"),
-									MIRV = new CustomItem(Material.GLOWSTONE_DUST, 28, "MIRV");
+									E_BOMB = new CustomItem(Material.GLOWSTONE_DUST, 28, "E-Bomb"),
+									MIRV = new CustomItem(Material.GLOWSTONE_DUST, 29, "MIRV");
 	
 	public static final Weapon	SNIPER = new Weapon(
 										new CustomItem(Material.IRON_HOE, 1, "Barrett .50"), new CustomItem(Material.GLOWSTONE_DUST, 4, "Barrett Ammo"),
@@ -190,7 +191,7 @@ public class CustomElementManager implements Listener {
 
 	@EventHandler
 	public void onBreak(BlockBreakEvent e) {
-		this.blockBreak(e.getBlock());
+		e.setDropItems(this.blockBreak(e.getBlock()));
 	}
 
 	@EventHandler
@@ -203,9 +204,9 @@ public class CustomElementManager implements Listener {
 		e.blockList().forEach(block -> this.blockBreak(block));
 	}
 
-	private void blockBreak(Block block) {
+	private boolean blockBreak(Block block) {
 		if (MISSILE_LAUNCHER.isParentOf(block)) {
-			MissileLauncherBlock.checkDestroy(block.getLocation());
+			return MissileLauncherBlock.checkDestroy(block.getLocation());
 		} else
 		if (MISSILE_CRAFT.isParentOf(block)) {
 			MissileCraftBlock.checkDestroy(block.getLocation());
@@ -217,11 +218,12 @@ public class CustomElementManager implements Listener {
 			Howitzer.checkDestroy(block.getLocation());
 		} else
 		if(RADAR.isParentOf(block)) {
-			Radar.checkDestroy(block.getLocation());
+			return Radar.checkDestroy(block.getLocation());
 		} else
 		if(ABM_LAUNCHER.isParentOf(block)) {
-			ABMLauncher.checkDestroy(block.getLocation());
+			return ABMLauncher.checkDestroy(block.getLocation());
 		}
+		return true;
 	}
 	
 	
@@ -267,7 +269,7 @@ public class CustomElementManager implements Listener {
 			} else
 			if(ABM_LAUNCHER.isParentOf(block)) {
 				ABMLauncher launcher = ABMLauncher.getLauncherAt(block.getLocation());
-				if(launcher != null && launcher.isOpen()) {
+				if(launcher != null && !launcher.isOpen()) {
 					this.abm.openLauncherInventory(launcher, e.getPlayer());
 				}
 			}

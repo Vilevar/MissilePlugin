@@ -1,9 +1,9 @@
 package be.vilevar.missiles.mcelements.weapons;
 
 import static be.vilevar.missiles.mcelements.CustomElementManager.BOMB;
+import static be.vilevar.missiles.mcelements.CustomElementManager.CLAYMORE;
 import static be.vilevar.missiles.mcelements.CustomElementManager.MACHINE_GUN;
 import static be.vilevar.missiles.mcelements.CustomElementManager.MINE;
-import static be.vilevar.missiles.mcelements.CustomElementManager.CLAYMORE;
 import static be.vilevar.missiles.mcelements.CustomElementManager.PISTOL;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SHOTGUN;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SMOKE_BOMB;
@@ -18,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -46,7 +47,6 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.utils.ParticleEffect;
 
 public class WeaponListener implements Listener {
 
@@ -272,13 +272,14 @@ public class WeaponListener implements Listener {
 	
 	private int createSmoke(Location loc, double radius, int n) {
 		return main.getServer().getScheduler().scheduleSyncRepeatingTask(main, () -> {
-			for(int i = 0; i < n; i++) {
-				double r = radius * Math.sqrt(Math.random());
-				double theta = 2 * Math.PI * Math.random();
-				double phi = 2 * Math.PI * Math.random();
-				Vector add = new Vector(r*Math.sin(theta)*Math.cos(phi), r*Math.cos(theta), r*Math.sin(theta)*Math.sin(phi));
-				Main.display(ParticleEffect.SMOKE_LARGE, loc.clone().add(add));
-			}
+//			for(int i = 0; i < n; i++) {
+//				double r = radius * Math.sqrt(Math.random());
+//				double theta = 2 * Math.PI * Math.random();
+//				double phi = 2 * Math.PI * Math.random();
+//				Vector add = new Vector(r*Math.sin(theta)*Math.cos(phi), r*Math.cos(theta), r*Math.sin(theta)*Math.sin(phi));
+//				Main.display(ParticleEffect.SMOKE_LARGE, loc.clone().add(add));
+//			}
+			loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, loc, 1, radius, radius, radius, 0, null, true);
 			for(Entity ent : loc.getWorld().getNearbyEntities(loc, radius, radius, radius, (e) -> e instanceof LivingEntity)) {
 				((LivingEntity) ent).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 255));
 			}

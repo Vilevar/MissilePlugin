@@ -1,5 +1,6 @@
 package be.vilevar.missiles.mcelements.radar;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -90,6 +91,12 @@ public class RadarBlockListener implements Listener {
 		ItemMeta im = is.getItemMeta();
 		im.setDisplayName("§6Canal n°§c" + radar.getChannel());
 		im.setCustomModelData(radar.getChannel() + 1);
+		
+		int offTime = radar.getTimeOut();
+		if(offTime != 0) {
+			im.setLore(Arrays.asList("§cRadar §4neutralisé§c pendant §4"+offTime+"ms"));
+		}
+		
 		is.setItemMeta(im);
 		
 		inv.setItem(2, is);

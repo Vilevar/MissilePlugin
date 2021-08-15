@@ -75,7 +75,7 @@ public class LauncherBlockListener implements Listener {
 				int slot = e.getSlot();
 				
 				e.setCancelled(true);
-				if(is == null)
+				if(is == null || launcher.getTimeOut() > 0)
 					return;
 				
 				if(inv.equals(e.getClickedInventory())) {
@@ -128,7 +128,17 @@ public class LauncherBlockListener implements Listener {
 	
 	
 	private void updateLauncherInventory(MissileLauncherBlock launcher, Inventory inv) {
-		if(launcher.getMissileData() == null) {
+		int offTime = launcher.getTimeOut();
+		if(offTime > 0) {
+			inv.setItem(0, launcher.getMissileData() == null ? null : launcher.getMissileData().toItemStack());
+			
+			ItemStack cant = this.cantFireItem.clone();
+			ItemMeta im = cant.getItemMeta();
+			im.getLore().add("§cLanceur de missiles §4neutralisé§c pendant §4"+offTime+"ms");
+			cant.setItemMeta(im);
+			
+			inv.setItem(1, cant);
+		} else if(launcher.getMissileData() == null) {
 			inv.setItem(0, null);
 			inv.setItem(1, this.cantFireItem);
 		} else {

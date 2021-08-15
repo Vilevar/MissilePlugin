@@ -6,16 +6,24 @@ import java.util.Iterator;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.defense.DefenseNetwork;
 import be.vilevar.missiles.defense.Target;
 import be.vilevar.missiles.mcelements.CustomElementManager;
+import be.vilevar.missiles.mcelements.ElectricBlock;
+import be.vilevar.missiles.utils.Vec3d;
 
-public class ABMLauncher {
+public class ABMLauncher implements ElectricBlock {
 	
 	public static final ArrayList<ABMLauncher> launchers = new ArrayList<>();
+	private static final double V = 200;
+	private static final double V_SQUARED = V*V;
 
+	private double g = 0.5*Main.i.getWorldManager().getGravityConstant();
+	
 	private final Location loc;
+	private final Location firingLoc;
 	private final Defender def;
 	
 	private int channel = -1;
@@ -27,20 +35,61 @@ public class ABMLauncher {
 	private boolean messageSend;
 	private boolean messageInter;
 	
+	private long offTime;
+	
 	private Player open;
 	
 	public ABMLauncher(Location loc, Defender def) {
 		this.loc = loc;
+		this.firingLoc = loc.getBlock().getLocation().add(0.5, 1, 0.5);
 		this.def = def;
 		this.setChannel(0);
 	}
 	
 	
-	public void tryToShoot(Target target) {
+	public boolean tryToShoot(Target target) {
+		Vec3d relativePos = new Vec3d(target.getTarget().getLocation().clone().subtract(this.firingLoc));
+		Vec3d u = target.getTarget().getVelocity();
+		
+		if(relativePos.getZ() <= 0) {
+			return false;
+		}
+		
+		double A = u.squaredLength() - V_SQUARED;
+		double B = relativePos.dot(u);
+		double C = relativePos.squaredLength();
+		
+		double T;
+		
+		if(A == 0) {
+			T = -C / (2 * B);
+		} else {
+			double D = B*B - A*C;
+			
+			if(D < 0) {
+				return false;
+			} else {
+				T = -(B + Math.sqrt(D)) / A;
+			}
+		}
+		
+		if(T <= 0) {
+			return false;
+		}
+		
+		System.out.println("T = "+T);
+		
+		Vec3d v = u.clone().add(relativePos.clone().divide(T));
+		
+		if(v.getZ() * T - g*T*T <= 0) {
+			return false;
+		}
+		
 		for(int i = 0; i < abms.length; i++) {
 			ABM abm = abms[i];
 			if(abm != null) {
-				abm.shoot(target, this, this.messageInter);
+				abm.shoot(this, target.getTarget(), v, T, this.messageInter);
+				target.ABMLaunched();
 				abms[i] = null;
 				if(this.messageSend) {
 					this.def.sendMessage("§5[§a"+channel+":"+this.id+
@@ -50,7 +99,7 @@ public class ABMLauncher {
 				if(this.isOpen())
 					this.open.closeInventory();
 				
-				return;
+				return true;
 			}
 		}
 		
@@ -58,6 +107,8 @@ public class ABMLauncher {
 			this.def.sendMessage("§5[§a"+channel+":"+this.id+
 					"§5] §cPlus assez de missiles§6 que pour intercepter le véhicule §c["+target.getTarget().getId()+"]§6.");
 		}
+		
+		return false;
 	}
 	
 	public ABM getABM(int id) {
@@ -75,6 +126,10 @@ public class ABMLauncher {
 				n += 1;
 		}
 		return n;
+	}
+	
+	public Location getFiringLocation() {
+		return firingLoc;
 	}
 	
 	public int getChannel() {
@@ -114,6 +169,20 @@ public class ABMLauncher {
 		this.messageInter = messageInter;
 	}
 	
+	@Override
+	public int getTimeOut() {
+		int time = (int) (this.offTime - System.currentTimeMillis());
+		if(time <= 0) {
+			return 0;
+		}
+		return time;
+	}
+	
+	@Override
+	public void addTimeOut(long time) {
+		this.offTime = System.currentTimeMillis() + this.getTimeOut() + time; 
+	}
+	
 	
 	
 	public boolean isOpen() {
@@ -124,21 +193,22 @@ public class ABMLauncher {
 		this.open = open;
 	}
 	
-	private void drop() {
-		int amount = 0;
-		for(int i = 0; i < 8; i++) {
-			if(this.getABM(i) != null) {
-				amount++;
-			}
+	private boolean drop() {
+		if(this.getTimeOut() > 0) {
+			return false;
 		}
+		
+		int amount = this.countABM();
 		
 		if(amount != 0) {
 			loc.getWorld().dropItem(loc, CustomElementManager.ABM.create(amount));
 		}
+		
+		return true;
 	}
 	
 	
-	public static void checkDestroy(Location loc) {
+	public static boolean checkDestroy(Location loc) {
 		Iterator<ABMLauncher> it = launchers.iterator();
 		while(it.hasNext()) {
 			ABMLauncher launcher = it.next();
@@ -146,10 +216,10 @@ public class ABMLauncher {
 				it.remove();
 				if(launcher.open != null)
 					launcher.open.closeInventory();
-				launcher.drop();
-				return;
+				return launcher.drop();
 			}
 		}
+		return true;
 	}
 	
 	public static ABMLauncher getLauncherAt(Location loc) {

@@ -9,17 +9,16 @@ import java.util.Iterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.WorldManager;
 import be.vilevar.missiles.missile.ballistic.explosives.Detonation;
 import be.vilevar.missiles.missile.ballistic.explosives.ExplosiveManager;
-import be.vilevar.missiles.utils.ParticleEffect;
 import be.vilevar.missiles.utils.Vec3d;
 
 public class ReentryVehicle {
@@ -40,7 +39,6 @@ public class ReentryVehicle {
 	private double dt = 0.01;
 	
 	private int id;
-	private BukkitTask runnable;
 	private Vec3d pos;
 	private Vec3d velocity;
 	private Location loc;
@@ -87,7 +85,7 @@ public class ReentryVehicle {
 //		HashMap<Integer, Pair<Vec3d, Vec3d>> states = new HashMap<>();
 		double t = 0;
 		
-		while(x.getZ() > 300) {
+		while(x.getZ() > 500) {
 			Vec3d dv = new Vec3d(0, 0, -wm.getGM() / pow(wm.getR() + x.getZ(), 2) * dt);
 			
 			v.add(dv);
@@ -128,10 +126,17 @@ public class ReentryVehicle {
 		Vec3d wind = wm.getWind(world);
 		
 		while(x.getZ() >= this.yExplosion) {
-			Vec3d force = v.clone().subtract(wind);
-			force.multiply(forceCoef * force.length());
 			
-			Vec3d dv = new Vec3d(0, 0, -wm.getGM() / pow(wm.getR() + x.getZ(), 2)).add(force.divide(mass)).multiply(dt);
+			Vec3d dv = new Vec3d(0, 0, -wm.getGM() / pow(wm.getR() + x.getZ(), 2));
+			
+			if(x.getZ() <= 300) {
+				Vec3d force = v.clone().subtract(wind);
+				force.multiply(forceCoef * force.length());
+				
+				dv.add(force.divide(mass));
+			
+			}
+			dv.multiply(dt);
 			
 			v.add(dv);
 			x.add(v.clone().multiply(dt));
@@ -144,42 +149,46 @@ public class ReentryVehicle {
 		
 		final Vec3d finalX = x;
 		
-		this.runnable = new BukkitRunnable() {
-			private int i;
-			
+		this.id = new BukkitRunnable() {
 			@Override
 			public void run() {
 				if(it.hasNext()) {
-					for(double t = 0; t < 0.05 && !it.hasNext(); t += dt) {
-						Pair<Vec3d, Vec3d> state = states.get(i);
+					for(double t = 0; t < 0.05 && it.hasNext(); t += dt) {
+						Pair<Vec3d, Vec3d> state = it.next();
 						Vec3d x = state.getLeft();
 						
-						loc = new Location(world, x.getX(), x.getZ(), x.getY());
-						Material block = loc.getBlock().getType();
-						if(block != Material.AIR && block != Material.VOID_AIR) {
-							ReentryVehicle.this.explode(launcher, loc);
-							return;
+						if(x.getZ() <= 256) { 
+							loc = x.toLocation(world);
+							Material block = loc.getBlock().getType();
+							if(block != Material.AIR && block != Material.VOID_AIR) {
+								ReentryVehicle.this.explode(launcher, loc);
+								this.cancel();
+								return;
+							}
+							Main.display(Particle.FLAME, loc);
 						}
-						Main.display(ParticleEffect.FLAME, loc);
 						
 						pos = x;
 						velocity = state.getRight();
 					}
 				} else {
-					ReentryVehicle.this.explode(launcher, new Location(world, finalX.getX(), finalX.getZ(), finalX.getY()));
+					ReentryVehicle.this.explode(launcher, finalX.toLocation(world));
+					this.cancel();
 				}
 			}
-		}.runTaskTimer(Main.i, 1, 1);
-		this.id = runnable.getTaskId();
+		}.runTaskTimer(Main.i, 1, 1).getTaskId();
 	}
 	
-	public void explode(Location loc) {
-		this.explode(this.launcher, loc);
+	public void intercepted(Player launcher, Location loc) {
+		this.explode(launcher, loc, true);
 	}
 
 	public void explode(Player launcher, Location loc) {
-		this.runnable.cancel();
-		ExplosiveManager.addDetonation(new Detonation(this.explosive, loc, launcher));
+		this.explode(launcher, loc, false);
+	}
+	
+	private void explode(Player launcher, Location loc, boolean intercepted) {
+		ExplosiveManager.addDetonation(new Detonation(this.explosive, loc, this.launcher, intercepted));
 		launcher.sendMessage("§6MIRV atterrie en §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
 		air.remove(this);
 		this.exploded = true;
@@ -195,6 +204,10 @@ public class ReentryVehicle {
 	
 	public Vec3d getVelocity() {
 		return velocity;
+	}
+	
+	public Player getLauncher() {
+		return launcher;
 	}
 	
 	public Location getLocation() {
