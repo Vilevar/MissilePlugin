@@ -111,9 +111,9 @@ public class ABMLBlockListener implements Listener {
 		im.setDisplayName("§6Canal n°§c" + launcher.getChannel()+" §5("+launcher.getId()+")");
 		im.setCustomModelData(launcher.getChannel() + 1);
 		
-		int offTime = launcher.getTimeOut();
+		long offTime = launcher.getTimeOut();
 		if(offTime != 0) {
-			im.setLore(Arrays.asList("§cDéfense ABM §4neutralisée§c pendant §4"+offTime+"ms"));
+			im.setLore(Arrays.asList("§cDéfense ABM §4neutralisée§c pendant §4"+(offTime / 1000)+"s"));
 		}
 		
 		is.setItemMeta(im);

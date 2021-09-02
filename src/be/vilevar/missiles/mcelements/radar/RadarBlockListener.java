@@ -92,9 +92,9 @@ public class RadarBlockListener implements Listener {
 		im.setDisplayName("§6Canal n°§c" + radar.getChannel());
 		im.setCustomModelData(radar.getChannel() + 1);
 		
-		int offTime = radar.getTimeOut();
+		long offTime = radar.getTimeOut();
 		if(offTime != 0) {
-			im.setLore(Arrays.asList("§cRadar §4neutralisé§c pendant §4"+offTime+"ms"));
+			im.setLore(Arrays.asList("§cRadar §4neutralisé§c pendant §4"+(offTime / 1000)+"s"));
 		}
 		
 		is.setItemMeta(im);

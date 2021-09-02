@@ -204,7 +204,7 @@ public class CustomElementManager implements Listener {
 		e.blockList().forEach(block -> this.blockBreak(block));
 	}
 
-	private boolean blockBreak(Block block) {
+	public boolean blockBreak(Block block) {
 		if (MISSILE_LAUNCHER.isParentOf(block)) {
 			return MissileLauncherBlock.checkDestroy(block.getLocation());
 		} else

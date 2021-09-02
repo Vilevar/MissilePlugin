@@ -25,7 +25,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -121,6 +120,10 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	
+	public CustomElementManager getCustomElementManager() {
+		return custom;
+	}
+	
 	
 	
 	@EventHandler
@@ -205,12 +208,6 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-	@EventHandler
-	public void onSpawn(CreatureSpawnEvent e) {
-//		if(e.getSpawnReason() == SpawnReason.NATURAL || e.getSpawnReason() == SpawnReason.SPAWNER) {
-		getServer().broadcastMessage(e.getEntity()+" spawned !!!! "+e.getSpawnReason());
-//		}
-	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockPhysics(BlockFadeEvent e) {

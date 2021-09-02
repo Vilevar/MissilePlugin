@@ -14,9 +14,7 @@ import io.netty.buffer.ByteBuf;
 public interface Explosive {
 
 	void explode(Location loc, Player damager);
-	default void explodeByInterception(Location loc, Player damager) {
-		this.explode(loc, damager);
-	}
+	void explodeByInterception(Location loc, Player damager);
 	
 	default void explode(Location loc, Player damager, boolean intercepted) {
 		if(intercepted)

@@ -49,7 +49,7 @@ public class MissileStage {
 		case 2:
 			return new MissileStage(100, 200, impulse, eject);
 		case 3:
-			return new MissileStage(50, 100, impulse, eject);
+			return new MissileStage(50, 185, impulse, eject);
 		}
 		return null;
 	}

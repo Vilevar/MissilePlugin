@@ -10,7 +10,7 @@ import be.vilevar.missiles.missile.ballistic.MissileStage;
 
 public class BallisticMissileData implements Cloneable {
 	
-	public static final int[] neededFuel = {18, 2, 1};
+	public static final int[] neededFuel = {18, 2, 2};
 	
 	private int stages;
 	private int[] impulses;

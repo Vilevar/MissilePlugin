@@ -2,6 +2,7 @@ package be.vilevar.missiles.mcelements.launcher;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -33,7 +34,7 @@ public class LauncherBlockListener implements Listener {
 		this.cantFireItem = new ItemStack(Material.RED_WOOL);
 		ItemMeta im = this.cantFireItem.getItemMeta();
 		im.setDisplayName("§cImpossible de tirer");
-		im.setLore(Arrays.asList("§6Vous devez placer un missile (prêt)", "§6pour pouvoir en tirer en.",
+		im.setLore(Arrays.asList("§6Vous devez placer un missile (prêt)", "§6pour pouvoir en tirer un.",
 				"§cEt il faut que la partie soit commencée (s'il y en a)."));
 		this.cantFireItem.setItemMeta(im);
 		
@@ -50,7 +51,7 @@ public class LauncherBlockListener implements Listener {
 	
 	
 	public void openLauncherInventory(MissileLauncherBlock launcher, Player p) {
-		Inventory inv = Bukkit.createInventory(null, 18, this.launcherInventoryName);
+		Inventory inv = Bukkit.createInventory(null, 9, this.launcherInventoryName);
 		inv.setItem(2, this.unusedSlot);
 		inv.setItem(6, this.unusedSlot);
 		this.updateLauncherInventory(launcher, inv);
@@ -128,13 +129,16 @@ public class LauncherBlockListener implements Listener {
 	
 	
 	private void updateLauncherInventory(MissileLauncherBlock launcher, Inventory inv) {
-		int offTime = launcher.getTimeOut();
+		long offTime = launcher.getTimeOut();
+		System.out.println("Update "+offTime);
 		if(offTime > 0) {
 			inv.setItem(0, launcher.getMissileData() == null ? null : launcher.getMissileData().toItemStack());
 			
 			ItemStack cant = this.cantFireItem.clone();
 			ItemMeta im = cant.getItemMeta();
-			im.getLore().add("§cLanceur de missiles §4neutralisé§c pendant §4"+offTime+"ms");
+			List<String> lore = im.getLore();
+			lore.add("§cLanceur de missiles §4neutralisé§c pendant §4"+(offTime / 1000)+"s");
+			im.setLore(lore);
 			cant.setItemMeta(im);
 			
 			inv.setItem(1, cant);

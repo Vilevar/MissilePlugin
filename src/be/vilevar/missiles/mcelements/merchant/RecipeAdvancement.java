@@ -134,6 +134,9 @@ public class RecipeAdvancement extends MerchantRecipe {
 		MRBM = new RecipeAdvancement(new RecipeAdvancement[] {SRBM}, new ResearchRecipe("MRBM", 1, 16), new DevelopmentRecipe[] {
 						new DevelopmentRecipe(CustomElementManager.MRBM.create(), 50)}),
 		
+		E_BOMB = new RecipeAdvancement(new RecipeAdvancement[] {A_BOMB}, new ResearchRecipe("Bombe à IEM", 40), new DevelopmentRecipe[] {
+						new DevelopmentRecipe(CustomElementManager.E_BOMB.create(), 20)}),
+		
 		H_BOMB = new RecipeAdvancement(new RecipeAdvancement[] {A_BOMB}, new ResearchRecipe("Bombe H", 2, 22), new DevelopmentRecipe[] {
 						new DevelopmentRecipe(CustomElementManager.H_BOMB.create(), 1, 36)}),
 		

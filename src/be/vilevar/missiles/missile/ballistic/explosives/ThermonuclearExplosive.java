@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBuf;
 public class ThermonuclearExplosive implements Explosive {
 
 	private final Main main;
+	private final CustomElementManager cem;
 	private final double energy0;
 	private final double radius;
 	private final double height;
@@ -30,10 +31,12 @@ public class ThermonuclearExplosive implements Explosive {
 	private final BukkitScheduler scheduler;
 	
 	private double energy;
-	private boolean isDone = true;
+	private boolean isDone;
+	private Explosive interception;
 	
 	public ThermonuclearExplosive(Main main, double energy, double radius, double height) {
 		this.main = main;
+		this.cem = main.getCustomElementManager();
 		this.energy = this.energy0 = energy;
 		this.radius = radius;
 		this.height = height;
@@ -45,8 +48,6 @@ public class ThermonuclearExplosive implements Explosive {
 	
 	@Override
 	public void explode(Location loc, Player damager) {
-		this.isDone = false;
-		
 		List<Block> explosion = new ArrayList<>();
 		// Crater
 		for(double y = 0; y >= -height; y--) {
@@ -142,7 +143,9 @@ public class ThermonuclearExplosive implements Explosive {
 			@Override
 			public void run() {
 				for(int i = 0; i < 100000 && it.hasNext(); i++) {
-					it.next().setType(Material.AIR);
+					Block block = it.next();
+					cem.blockBreak(block);
+					block.setType(Material.AIR);
 				}
 				if(!it.hasNext()) {
 					this.cancel();
@@ -205,12 +208,13 @@ public class ThermonuclearExplosive implements Explosive {
 	
 	@Override
 	public void explodeByInterception(Location loc, Player damager) {
-		loc.getWorld().createExplosion(loc, 100, true, true, damager);
+		this.interception = new TraditionalExplosive(main, 100);
+		this.interception.explode(loc, damager);
 	}
 	
 	@Override
 	public boolean isDone() {
-		return isDone;
+		return (this.interception != null && this.interception.isDone()) || this.isDone;
 	}
 
 	@Override

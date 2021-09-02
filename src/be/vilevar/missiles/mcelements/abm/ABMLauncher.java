@@ -6,22 +6,16 @@ import java.util.Iterator;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.defense.DefenseNetwork;
 import be.vilevar.missiles.defense.Target;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.mcelements.ElectricBlock;
-import be.vilevar.missiles.utils.Vec3d;
 
 public class ABMLauncher implements ElectricBlock {
 	
 	public static final ArrayList<ABMLauncher> launchers = new ArrayList<>();
-	private static final double V = 200;
-	private static final double V_SQUARED = V*V;
 
-	private double g = 0.5*Main.i.getWorldManager().getGravityConstant();
-	
 	private final Location loc;
 	private final Location firingLoc;
 	private final Defender def;
@@ -48,64 +42,34 @@ public class ABMLauncher implements ElectricBlock {
 	
 	
 	public boolean tryToShoot(Target target) {
-		Vec3d relativePos = new Vec3d(target.getTarget().getLocation().clone().subtract(this.firingLoc));
-		Vec3d u = target.getTarget().getVelocity();
-		
-		if(relativePos.getZ() <= 0) {
+		if(this.getTimeOut() > 0)
 			return false;
-		}
 		
-		double A = u.squaredLength() - V_SQUARED;
-		double B = relativePos.dot(u);
-		double C = relativePos.squaredLength();
-		
-		double T;
-		
-		if(A == 0) {
-			T = -C / (2 * B);
-		} else {
-			double D = B*B - A*C;
-			
-			if(D < 0) {
-				return false;
-			} else {
-				T = -(B + Math.sqrt(D)) / A;
-			}
-		}
-		
-		if(T <= 0) {
-			return false;
-		}
-		
-		System.out.println("T = "+T);
-		
-		Vec3d v = u.clone().add(relativePos.clone().divide(T));
-		
-		if(v.getZ() * T - g*T*T <= 0) {
-			return false;
-		}
-		
-		for(int i = 0; i < abms.length; i++) {
-			ABM abm = abms[i];
+		for(int i = abms.length; i > 0; i--) {
+			int j = i - 1;
+			ABM abm = abms[j];
 			if(abm != null) {
-				abm.shoot(this, target.getTarget(), v, T, this.messageInter);
-				target.ABMLaunched();
-				abms[i] = null;
-				if(this.messageSend) {
-					this.def.sendMessage("§5[§a"+channel+":"+this.id+
-							"§5] §6Missile d'interception envoyé sur le véhicule §c["+target.getTarget().getId()+"]§6.");
+				if(abm.shoot(this, target.getTarget(), this.messageInter)) {
+					target.ABMLaunched();
+					abms[j] = null;
+					if(this.messageSend) {
+						this.def.sendMessage(this.getSignature() + "§6Missile d'interception envoyé sur le véhicule §c["
+									+ target.getTarget().getId() + "]§6.");
+					}
+					
+					if(this.isOpen())
+						this.open.closeInventory();
+					
+					return true;
+				} else {
+					return false;
 				}
-				
-				if(this.isOpen())
-					this.open.closeInventory();
-				
-				return true;
 			}
 		}
 		
 		if(this.messageSend) {
-			this.def.sendMessage("§5[§a"+channel+":"+this.id+
-					"§5] §cPlus assez de missiles§6 que pour intercepter le véhicule §c["+target.getTarget().getId()+"]§6.");
+			this.def.sendMessage(this.getSignature()+"§4Plus assez de missiles§6 que pour intercepter le véhicule §c[" +
+							target.getTarget().getId() + "]§6.");
 		}
 		
 		return false;
@@ -139,6 +103,10 @@ public class ABMLauncher implements ElectricBlock {
 	public int getId() {
 		return id;
 	}
+	
+	public String getSignature() {
+		return "§5[§a" + this.channel + ":" + this.id + "§5] ";
+	}
 
 	public void setChannel(int channel) {
 		if(this.channel == channel)
@@ -170,8 +138,8 @@ public class ABMLauncher implements ElectricBlock {
 	}
 	
 	@Override
-	public int getTimeOut() {
-		int time = (int) (this.offTime - System.currentTimeMillis());
+	public long getTimeOut() {
+		long time = this.offTime - System.currentTimeMillis();
 		if(time <= 0) {
 			return 0;
 		}
@@ -209,6 +177,7 @@ public class ABMLauncher implements ElectricBlock {
 	
 	
 	public static boolean checkDestroy(Location loc) {
+		System.out.println("Check Destroy ABMLauncher "+loc);
 		Iterator<ABMLauncher> it = launchers.iterator();
 		while(it.hasNext()) {
 			ABMLauncher launcher = it.next();
@@ -216,6 +185,7 @@ public class ABMLauncher implements ElectricBlock {
 				it.remove();
 				if(launcher.open != null)
 					launcher.open.closeInventory();
+				launcher.network.delABMLauncher(launcher);
 				return launcher.drop();
 			}
 		}

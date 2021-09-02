@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -210,10 +209,10 @@ public class WeaponListener implements Listener {
 			} else if(e.getEntityType() == EntityType.SNOWBALL) {
 				ItemStack main = p.getInventory().getItemInMainHand();
 				if(BOMB.isParentOf(main)  || (main.getType() != Material.SNOWBALL && BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
-					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(Main.i, 0));
+					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(this.main, 0));
 				} else if(SMOKE_BOMB.isParentOf(main)
 						|| (main.getType() != Material.SNOWBALL && SMOKE_BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
-					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(Main.i, 1));
+					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(this.main, 1));
 				}
 			}
 		}
@@ -235,7 +234,7 @@ public class WeaponListener implements Listener {
 					tnt.setSource(p);
 				} else if(bombType == 1) {
 					final int task = this.createSmoke(proj.getLocation(), 5., 100);
-					Bukkit.getScheduler().runTaskLater(Main.i, () -> Bukkit.getScheduler().cancelTask(task), 20*10);
+					main.getServer().getScheduler().runTaskLater(main, () -> main.getServer().getScheduler().cancelTask(task), 20*10);
 				}
 			} else if(proj instanceof Arrow) {
 				if(e.getHitBlock() != null && e.getHitBlock().getType().toString().contains("GLASS")) {
@@ -244,7 +243,7 @@ public class WeaponListener implements Listener {
 					Arrow arrow = (Arrow) proj;
 					Player hit = (Player) e.getHitEntity();
 					if(proj.getLocation().distance(hit.getEyeLocation()) <= 0.25) {
-						if(hit.getInventory().getHelmet() != null && hit.getInventory().getHelmet().getType() != Material.AIR) {
+						if(hit.getInventory().getHelmet() == null || hit.getInventory().getHelmet().getType() == Material.AIR) {
 							arrow.setCritical(true);
 							p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 						}

@@ -1,8 +1,10 @@
 package be.vilevar.missiles.game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -18,6 +20,7 @@ import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.defense.defender.TeamDefender;
 import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
+import be.vilevar.missiles.utils.Vec3d;
 
 public class DefaultGame implements Game {
 	
@@ -26,6 +29,17 @@ public class DefaultGame implements Game {
 								communistHorse = "{Variant:768,Health:30,Attributes:[{Name:\"horse.jump_strength\",Base:1.5f},"
 										+ "{Name:\"generic.movement_speed\",Base:0.8f},{Name:\"generic.max_health\",Base:30F}]}";
 	
+	private static final List<Vec3d> spawns = new ArrayList<>(Arrays.asList(
+			new Vec3d(-325, 1514, 70),
+			new Vec3d(976, 930, 103),
+			new Vec3d(-152, 95, 80),
+			new Vec3d(1743, 67, 63),
+			new Vec3d(761, -243, 71),
+			new Vec3d(177, -617, 63),
+			new Vec3d(964, -585, 63),
+			new Vec3d(1945, -517, 63),
+			new Vec3d(2848, -621, 71),
+			new Vec3d(1278, -1027, 74)));
 
 	private Main main = Main.i;
 	private TeamDefender communism;
@@ -41,6 +55,11 @@ public class DefaultGame implements Game {
 	
 	@Override
 	public String prepare() {
+		Collections.shuffle(spawns);
+		int communistIndex = 0;
+		int capitalistIndex = 0;
+		int size = spawns.size() / 2;
+		
 		Collection<? extends Player> online = main.getServer().getOnlinePlayers();
 		if(online.size() < 2) {
 			return "§cPas assez de joueurs.";
@@ -55,11 +74,13 @@ public class DefaultGame implements Game {
 		ItemStack beef = new ItemStack(Material.COOKED_BEEF, 10);
 		
 		for(Player p : online) {
-			if(!main.getCommunism().hasEntry(p.getName()) && !main.getCapitalism().hasEntry(p.getName())) {
+			boolean isCommunist = main.getCommunism().hasEntry(p.getName());
+			if(!isCommunist && !main.getCapitalism().hasEntry(p.getName())) {
 				if(main.getCapitalism().getSize() < main.getCommunism().getSize()) {
 					main.getCapitalism().addEntry(p.getName());
 				} else {
 					main.getCommunism().addEntry(p.getName());
+					isCommunist = true;
 				}
 			}
 			
@@ -67,6 +88,9 @@ public class DefaultGame implements Game {
 			p.getInventory().addItem(pickaxe, beef);
 			p.getEnderChest().clear();
 			p.setGameMode(GameMode.SURVIVAL);
+			
+			Vec3d pos = spawns.get(isCommunist ? (communistIndex++) % size : size + ((capitalistIndex++) % size));
+			p.teleport(pos.toLocation(p.getWorld()));
 		}
 		
 		if(main.getCapitalism().getSize() == 0 || main.getCommunism().getSize() == 0) {

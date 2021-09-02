@@ -307,7 +307,7 @@ public class RVCraftingTableListener implements Listener {
 		} else if(CustomElementManager.H_BOMB.isParentOf(is)) {
 			return new ThermonuclearExplosive(Main.i, 8000000, 75, 40);
 		} else if(CustomElementManager.E_BOMB.isParentOf(is)) {
-			return new EMPExplosive(1200000);
+			return new EMPExplosive(250_000_000);
 		}
 		return null;
 	}

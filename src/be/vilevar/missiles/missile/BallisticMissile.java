@@ -60,21 +60,27 @@ public class BallisticMissile {
 	
 	
 	public boolean launch(Player launcher, Location loc, double yaw, double pitch) {
-		Location test = loc.clone();
-		for(int i = test.getBlockY(); i < 226; i++) {
-			Material m = test.add(0, 1, 0).getBlock().getType();
-			if(m != Material.AIR && m != Material.VOID_AIR) {
-				launcher.sendMessage("§cLe missile n'a pas accès au ciel. "+test+" "+test.getBlock().getType());
-				return false;
-			}
-		}
+		
 		if(loc.getY() < 30) {
-			launcher.sendMessage("§cLe missile a besoin d'être placé plus haut.");
+			launcher.sendMessage("§cLe missile n'est pas assez puissant que pour s'élever de si bas.");
 			return false;
 		}
 		if(loc.getY() > 100) {
 			launcher.sendMessage("§cIl n'y a pas assez d'oxygène si haut.");
 			return false;
+		}
+		
+		Location test = loc.clone();
+		for(int i = test.getBlockY(); i < 226; i++) {
+			Material m = test.add(0, 1, 0).getBlock().getType();
+			if(test.getBlockY() > 256) {
+				break;
+			}
+			if(m != Material.AIR) {
+				launcher.sendMessage("§cLe missile n'a pas accès au ciel. Il y a en §4y="+test.getY()
+						+ "§c un §6"+test.getBlock().getType()+"§c.");
+				return false;
+			}
 		}
 		
 		// Compute asynchronously the path

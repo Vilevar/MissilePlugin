@@ -69,8 +69,8 @@ public class MissileLauncherBlock implements ElectricBlock {
 	}
 	
 	@Override
-	public int getTimeOut() {
-		int time = (int) (this.offTime - System.currentTimeMillis());
+	public long getTimeOut() {
+		long time = this.offTime - System.currentTimeMillis();
 		if(time <= 0) {
 			return 0;
 		}

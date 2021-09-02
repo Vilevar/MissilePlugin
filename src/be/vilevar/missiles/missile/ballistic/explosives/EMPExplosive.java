@@ -1,8 +1,10 @@
 package be.vilevar.missiles.missile.ballistic.explosives;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -19,45 +21,26 @@ public class EMPExplosive implements Explosive {
 
 	private final double energy;
 	
-	private final double radiusSquared;
-	private final int radius;
-	
 	public EMPExplosive(double energy) {
 		this.energy = energy;
-		
-		this.radiusSquared = energy / 100;
-		this.radius = (int) (Math.sqrt(energy) / 10);
 	}
 	
 	
 	@Override
 	public void explode(Location loc, Player damager) {
-		for(int x = -radius; x <= radius; x++) {
-			for(int y = -radius; y <= radius; y++) {
-				for(int z = -radius; z <= radius; z++) {
-					double distance = x*x + y*y + z*z;
-					if(distance <= this.radiusSquared) {
-						Block block = loc.clone().add(x, y, z).getBlock();
-						
-						ElectricBlock electric;
-						if(CustomElementManager.MISSILE_LAUNCHER.isParentOf(block)) {
-							electric = MissileLauncherBlock.getLauncherAt(loc);
-						} else if(CustomElementManager.RADAR.isParentOf(block)) {
-							electric = Radar.getRadarAt(loc);
-						} else if(CustomElementManager.ABM_LAUNCHER.isParentOf(block)) {
-							electric = ABMLauncher.getLauncherAt(loc);
-						} else {
-							electric = null;
-						}
-						
-						if(electric != null) {
-							electric.addTimeOut((long) (distance <= 1 ? this.energy : this.energy / distance));
-							Main.display(Particle.EXPLOSION_NORMAL, block.getLocation());
-						}
-					}
-				}
-			}
+		List<ElectricBlock> electrics = new ArrayList<>();
+		electrics.addAll(MissileLauncherBlock.launchers);
+		electrics.addAll(Radar.radars);
+		electrics.addAll(ABMLauncher.launchers);
+		
+		for(ElectricBlock electric : electrics) {
+			double distance = Math.max(electric.getLocation().distanceSquared(loc), 0.1);
+			long timeOut = (long) (this.energy / distance);
+			electric.addTimeOut(timeOut);
+			if(timeOut != 0)
+				Main.display(Particle.FLASH, electric.getLocation());
 		}
+		
 		loc.getWorld().spawnParticle(Particle.FLASH, loc, 1000, 1, 1, 1);
 	}
 	

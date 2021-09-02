@@ -13,6 +13,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -96,8 +97,16 @@ public class MerchantListener implements Listener {
 				case 7:
 					break; // Health item
 				case 8:
-					int availableMoney = Math.min(merchant.getMoney(), 64);
-					ItemStack is = new ItemStack(Material.EMERALD, availableMoney);
+					int availableMoney;
+					ItemStack is;
+					if(e.getAction() == InventoryAction.PICKUP_HALF) {
+						availableMoney = Math.min(merchant.getMoney() / 9, 64);
+						is = new ItemStack(Material.EMERALD_BLOCK, availableMoney);
+						availableMoney *= 9;
+					} else {
+						availableMoney = Math.min(merchant.getMoney(), 64);
+						is = new ItemStack(Material.EMERALD, availableMoney);
+					}
 					p.getInventory().addItem(is);
 					merchant.addMoney(-availableMoney);
 					e.getClickedInventory().setItem(8, merchant.updateMoneyItem());

@@ -81,8 +81,6 @@ public class ReentryVehicle {
 		x = x.clone();
 		v = v.clone().matrixProduct(this.matrixProduct(this.makeMatrix(v), matrix));
 		
-//		int count = 0;
-//		HashMap<Integer, Pair<Vec3d, Vec3d>> states = new HashMap<>();
 		double t = 0;
 		
 		while(x.getZ() > 500) {
@@ -92,7 +90,6 @@ public class ReentryVehicle {
 			x.add(v.clone().multiply(dt));
 			
 			t += dt;
-		//	states.put(count++, Pair.of(x, v));
 		}
 		
 		final Vec3d finalX = x;
@@ -124,6 +121,13 @@ public class ReentryVehicle {
 		World world = launcher.getWorld();
 		double forceCoef = -0.5 * this.surface * this.cd * wm.getAirDensity(world);
 		Vec3d wind = wm.getWind(world);
+
+//		Vec3d wind = new Vec3d(32.5, 0, 0); 0/5
+//		Vec3d wind = new Vec3d(-32.5, 0, 0); 1/5
+//		Vec3d wind = new Vec3d(0, 32.5, 0); 2/5
+//		Vec3d wind = new Vec3d(0, -32.5, 0); 1/5
+		
+//		Vec3d wind = new Vec3d(0, 0, 0);
 		
 		while(x.getZ() >= this.yExplosion) {
 			
@@ -134,7 +138,6 @@ public class ReentryVehicle {
 				force.multiply(forceCoef * force.length());
 				
 				dv.add(force.divide(mass));
-			
 			}
 			dv.multiply(dt);
 			
@@ -152,6 +155,10 @@ public class ReentryVehicle {
 		this.id = new BukkitRunnable() {
 			@Override
 			public void run() {
+				if(ReentryVehicle.this.exploded) {
+					this.cancel();
+					return;
+				}
 				if(it.hasNext()) {
 					for(double t = 0; t < 0.05 && it.hasNext(); t += dt) {
 						Pair<Vec3d, Vec3d> state = it.next();
@@ -160,7 +167,7 @@ public class ReentryVehicle {
 						if(x.getZ() <= 256) { 
 							loc = x.toLocation(world);
 							Material block = loc.getBlock().getType();
-							if(block != Material.AIR && block != Material.VOID_AIR) {
+							if(block.isSolid()) {
 								ReentryVehicle.this.explode(launcher, loc);
 								this.cancel();
 								return;
@@ -189,13 +196,18 @@ public class ReentryVehicle {
 	
 	private void explode(Player launcher, Location loc, boolean intercepted) {
 		ExplosiveManager.addDetonation(new Detonation(this.explosive, loc, this.launcher, intercepted));
-		launcher.sendMessage("§6MIRV atterrie en §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
+		launcher.sendMessage("§6MIRV "+this.getSignature()
+				+ "§6 atterrie en §cx=§a" + loc.getBlockX() + " §cy=§a" + loc.getBlockY() + " §cz=§a" + loc.getBlockZ());
 		air.remove(this);
 		this.exploded = true;
 	}
 	
 	public int getId() {
 		return id;
+	}
+	
+	public String getSignature() {
+		return "§c["+this.id+"] ";
 	}
 	
 	public Vec3d getPosition() {

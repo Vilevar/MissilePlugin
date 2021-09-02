@@ -74,7 +74,7 @@ public class Radar implements ElectricBlock {
 				Target target = this.network.getTarget(rv);
 				
 				if(this.sound  && !this.isSounding) {
-					this.loc.getWorld().playSound(this.loc, Sound.ENTITY_MAGMA_CUBE_JUMP, channel, area);
+					this.loc.getWorld().playSound(this.loc, Sound.ENTITY_MAGMA_CUBE_JUMP, 2, 1);
 					this.isSounding = true;
 					main.getServer().getScheduler().runTaskLaterAsynchronously(main, () -> this.isSounding = false, 330);
 				}
@@ -132,8 +132,8 @@ public class Radar implements ElectricBlock {
 	}
 	
 	@Override
-	public int getTimeOut() {
-		int time = (int) (this.offTime - System.currentTimeMillis());
+	public long getTimeOut() {
+		long time = this.offTime - System.currentTimeMillis();
 		if(time <= 0) {
 			return 0;
 		}
