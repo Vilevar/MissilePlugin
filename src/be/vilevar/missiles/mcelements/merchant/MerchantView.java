@@ -5,18 +5,18 @@ import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant.WeaponsMerchantSt
 public class MerchantView {
 
 	private final WeaponsMerchant merchant;
-	private WeaponsMerchant.WeaponsMerchantStage stage;
+	private WeaponsMerchantStage stage;
 	
 	public MerchantView(WeaponsMerchant merchant, WeaponsMerchantStage stage) {
 		this.merchant = merchant;
 		this.stage = stage;
 	}
 	
-	public WeaponsMerchant.WeaponsMerchantStage getStage() {
+	public WeaponsMerchantStage getStage() {
 		return stage;
 	}
 	
-	public void setStage(WeaponsMerchant.WeaponsMerchantStage stage) {
+	public void setStage(WeaponsMerchantStage stage) {
 		this.stage = stage;
 	}
 	

@@ -83,6 +83,8 @@ public class BallisticMissile {
 			}
 		}
 		
+		double yRedirect = loc.getY() + 270;
+		
 		// Compute asynchronously the path
 		new BukkitRunnable() {
 			@Override
@@ -98,7 +100,7 @@ public class BallisticMissile {
 				Vec3d ejection = BallisticMissile.this.defaultEjection;
 				
 				do {
-					if(x.getZ() >= 300 && ejection.equals(BallisticMissile.this.defaultEjection)) {
+					if(x.getZ() >= yRedirect && ejection.equals(BallisticMissile.this.defaultEjection)) {
 						ejection = new Vec3d(cos(pitch)*cos(yaw), cos(pitch)*sin(yaw), sin(pitch));
 					}
 					

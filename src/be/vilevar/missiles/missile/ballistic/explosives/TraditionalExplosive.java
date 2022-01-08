@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R3.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_17_R1.event.CraftEventFactory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -16,47 +16,51 @@ import be.vilevar.missiles.Main;
 import be.vilevar.missiles.mcelements.CustomElementManager;
 import be.vilevar.missiles.missile.ballistic.Explosive;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.server.v1_16_R3.AxisAlignedBB;
-import net.minecraft.server.v1_16_R3.BlockFireAbstract;
-import net.minecraft.server.v1_16_R3.BlockPosition;
-import net.minecraft.server.v1_16_R3.Blocks;
-import net.minecraft.server.v1_16_R3.DamageSource;
-import net.minecraft.server.v1_16_R3.EnchantmentProtection;
-import net.minecraft.server.v1_16_R3.Entity;
-import net.minecraft.server.v1_16_R3.EntityFallingBlock;
-import net.minecraft.server.v1_16_R3.EntityLiving;
-import net.minecraft.server.v1_16_R3.EntityPlayer;
-import net.minecraft.server.v1_16_R3.EntityTNTPrimed;
-import net.minecraft.server.v1_16_R3.Fluid;
-import net.minecraft.server.v1_16_R3.IBlockData;
-import net.minecraft.server.v1_16_R3.MathHelper;
-import net.minecraft.server.v1_16_R3.Particles;
-import net.minecraft.server.v1_16_R3.RayTrace;
-import net.minecraft.server.v1_16_R3.Vec3D;
-import net.minecraft.server.v1_16_R3.World;
-import net.minecraft.server.v1_16_R3.MovingObjectPosition.EnumMovingObjectType;
-import net.minecraft.server.v1_16_R3.RayTrace.BlockCollisionOption;
-import net.minecraft.server.v1_16_R3.RayTrace.FluidCollisionOption;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.core.particles.Particles;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityLiving;
+import net.minecraft.world.entity.item.EntityFallingBlock;
+import net.minecraft.world.entity.item.EntityTNTPrimed;
+import net.minecraft.world.item.enchantment.EnchantmentProtection;
+import net.minecraft.world.level.RayTrace;
+import net.minecraft.world.level.RayTrace.BlockCollisionOption;
+import net.minecraft.world.level.RayTrace.FluidCollisionOption;
+import net.minecraft.world.level.World;
+import net.minecraft.world.level.block.BlockFireAbstract;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.phys.AxisAlignedBB;
+import net.minecraft.world.phys.MovingObjectPosition.EnumMovingObjectType;
+import net.minecraft.world.phys.Vec3D;
 
 public class TraditionalExplosive implements Explosive {
 
 	private final Main main;
 	private final CustomElementManager cem;
 	private final float power;
+	private final boolean fire;
 
 	private boolean isDone;
 	private Explosive interception;
 
 	public TraditionalExplosive(Main main, float power) {
+		this(main, power, true);
+	}
+	
+	public TraditionalExplosive(Main main, float power, boolean fire) {
 		this.main = main;
 		this.cem = main.getCustomElementManager();
 		this.power = power;
+		this.fire = fire;
 	}
 
 	@Override
 	public void explode(Location loc, Player damager) {
-		System.out.println("Traditional explosion ("+power+") at "+loc);
-		
 		World world = ((CraftWorld) loc.getWorld()).getHandle();
 		EntityPlayer source = ((CraftPlayer) damager).getHandle();
 		DamageSource damageSrc = DamageSource.d(source);
@@ -83,8 +87,7 @@ public class TraditionalExplosive implements Explosive {
 						double y = loc.getY();
 						double z = loc.getZ();
 
-						for (float f = this.power
-								* (0.7F + world.random.nextFloat() * 0.6F); f > 0.0F; f -= 0.22500001F) {
+						for (float f = this.power * (0.7F + world.w.nextFloat() * 0.6F); f > 0.0F; f -= 0.22500001F) {
 
 							BlockPosition blockposition = new BlockPosition(x, y, z);
 							IBlockData block = world.getType(blockposition);
@@ -109,7 +112,6 @@ public class TraditionalExplosive implements Explosive {
 				}
 			}
 		}
-
 		
 		// Entities
 		float range = this.power * 2.0F;
@@ -128,22 +130,22 @@ public class TraditionalExplosive implements Explosive {
 		Vec3D vec3d = new Vec3D(loc.getX(), loc.getY(), loc.getZ());
 
 		for (Entity entity : entities) {
-			if (!entity.ci()) {
-				double relativeSquareDistance = MathHelper.sqrt(entity.e(vec3d)) / range;
+			if (!entity.cx()) {
+				double relativeSquareDistance = Math.sqrt(entity.e(vec3d)) / range;
 
 				if (relativeSquareDistance <= 1.0D) {
 					double dx = entity.locX() - loc.getX();
 					double dy = (entity instanceof EntityTNTPrimed ? entity.locY() : entity.getHeadY()) - loc.getY();
 					double dz = entity.locZ() - loc.getZ();
 
-					double dist = MathHelper.sqrt(dx * dx + dy * dy + dz * dz);
+					double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
 					if (dist != 0.0D) {
 						dx /= dist;
 						dy /= dist;
 						dz /= dist;
 
-						double obstacles = this.getObstacleImportance(vec3d, entity);
+						double obstacles = getObstacleImportance(vec3d, entity);
 						double d13 = (1.0D - relativeSquareDistance) * obstacles;
 
 						CraftEventFactory.entityDamage = source;
@@ -169,18 +171,21 @@ public class TraditionalExplosive implements Explosive {
 		}
 		
 		// Destroy blocks
-		world.addParticle(Particles.EXPLOSION, loc.getX(), loc.getY(), loc.getZ(), 1.0D, 0.0D, 0.0D);
+		world.addParticle(Particles.y, loc.getX(), loc.getY(), loc.getZ(), 1.0D, 0.0D, 0.0D);
 		
 		org.bukkit.World bukkitWorld = world.getWorld();
 		
 		for(BlockPosition pos : blocks) {
 			cem.blockBreak(bukkitWorld.getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
-			world.setTypeAndData(pos, Blocks.AIR.getBlockData(), 3);
+			world.setTypeAndData(pos, Blocks.a.getBlockData(), 3);
 		}
 
-		for(BlockPosition pos : blocks) {
-			if (world.random.nextInt(3) == 0 && world.getType(pos).isAir() && world.getType(pos.down()).i(world, pos.down())) {
-				world.setTypeUpdate(pos, BlockFireAbstract.a(world, pos));
+		// Set fire
+		if(this.fire) {
+			for(BlockPosition pos : blocks) {
+				if (world.w.nextInt(3) == 0 && world.getType(pos).isAir() && world.getType(pos.down()).i(world, pos.down())) {
+					world.setTypeUpdate(pos, BlockFireAbstract.a(world, pos));
+				}
 			}
 		}
 		
@@ -190,36 +195,36 @@ public class TraditionalExplosive implements Explosive {
 	}
 	
 	
-	private float getObstacleImportance(Vec3D vec3d, Entity entity) {
+	private static float getObstacleImportance(Vec3D vec3d, Entity entity) {
 		AxisAlignedBB axisalignedbb = entity.getBoundingBox();
 		
-		double dx = 1.0D / ((axisalignedbb.maxX - axisalignedbb.minX) * 2.0D + 1.0D);
-		double dy = 1.0D / ((axisalignedbb.maxY - axisalignedbb.minY) * 2.0D + 1.0D);
-		double dz = 1.0D / ((axisalignedbb.maxZ - axisalignedbb.minZ) * 2.0D + 1.0D);
+		double dx = 1.0D / ((axisalignedbb.d - axisalignedbb.a) * 2.0D + 1.0D);
+		double dy = 1.0D / ((axisalignedbb.e - axisalignedbb.b) * 2.0D + 1.0D);
+		double dz = 1.0D / ((axisalignedbb.f - axisalignedbb.c) * 2.0D + 1.0D);
 		
-		double d3 = (1.0D - Math.floor(1.0D / dx) * dx) / 2.0D;
-		double d4 = (1.0D - Math.floor(1.0D / dz) * dz) / 2.0D;
+		double shiftX = (1.0D - Math.floor(1.0D / dx) * dx) / 2.0D;
+		double shiftY = (1.0D - Math.floor(1.0D / dz) * dz) / 2.0D;
 		
 		if (dx >= 0.0D && dy >= 0.0D && dz >= 0.0D) {
 			int i = 0;
 			int j = 0;
 
-			for (float x = 0.0F; x <= 1.0F; x += dx) {
-				for (float y = 0.0F; y <= 1.0F; y += dy) {
-					for (float z = 0.0F; z <= 1.0F; z += dz) {
+			for (float x = 0.0F; x <= 1.0F; x = (float) ((double) x + dx)) {
+				for (float y = 0.0F; y <= 1.0F; y = (float) ((double) y + dy)) {
+					for (float z = 0.0F; z <= 1.0F; z = (float) ((double) z + dz)) {
 						
-						double mX = MathHelper.d((double) x, axisalignedbb.minX, axisalignedbb.maxX);
-						double mY = MathHelper.d((double) y, axisalignedbb.minY, axisalignedbb.maxY);
-						double mZ = MathHelper.d((double) z, axisalignedbb.minZ, axisalignedbb.maxZ);
+						double mX = MathHelper.d((double) x, axisalignedbb.a, axisalignedbb.d);
+						double mY = MathHelper.d((double) y, axisalignedbb.b, axisalignedbb.e);
+						double mZ = MathHelper.d((double) z, axisalignedbb.c, axisalignedbb.f);
 						
-						Vec3D vec3d1 = new Vec3D(mX + d3, mY, mZ + d4);
+						Vec3D vec3d1 = new Vec3D(mX + shiftX, mY, mZ + shiftY);
 						
-						if (entity.world.rayTrace(new RayTrace(vec3d1, vec3d, BlockCollisionOption.COLLIDER,
-								FluidCollisionOption.NONE, entity)).getType() == EnumMovingObjectType.MISS) {
-							++i;
+						if (entity.t.rayTrace(new RayTrace(vec3d1, vec3d, BlockCollisionOption.a, FluidCollisionOption.a, entity))
+								.getType() == EnumMovingObjectType.a) {
+							i++;
 						}
-
-						++j;
+						
+						j++;
 					}
 				}
 			}

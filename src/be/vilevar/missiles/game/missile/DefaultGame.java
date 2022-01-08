@@ -1,4 +1,4 @@
-package be.vilevar.missiles.game;
+package be.vilevar.missiles.game.missile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +19,8 @@ import org.bukkit.scheduler.BukkitScheduler;
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.defense.defender.TeamDefender;
+import be.vilevar.missiles.game.Game;
+import be.vilevar.missiles.mcelements.merchant.MissileMerchant;
 import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
 import be.vilevar.missiles.utils.Vec3d;
 
@@ -51,6 +53,11 @@ public class DefaultGame implements Game {
 	public DefaultGame() {
 		this.communism = new TeamDefender(main.getCommunism(), communistHorse);
 		this.capitalism = new TeamDefender(main.getCapitalism(), capitalistHorse);
+	}
+	
+	@Override
+	public GameType getType() {
+		return GameType.MISSILE;
 	}
 	
 	@Override
@@ -111,7 +118,7 @@ public class DefaultGame implements Game {
 				this.communism.getMerchant().addMoney(20);
 			if(this.capitalism.getMerchant() != null)
 				this.capitalism.getMerchant().addMoney(20);
-		}, 200, 200);
+		}, 400, 400);
 		scheduler.runTaskLater(main, () -> {
 			scheduler.cancelTask(task);
 			
@@ -133,7 +140,7 @@ public class DefaultGame implements Game {
 				task = scheduler.scheduleSyncRepeatingTask(main, () -> {
 					this.communism.getMerchant().addMoney(15);
 					this.capitalism.getMerchant().addMoney(15);
-				}, 200, 200);
+				}, 400, 400);
 				
 				// Normal
 				scheduler.runTaskLater(main, () -> {
@@ -142,7 +149,7 @@ public class DefaultGame implements Game {
 					task = scheduler.scheduleSyncRepeatingTask(main, () -> {
 						this.communism.getMerchant().addMoney(20);
 						this.capitalism.getMerchant().addMoney(20);
-					}, 400, 400);
+					}, 800, 800);
 				}, 6200);
 			}
 		}, 18100);
@@ -200,7 +207,7 @@ public class DefaultGame implements Game {
 		final Player p = e.getPlayer();
 		Defender def = this.main.getDefender(p);
 		if(def instanceof TeamDefender) {
-			WeaponsMerchant merchant = ((TeamDefender) def).getMerchant();
+			MissileMerchant merchant = ((TeamDefender) def).getMerchant();
 			if(merchant != null) {
 				p.setGameMode(GameMode.SPECTATOR);
 				e.setRespawnLocation(merchant.getLocation());

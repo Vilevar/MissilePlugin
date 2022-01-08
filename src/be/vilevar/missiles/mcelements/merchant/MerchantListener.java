@@ -27,6 +27,7 @@ import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant.WeaponsMerchantSt
 public class MerchantListener implements Listener {
 
 	private HashMap<UUID, MerchantView> openMerchant = new HashMap<>();
+	private Main main = Main.i;
 	
 	@EventHandler
 	public void onOpenMerchant(PlayerInteractEntityEvent e) {
@@ -57,7 +58,7 @@ public class MerchantListener implements Listener {
 					openMerchant.remove(id);
 				} else {
 					merchant.close();
-					Main.i.getServer().getScheduler().runTaskLater(Main.i, () -> {
+					this.main.getServer().getScheduler().runTaskLater(this.main, () -> {
 						if(merchant.open((Player) e.getPlayer())) {
 							view.setStage(merchant.getOpenStage());
 						} else {
@@ -75,7 +76,10 @@ public class MerchantListener implements Listener {
 		if(openMerchant.containsKey(p.getUniqueId())) {
 			
 			MerchantView view = openMerchant.get(p.getUniqueId());
-			WeaponsMerchant merchant = view.getMerchant();
+			
+			MissileMerchant merchant = view.getMerchant().getAsMissileMerchant();
+			if(merchant == null)
+				return;
 			
 			if(view.getStage() == WeaponsMerchantStage.HOME) {
 				
@@ -136,8 +140,11 @@ public class MerchantListener implements Listener {
 						e.setCancelled(true);
 					}
 				}
-				merchant.updateHealthItem();
-				merchant.updateAttackItem();
+				MissileMerchant mm = merchant.getAsMissileMerchant();
+				if(mm != null) {
+					mm.updateHealthItem();
+					mm.updateAttackItem();
+				}
 			}
 		}
 	}

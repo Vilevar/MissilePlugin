@@ -7,7 +7,7 @@ import org.bukkit.scoreboard.Team;
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
 import be.vilevar.missiles.defense.DefenseNetwork;
-import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
+import be.vilevar.missiles.mcelements.merchant.MissileMerchant;
 
 public class TeamDefender implements Defender {
 
@@ -19,7 +19,7 @@ public class TeamDefender implements Defender {
 	
 	private final DefenseNetwork[] networks = new DefenseNetwork[10];
 	
-	private WeaponsMerchant merchant;
+	private MissileMerchant merchant;
 	private Location outpost;
 	
 	public TeamDefender(Team team, String horse) {
@@ -46,11 +46,11 @@ public class TeamDefender implements Defender {
 		return horse;
 	}
 	
-	public WeaponsMerchant getMerchant() {
+	public MissileMerchant getMerchant() {
 		return merchant;
 	}
 	
-	public void setMerchant(WeaponsMerchant merchant) {
+	public void setMerchant(MissileMerchant merchant) {
 		this.merchant = merchant;
 	}
 	

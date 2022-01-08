@@ -37,7 +37,7 @@ public class RecipeAdvancement extends MerchantRecipe {
 		return development;
 	}
 	
-	public boolean isUnlocked(WeaponsMerchant merchant) {
+	public boolean isUnlocked(MissileMerchant merchant) {
 		for(RecipeAdvancement cond : this.previous) {
 			if(!merchant.hasResearched(cond)) {
 				return false;

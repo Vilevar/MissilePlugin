@@ -35,6 +35,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -43,6 +44,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
@@ -52,6 +54,7 @@ public class WeaponListener implements Listener {
 	private Main main = Main.i;
 	private HashMap<UUID, Long> recover = new HashMap<>();
 	private ArrayList<UUID> aiming = new ArrayList<>();
+	private HashMap<UUID, Integer> discharge = new HashMap<>();
 	
 	private ArrayList<MinePredicate> mines = new ArrayList<>();
 	
@@ -170,8 +173,8 @@ public class WeaponListener implements Listener {
 				// Shoot
 				w.shoot(p, this.aiming.contains(p.getUniqueId()));
 				this.recover.put(p.getUniqueId(), System.currentTimeMillis() + recover);
+			// Aim
 			} else {
-				// Aim
 				if(p.hasPotionEffect(PotionEffectType.SLOW)) {
 					p.removePotionEffect(PotionEffectType.SLOW);
 					if(aiming.contains(p.getUniqueId()))
@@ -253,6 +256,50 @@ public class WeaponListener implements Listener {
 		}
 	}
 	
+	
+	@EventHandler
+	public void onDischarge(PlayerToggleSneakEvent e) {
+		Player p = e.getPlayer();
+		ItemStack is = p.getInventory().getItemInMainHand();
+		Weapon weapon = this.getWeapon(is);
+		if(p.isSneaking() && weapon != null) {
+			UUID id = p.getUniqueId();
+			BukkitScheduler scheduler = this.main.getServer().getScheduler();
+			int nSneaks = this.discharge.getOrDefault(id, 0);
+			
+			if(nSneaks == 0) {
+				this.discharge.put(id, 1);
+				scheduler.runTaskLater(this.main, () -> {
+					if(this.discharge.get(id) == 1) {
+						this.discharge.remove(id);
+					}
+				}, 15);
+			} else if(nSneaks == 1) {
+				this.discharge.put(id, 2);
+				scheduler.runTaskLater(this.main, () -> {
+					if(this.discharge.get(id) == 2) {
+						this.discharge.remove(id);
+					}
+				}, 15);
+			} else if(nSneaks == 2) {
+				this.discharge.remove(id);
+				// Discharge
+				ItemMeta im = is.getItemMeta();
+				if (im instanceof Damageable) {
+					Damageable dam = (Damageable) im;
+					dam.setDamage(is.getType().getMaxDurability());
+					is.setItemMeta(im);
+					p.getInventory().setItemInMainHand(is);
+					p.sendMessage("§6Arme déchargée.");
+				} else {
+					p.sendMessage("§6Cette arme a munitions infinies.");
+				}
+			}
+		}
+	}
+	
+	
+	
 	public Weapon getWeapon(ItemStack is) {
 		if(is == null) {
 			return null;
@@ -279,7 +326,7 @@ public class WeaponListener implements Listener {
 //				Main.display(ParticleEffect.SMOKE_LARGE, loc.clone().add(add));
 //			}
 			loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, loc, 1, radius, radius, radius, 0, null, true);
-			for(Entity ent : loc.getWorld().getNearbyEntities(loc, radius, radius, radius, (e) -> e instanceof LivingEntity)) {
+			for(Entity ent : loc.getWorld().getNearbyEntities(loc, radius, radius, radius, e -> e instanceof LivingEntity)) {
 				((LivingEntity) ent).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 255));
 			}
 		}, 1, 1);

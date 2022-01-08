@@ -99,7 +99,8 @@ public class MIRVData {
 	public ReentryVehicle[] toMIRV() {
 		ArrayList<ReentryVehicle> mirv = new ArrayList<>();
 		for(int i = 0; i < this.mirvs; i++) {
-			mirv.add(new ReentryVehicle(Math.toRadians(this.pitch[i]), Math.toRadians(this.yaw[i]), this.explosives[i], this.altitudes[i]));
+			if(this.explosives[i] != null)
+				mirv.add(new ReentryVehicle(Math.toRadians(this.pitch[i]), Math.toRadians(this.yaw[i]), this.explosives[i], this.altitudes[i]));
 		}
 		return mirv.toArray(new ReentryVehicle[mirv.size()]);
 	}
