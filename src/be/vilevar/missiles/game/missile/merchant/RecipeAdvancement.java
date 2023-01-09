@@ -1,4 +1,4 @@
-package be.vilevar.missiles.mcelements.merchant;
+package be.vilevar.missiles.game.missile.merchant;
 
 import java.util.ArrayList;
 

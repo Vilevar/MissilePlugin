@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import be.vilevar.missiles.mcelements.data.BallisticMissileData;
@@ -54,6 +55,20 @@ public class MissileCraftBlock {
 	
 	
 	
+	public static void destroyAll(boolean drops) {
+		Iterator<MissileCraftBlock> it = crafts.iterator();
+		while(it.hasNext()) {
+			MissileCraftBlock craft = it.next();
+			it.remove();
+			craft.getLocation().getBlock().setType(Material.AIR);
+			if(drops) {
+				craft.destroy(false);
+			} else {
+				if(craft.open != null)
+					craft.open.closeInventory();
+			}
+		}
+	}
 	
 	public static void checkDestroy(Location loc) {
 		Iterator<MissileCraftBlock> it = crafts.iterator();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -156,6 +157,20 @@ public class MissileLauncherBlock implements ElectricBlock {
 	
 	
 	
+	public static void destroyAll(boolean drops) {
+		Iterator<MissileLauncherBlock> it = launchers.iterator();
+		while(it.hasNext()) {
+			MissileLauncherBlock launcher = it.next();
+			it.remove();
+			launcher.getLocation().getBlock().setType(Material.AIR);
+			if(drops) {
+				launcher.destroy(false);
+			} else {
+				if(launcher.isOpen != null)
+					launcher.isOpen.closeInventory();
+			}
+		}
+	}
 	
 	public static boolean checkDestroy(Location loc) {
 		Iterator<MissileLauncherBlock> it = launchers.iterator();

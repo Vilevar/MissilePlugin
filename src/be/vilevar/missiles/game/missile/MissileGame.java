@@ -2,7 +2,6 @@ package be.vilevar.missiles.game.missile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,13 +17,14 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
-import be.vilevar.missiles.defense.defender.TeamDefender;
+import be.vilevar.missiles.defense.defender.BigTeamDefender;
 import be.vilevar.missiles.game.Game;
-import be.vilevar.missiles.mcelements.merchant.MissileMerchant;
-import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
+import be.vilevar.missiles.game.GameType;
+import be.vilevar.missiles.game.missile.merchant.MissileMerchant;
+import be.vilevar.missiles.merchant.WeaponsMerchant;
 import be.vilevar.missiles.utils.Vec3d;
 
-public class DefaultGame implements Game {
+public class MissileGame implements Game {
 	
 	private static final String capitalistHorse = "{Variant:513,Health:30,Attributes:[{Name:\"horse.jump_strength\",Base:1.5f},"
 										+ "{Name:\"generic.movement_speed\",Base:0.8f},{Name:\"generic.max_health\",Base:30F}]}",
@@ -44,15 +44,15 @@ public class DefaultGame implements Game {
 			new Vec3d(1278, -1027, 74)));
 
 	private Main main = Main.i;
-	private TeamDefender communism;
-	private TeamDefender capitalism;
+	private BigTeamDefender communism;
+	private BigTeamDefender capitalism;
 	private boolean started;
 	private boolean stopped;
 	private int task;
 
-	public DefaultGame() {
-		this.communism = new TeamDefender(main.getCommunism(), communistHorse);
-		this.capitalism = new TeamDefender(main.getCapitalism(), capitalistHorse);
+	public MissileGame() {
+		this.communism = new BigTeamDefender(main.getCommunism(), 10, communistHorse);
+		this.capitalism = new BigTeamDefender(main.getCapitalism(), 10, capitalistHorse);
 	}
 	
 	@Override
@@ -67,42 +67,26 @@ public class DefaultGame implements Game {
 		int capitalistIndex = 0;
 		int size = spawns.size() / 2;
 		
-		Collection<? extends Player> online = main.getServer().getOnlinePlayers();
-		if(online.size() < 2) {
-			return "§cPas assez de joueurs.";
-		} else {
-			ArrayList<? extends Player> test = new ArrayList<>(online);
-			Collections.shuffle(test);
-			online = test;
+		String error = this.prepareTeams(main);
+		if(error != null) {
+			return error;
 		}
 		
 		ItemStack pickaxe = new ItemStack(Material.DIAMOND_PICKAXE);
 		pickaxe.addEnchantment(Enchantment.DIG_SPEED, 4);
 		ItemStack beef = new ItemStack(Material.COOKED_BEEF, 10);
 		
-		for(Player p : online) {
-			boolean isCommunist = main.getCommunism().hasEntry(p.getName());
-			if(!isCommunist && !main.getCapitalism().hasEntry(p.getName())) {
-				if(main.getCapitalism().getSize() < main.getCommunism().getSize()) {
-					main.getCapitalism().addEntry(p.getName());
-				} else {
-					main.getCommunism().addEntry(p.getName());
-					isCommunist = true;
-				}
-			}
-			
+		for(Player p : main.getServer().getOnlinePlayers()) {
 			p.getInventory().clear();
 			p.getInventory().addItem(pickaxe, beef);
 			p.getEnderChest().clear();
 			p.setGameMode(GameMode.SURVIVAL);
 			
-			Vec3d pos = spawns.get(isCommunist ? (communistIndex++) % size : size + ((capitalistIndex++) % size));
+			Vec3d pos = spawns.get(
+					main.getCommunism().hasEntry(p.getName()) ? (communistIndex++) % size : size + ((capitalistIndex++) % size));
 			p.teleport(pos.toLocation(p.getWorld()));
 		}
 		
-		if(main.getCapitalism().getSize() == 0 || main.getCommunism().getSize() == 0) {
-			return "§cLes équipes ne sont pas bien réparties.";
-		}
 		return null;
 	}
 
@@ -155,12 +139,18 @@ public class DefaultGame implements Game {
 		}, 18100);
 	}
 	
-	public TeamDefender getTeamCapitalism() {
+	public BigTeamDefender getTeamCapitalism() {
 		return capitalism;
 	}
 	
-	public TeamDefender getTeamCommunism() {
+	public BigTeamDefender getTeamCommunism() {
 		return communism;
+	}
+	
+	
+	@Override
+	public WeaponsMerchant createMerchant(BigTeamDefender team, Location loc) {
+		return new MissileMerchant(team, loc);
 	}
 
 
@@ -173,7 +163,7 @@ public class DefaultGame implements Game {
 	}
 
 
-	public void stop(TeamDefender winner, boolean message) {
+	public void stop(BigTeamDefender winner, boolean message) {
 		if (message)
 			main.getServer().broadcastMessage("§6Fin de la partie ! Le §a" + winner.getDisplayName() + "§6 a gagné !");
 		for (Player p : main.getServer().getOnlinePlayers()) {
@@ -184,11 +174,10 @@ public class DefaultGame implements Game {
 		main.getServer().getScheduler().cancelTask(task);
 		started = false;
 		stopped = true;
-		WeaponsMerchant.killMerchants();
 	}
 	
 	
-	private void sendNear(TeamDefender defender, Location loc) {
+	private void sendNear(BigTeamDefender defender, Location loc) {
 		double angle = Math.random() * 2 * Math.PI;
 		double dist = 200 * Math.sqrt(Math.random());
 		
@@ -206,17 +195,33 @@ public class DefaultGame implements Game {
 	public void handleRespawn(PlayerRespawnEvent e) {
 		final Player p = e.getPlayer();
 		Defender def = this.main.getDefender(p);
-		if(def instanceof TeamDefender) {
-			MissileMerchant merchant = ((TeamDefender) def).getMerchant();
-			if(merchant != null) {
-				p.setGameMode(GameMode.SPECTATOR);
-				e.setRespawnLocation(merchant.getLocation());
-				main.getServer().getScheduler().runTaskLater(main, () -> {
-					if(main.getGame() != null && p.isOnline()) {
-						p.setGameMode(GameMode.SURVIVAL);
-					}
-				}, 60);
+		if(def instanceof BigTeamDefender) {
+			WeaponsMerchant wm = ((BigTeamDefender) def).getMerchant();
+			if(wm != null) {
+				MissileMerchant merchant = wm.getAsMissileMerchant();
+				if(merchant != null) {
+					p.setGameMode(GameMode.SPECTATOR);
+					e.setRespawnLocation(merchant.getLocation());
+					main.getServer().getScheduler().runTaskLater(main, () -> {
+						if(main.hasGame() && p.isOnline()) {
+							p.setGameMode(GameMode.SURVIVAL);
+						}
+					}, 60);
+				}
 			}
 		}		
+	}
+
+	@Override
+	public void handlePlayerDeath(Player p, List<ItemStack> drops) {
+	}
+
+	@Override
+	public void handleMerchantDeath(WeaponsMerchant merchant, List<ItemStack> drops) {
+		if(merchant.equals(this.capitalism.getMerchant())) {
+			this.stop(this.communism, true);
+		} else if(merchant.equals(this.communism.getMerchant())) {
+			this.stop(this.capitalism, true);
+		}
 	}
 }

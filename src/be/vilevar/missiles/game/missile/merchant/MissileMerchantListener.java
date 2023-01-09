@@ -1,14 +1,12 @@
-package be.vilevar.missiles.mcelements.merchant;
+package be.vilevar.missiles.game.missile.merchant;
 
 import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,41 +15,28 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantInventory;
 
 import be.vilevar.missiles.Main;
-import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant.WeaponsMerchantStage;
+import be.vilevar.missiles.game.missile.merchant.MissileMerchant.WeaponsMerchantStage;
+import be.vilevar.missiles.merchant.WeaponsMerchant;
 
-public class MerchantListener implements Listener {
+public class MissileMerchantListener implements Listener {
 
-	private HashMap<UUID, MerchantView> openMerchant = new HashMap<>();
+	private HashMap<UUID, MissileMerchantView> openMerchant = new HashMap<>();
 	private Main main = Main.i;
-	
-	@EventHandler
-	public void onOpenMerchant(PlayerInteractEntityEvent e) {
-		if(e.getRightClicked().getType() == EntityType.VILLAGER) {
-			WeaponsMerchant merchant = WeaponsMerchant.getMerchant((Villager) e.getRightClicked());
-			if(merchant != null) {
-				Player p = e.getPlayer();
-				
-				merchant.testLocation();
-				if(merchant.open(p)) {
-					this.openMerchant.put(p.getUniqueId(), new MerchantView(merchant, merchant.getOpenStage()));
-				}
-				
-				e.setCancelled(true);
-			}
-		}
+
+	public void registerOpenMerchant(Player p, MissileMerchant merchant) {
+		this.openMerchant.put(p.getUniqueId(), new MissileMerchantView(merchant, merchant.getOpenStage()));
 	}
 	
 	@EventHandler
 	public void onInventoryClose(InventoryCloseEvent e) {
 		UUID id = e.getPlayer().getUniqueId();
 		if(openMerchant.containsKey(id)) {
-			MerchantView view = openMerchant.get(id);
-			WeaponsMerchant merchant = view.getMerchant();
+			MissileMerchantView view = openMerchant.get(id);
+			MissileMerchant merchant = view.getMerchant();
 			if(merchant.getOpenStage() == view.getStage()) {
 				if(merchant.getOpenStage() == WeaponsMerchantStage.HOME) {
 					merchant.close();
@@ -75,7 +60,7 @@ public class MerchantListener implements Listener {
 		HumanEntity p = e.getWhoClicked();
 		if(openMerchant.containsKey(p.getUniqueId())) {
 			
-			MerchantView view = openMerchant.get(p.getUniqueId());
+			MissileMerchantView view = openMerchant.get(p.getUniqueId());
 			
 			MissileMerchant merchant = view.getMerchant().getAsMissileMerchant();
 			if(merchant == null)
@@ -131,15 +116,6 @@ public class MerchantListener implements Listener {
 		if(e.getEntity().getType() == EntityType.VILLAGER) {
 			WeaponsMerchant merchant = WeaponsMerchant.getMerchant((Villager) e.getEntity());
 			if(merchant != null) {
-				Entity damager = e.getDamager();
-				if(damager.getType() == EntityType.PLAYER && !merchant.canBeHurtBy((Player) damager)) {
-					e.setCancelled(true);
-				} else if(damager instanceof Projectile) {
-					Projectile proj = (Projectile) damager;
-					if(proj.getShooter() != null && proj.getShooter() instanceof Player && !merchant.canBeHurtBy((Player) proj.getShooter())) {
-						e.setCancelled(true);
-					}
-				}
 				MissileMerchant mm = merchant.getAsMissileMerchant();
 				if(mm != null) {
 					mm.updateHealthItem();

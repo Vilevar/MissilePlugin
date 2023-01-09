@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -252,6 +253,18 @@ public class Howitzer {
 		return Math.abs(pitchMilliradRemind - pitchMillirad);
 	}
 	
+	
+	public static void destroyAll() {
+		Iterator<Howitzer> it = howitzers.iterator();
+		while(it.hasNext()) {
+			Howitzer howitzer = it.next();
+			it.remove();
+			if(howitzer.isOpen()) {
+				howitzer.open.closeInventory();
+			}
+			howitzer.getLocation().getBlock().setType(Material.AIR);
+		}
+	}
 	
 	public static void checkDestroy(Location loc) {
 		Iterator<Howitzer> it = howitzers.iterator();

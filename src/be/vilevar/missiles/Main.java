@@ -25,22 +25,20 @@ import be.vilevar.missiles.defense.defender.TeamDefender;
 import be.vilevar.missiles.game.Game;
 import be.vilevar.missiles.game.GameListener;
 import be.vilevar.missiles.mcelements.CustomElementManager;
+import be.vilevar.missiles.mcelements.abm.ABMLauncher;
+import be.vilevar.missiles.mcelements.artillery.Howitzer;
+import be.vilevar.missiles.mcelements.crafting.MissileCraftBlock;
+import be.vilevar.missiles.mcelements.crafting.RVCraftBlock;
+import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
 import be.vilevar.missiles.mcelements.radar.Radar;
+import be.vilevar.missiles.merchant.WeaponsMerchant;
 import be.vilevar.missiles.missile.ballistic.explosives.ExplosiveManager;
-import be.vilevar.missiles.mcelements.merchant.WeaponsMerchant;
 
 public class Main extends JavaPlugin {
 
-	public static void display(Particle particle, Location loc) {
-		loc.getWorld().spawnParticle(particle, loc, 1, 0, 0, 0, 0, null);
-	}
-	
-	public static void display(Particle particle, Location loc, boolean force) {
-		loc.getWorld().spawnParticle(particle, loc, 1, 0, 0, 0, 0, null, force);
-	}
-
 	public static Main i;
 
+	
 	private HashMap<UUID, PlayerDefender> players = new HashMap<>();
 
 	private CustomElementManager custom;
@@ -77,7 +75,7 @@ public class Main extends JavaPlugin {
 		
 		BasicCommands basicCommands = new BasicCommands();
 		BigGameCommands gameCommands = new BigGameCommands();
-		getCommand("missile").setExecutor(basicCommands);
+		getCommand("game").setExecutor(basicCommands);
 		getCommand("merchant").setExecutor(basicCommands);
 //		getCommand("discharge").setExecutor(this);
 		getCommand("outpost").setExecutor(gameCommands);
@@ -90,13 +88,15 @@ public class Main extends JavaPlugin {
 		for (Player p : getServer().getOnlinePlayers()) {
 			players.put(p.getUniqueId(), new PlayerDefender(p));
 		}
+		
 	}
 
 	@Override
 	public void onDisable() {
 		if (game != null)
 			game.stop(null, false);
-		WeaponsMerchant.killMerchants();
+		else
+			this.resetGame();
 	}
 
 	
@@ -120,10 +120,12 @@ public class Main extends JavaPlugin {
 		team.setPrefix(prefix);
 	}
 
+	
+	
 	public Game getGame() {
 		return game;
 	}
-
+	
 	public boolean hasGame() {
 		return this.game != null;
 	}
@@ -135,9 +137,37 @@ public class Main extends JavaPlugin {
 	public Team getCapitalism() {
 		return capitalism;
 	}
-
+	
+	public Scoreboard getScoreboard() {
+		return scoreboard;
+	}
+	
+	public String prepareGame(Game game) {
+		this.resetGame();
+		
+		this.game = game;
+		
+		String error = game.prepare();
+		if(error == null) {
+			game.start();
+		} else {
+			game.stop(null, false);
+		}
+		return error;
+	}
+	
+	
 	public void resetGame() {
 		this.game = null;
+		
+		WeaponsMerchant.killMerchants();
+		
+		ABMLauncher.destroyAll(false);
+		Howitzer.destroyAll();
+		MissileCraftBlock.destroyAll(false);
+		RVCraftBlock.destroyAll(false);
+		MissileLauncherBlock.destroyAll(false);
+		// TODO Remove everything (merchant, missile crafters, radars, missile launchers, etc.)
 	}
 	
 	public TeamDefender getTeamDefender(Player p) {
@@ -163,6 +193,22 @@ public class Main extends JavaPlugin {
 			this.players.put(p.getUniqueId(), def);
 			return def;
 		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public static void display(Particle particle, Location loc) {
+		loc.getWorld().spawnParticle(particle, loc, 1, 0, 0, 0, 0, null);
+	}
+	
+	public static void display(Particle particle, Location loc, boolean force) {
+		loc.getWorld().spawnParticle(particle, loc, 1, 0, 0, 0, 0, null, force);
 	}
 
 	public static int clamp(int min, int max, int value) {

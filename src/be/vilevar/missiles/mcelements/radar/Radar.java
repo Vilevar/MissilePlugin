@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -162,6 +163,18 @@ public class Radar implements ElectricBlock {
 	}
 	
 	
+	
+	public static void destroyAll() {
+		Iterator<Radar> it = radars.iterator();
+		while(it.hasNext()) {
+			Radar radar = it.next();
+			it.remove();
+			radar.getLocation().getBlock().setType(Material.AIR);
+			if(radar.open != null)
+				radar.open.closeInventory();
+			radar.network.delRadar(radar);
+		}
+	}
 	
 	public static boolean checkDestroy(Location loc) {
 		Iterator<Radar> it = radars.iterator();

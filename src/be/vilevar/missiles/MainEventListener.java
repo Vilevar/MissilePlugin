@@ -6,7 +6,9 @@ import java.util.Set;
 
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -86,7 +88,8 @@ public class MainEventListener implements Listener {
 						CustomElementManager.SHOTGUN.createItem(), CustomElementManager.SHOTGUN.getAmmunition().create(),
 						CustomElementManager.SMALL_SHELL.create(), CustomElementManager.SMOKE_BOMB.create(),
 						CustomElementManager.SNIPER.createItem(), CustomElementManager.SNIPER.getAmmunition().create(),
-						CustomElementManager.SRBM.create(), CustomElementManager.WEATHER_FORECASTER.create());
+						CustomElementManager.SRBM.create(), CustomElementManager.WEATHER_FORECASTER.create(),
+						CustomElementManager.PLIERS.create());
 			}
 		}
 		// Removing entities and tile entities
@@ -112,6 +115,21 @@ public class MainEventListener implements Listener {
 					bs.getBlock().setType(Material.AIR);
 				}
 			}
+			
+			p.sendMessage("Custom blocks :");
+			for(Chunk c : p.getWorld().getLoadedChunks()) {
+				for(int x = 0; x < 16; x++) {
+					for(int y = 0; y < 256; y++) {
+						for(int z = 0; z < 16; z++) {
+							Block block = c.getBlock(x, y, z);
+							if(CustomElementManager.isCustomBlock(block)) {
+								Location loc = block.getLocation();
+								p.sendMessage("§6Custom §e"+block.getType()+"§6 at : §c"+loc.getBlockX()+"/"+loc.getBlockY()+"/"+loc.getBlockZ());
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -119,20 +137,21 @@ public class MainEventListener implements Listener {
 	
 	// Debug
 	
-	@EventHandler
-	public void onload(ChunkLoadEvent e) {
-		Chunk c = e.getChunk();
-		
-		for(BlockState state : c.getTileEntities()) {
-//			state.getBlock().setType(Material.AIR);
-			System.out.println(state.getBlock().getType());
-		}
-		
-		for(Entity ent : c.getEntities()) {
-			if(ent.getType() != EntityType.PLAYER) {
-//				ent.remove();
-				System.out.println(ent.getType());
-			}
-		}
-	}
+	// TODO Add
+//	@EventHandler
+//	public void onload(ChunkLoadEvent e) {
+//		Chunk c = e.getChunk();
+//		
+//		for(BlockState state : c.getTileEntities()) {
+////			state.getBlock().setType(Material.AIR);
+//			System.out.println(state.getBlock().getType());
+//		}
+//		
+//		for(Entity ent : c.getEntities()) {
+//			if(ent.getType() != EntityType.PLAYER) {
+////				ent.remove();
+//				System.out.println(ent.getType());
+//			}
+//		}
+//	}
 }

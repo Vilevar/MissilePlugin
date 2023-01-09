@@ -8,8 +8,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.defense.defender.BigTeamDefender;
 import be.vilevar.missiles.defense.defender.TeamDefender;
-import be.vilevar.missiles.mcelements.merchant.MissileMerchant;
+import be.vilevar.missiles.merchant.WeaponsMerchant;
 
 public class BigGameCommands implements CommandExecutor {
 
@@ -22,30 +23,33 @@ public class BigGameCommands implements CommandExecutor {
 			if (main.getGame() == null) {
 				p.sendMessage("§cPas de partie en cours.");
 				return true;
-			} else if(!main.getGame().getType().isStrategic()) {
+			} else if(!main.getGame().getType().getGameManager().isStrategic()) {
 				p.sendMessage("§cLa partie en cours ne permet pas ces commandes.");
 				return true;
 			}
 			if (command.getName().equals("base")) {
-				TeamDefender team = main.getTeamDefender(p);
-				if (team != null) {
+				BigTeamDefender team = this.getTeamDefender(p);
+				if(team != null) {
 					if (team.getMerchant() != null) {
 						p.teleport(team.getMerchant().getLocation());
 					} else {
 						Location loc = p.getLocation();
-						for (int i = -1; i <= 1; i++) {
-							for (int j = -1; j <= 1; j++) {
-								loc.clone().add(i, -1, j).getBlock().setType(Material.BEDROCK);
+						WeaponsMerchant merchant = this.main.getGame().createMerchant(team, loc);
+						if(merchant != null) {
+							for (int i = -1; i <= 1; i++) {
+								for (int j = -1; j <= 1; j++) {
+									loc.clone().add(i, -1, j).getBlock().setType(Material.BEDROCK);
+								}
 							}
+							team.setMerchant(merchant);
 						}
-						team.setMerchant(new MissileMerchant(team, loc.getBlock().getLocation().add(0.5, 0, 0.5).setDirection(loc.getDirection())));
 					}
 				} else {
 					p.sendMessage("§cVous n'êtes pas membre d'une équipe.");
 				}
 				return true;
 			} else if (command.getName().equals("outpost")) {
-				TeamDefender team = main.getTeamDefender(p);
+				BigTeamDefender team = this.getTeamDefender(p);
 				if (team != null && team.getOutpost() != null) {
 					p.teleport(team.getOutpost());
 				} else {
@@ -53,7 +57,7 @@ public class BigGameCommands implements CommandExecutor {
 				}
 				return true;
 			} else if (command.getName().equals("setoutpost")) {
-				TeamDefender team = main.getTeamDefender(p);
+				BigTeamDefender team = this.getTeamDefender(p);
 				if (team != null) {
 					team.setOutpost(p.getLocation());
 					p.sendMessage("§6Avant-poste §aplacé§6 à votre position.");
@@ -64,6 +68,14 @@ public class BigGameCommands implements CommandExecutor {
 			}
 		}
 		return false;
+	}
+	
+	private BigTeamDefender getTeamDefender(Player p) {
+		TeamDefender team = main.getTeamDefender(p);
+		if (team != null && team instanceof BigTeamDefender) {
+			return (BigTeamDefender) team;
+		}
+		return null;
 	}
 
 }

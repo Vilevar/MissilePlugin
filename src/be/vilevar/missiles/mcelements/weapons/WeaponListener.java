@@ -5,6 +5,7 @@ import static be.vilevar.missiles.mcelements.CustomElementManager.CLAYMORE;
 import static be.vilevar.missiles.mcelements.CustomElementManager.MACHINE_GUN;
 import static be.vilevar.missiles.mcelements.CustomElementManager.MINE;
 import static be.vilevar.missiles.mcelements.CustomElementManager.PISTOL;
+import static be.vilevar.missiles.mcelements.CustomElementManager.PLIERS;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SHOTGUN;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SMOKE_BOMB;
 import static be.vilevar.missiles.mcelements.CustomElementManager.SNIPER;
@@ -12,6 +13,7 @@ import static be.vilevar.missiles.mcelements.CustomElementManager.SNIPER;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.GameMode;
@@ -19,6 +21,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -29,6 +32,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -48,6 +52,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.missile.ballistic.explosives.TraditionalExplosive;
 
 public class WeaponListener implements Listener {
 
@@ -57,6 +62,7 @@ public class WeaponListener implements Listener {
 	private HashMap<UUID, Integer> discharge = new HashMap<>();
 	
 	private ArrayList<MinePredicate> mines = new ArrayList<>();
+	private Random random = new Random();
 	
 	
 	public WeaponListener() {
@@ -73,7 +79,7 @@ public class WeaponListener implements Listener {
 						mines.remove();
 						loc.getBlock().setType(Material.AIR);
 						if(mine.isInstant()) {
-							mine.getLocation().getWorld().createExplosion(mine.getLocation(), 5.0f, false, true, mine.getMiner());
+							new TraditionalExplosive(main, 5.0f, false).explode(mine.getLocation(), mine.getMiner());
 						} else {
 							TNTPrimed tnt = (TNTPrimed) loc.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
 							tnt.setFuseTicks(5);
@@ -107,9 +113,65 @@ public class WeaponListener implements Listener {
 				MinePredicate mine = mines.next();
 				if(mine.getLocation().equals(e.getClickedBlock().getLocation())) {
 					if(mine.test(e.getPlayer())) {
-						mine.getLocation().getWorld().createExplosion(mine.getLocation(), 5.0f, false, true, mine.getMiner());
+						new TraditionalExplosive(main, 5.0f, false).explode(mine.getLocation(), mine.getMiner());
 						mines.remove();
 					}
+					return;
+				}
+			}
+		}
+		if(e.getAction() == Action.RIGHT_CLICK_BLOCK && PLIERS.isParentOf(e.getItem())) {
+			e.setCancelled(true);
+			Block block = e.getClickedBlock();
+			if(MINE.isParentOf(block) || CLAYMORE.isParentOf(block)) {
+				Iterator<MinePredicate> mines = this.mines.iterator();
+				while(mines.hasNext()) {
+					// Look for the mine
+					MinePredicate mine = mines.next();
+					if(mine.getLocation().equals(e.getClickedBlock().getLocation()) && mine.test(e.getPlayer())) { // Only for enemies
+						
+						ItemStack is = e.getItem();
+						Damageable im = (Damageable) is.getItemMeta();
+						int newDamage = im.getDamage() + 35;
+						// Explode because of lack of luck
+						if(this.random.nextDouble() < 0.33) {
+							new TraditionalExplosive(main, 3.0f, false).explode(mine.getLocation(), mine.getMiner());
+						} else {
+							
+							mine.getLocation().getWorld().dropItem(mine.getLocation(), BOMB.create());
+							
+							if(newDamage >= is.getType().getMaxDurability()) {
+								e.getPlayer().getInventory().setItem(e.getHand(), null);
+							} else {
+								im.setDamage(newDamage);
+								is.setItemMeta(im);
+							}
+						}
+						
+						block.setType(Material.AIR);
+						mines.remove();
+						return;
+					}
+				}
+				
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onBreakMine(BlockBreakEvent e) {
+		Block block = e.getBlock();
+		if(MINE.isParentOf(block) || CLAYMORE.isParentOf(block)) {
+			Iterator<MinePredicate> mines = this.mines.iterator();
+			while(mines.hasNext()) {
+				MinePredicate mine = mines.next();
+				if(mine.getLocation().equals(block.getLocation())) {
+					e.setCancelled(true);
+					if(mine.test(e.getPlayer())) {
+						new TraditionalExplosive(main, 5.0f, false).explode(mine.getLocation(), mine.getMiner());
+						mines.remove();
+					}
+					e.getBlock().setType(Material.AIR);
 					return;
 				}
 			}
@@ -270,17 +332,17 @@ public class WeaponListener implements Listener {
 			if(nSneaks == 0) {
 				this.discharge.put(id, 1);
 				scheduler.runTaskLater(this.main, () -> {
-					if(this.discharge.get(id) == 1) {
+					if(this.discharge.getOrDefault(id, 0) == 1) {
 						this.discharge.remove(id);
 					}
-				}, 15);
+				}, 10);
 			} else if(nSneaks == 1) {
 				this.discharge.put(id, 2);
 				scheduler.runTaskLater(this.main, () -> {
-					if(this.discharge.get(id) == 2) {
+					if(this.discharge.getOrDefault(id, 0) == 2) {
 						this.discharge.remove(id);
 					}
-				}, 15);
+				}, 10);
 			} else if(nSneaks == 2) {
 				this.discharge.remove(id);
 				// Discharge

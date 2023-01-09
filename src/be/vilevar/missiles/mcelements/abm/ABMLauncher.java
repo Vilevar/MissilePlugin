@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import be.vilevar.missiles.defense.Defender;
@@ -104,6 +105,14 @@ public class ABMLauncher implements ElectricBlock {
 		return id;
 	}
 	
+	public Location getLocation() {
+		return this.loc;
+	}
+
+	public Defender getDefender() {
+		return this.def;
+	}
+	
 	public String getSignature() {
 		return "§5[§a" + this.channel + ":" + this.id + "§5] ";
 	}
@@ -176,6 +185,19 @@ public class ABMLauncher implements ElectricBlock {
 	}
 	
 	
+	public static void destroyAll(boolean drops) {
+		Iterator<ABMLauncher> it = launchers.iterator();
+		while(it.hasNext()) {
+			ABMLauncher launcher = it.next();
+			if(launcher.open != null)
+				launcher.open.closeInventory();
+			launcher.network.delABMLauncher(launcher);
+			if(drops)
+				launcher.drop();
+			launcher.getLocation().getBlock().setType(Material.AIR);
+		}
+	}
+	
 	public static boolean checkDestroy(Location loc) {
 		System.out.println("Check Destroy ABMLauncher "+loc);
 		Iterator<ABMLauncher> it = launchers.iterator();
@@ -199,13 +221,5 @@ public class ABMLauncher implements ElectricBlock {
 			}
 		}
 		return null;
-	}
-
-	public Location getLocation() {
-		return this.loc;
-	}
-
-	public Defender getDefender() {
-		return this.def;
 	}
 }

@@ -1,11 +1,4 @@
-package be.vilevar.missiles.mcelements.merchant;
-
-import static be.vilevar.missiles.mcelements.merchant.RecipeAdvancement.ENGINE_1;
-import static be.vilevar.missiles.mcelements.merchant.RecipeAdvancement.HOWITZER;
-import static be.vilevar.missiles.mcelements.merchant.RecipeAdvancement.PISTOL;
-import static be.vilevar.missiles.mcelements.merchant.RecipeAdvancement.PROPELLANT_1;
-import static be.vilevar.missiles.mcelements.merchant.RecipeAdvancement.RADAR;
-import static be.vilevar.missiles.mcelements.merchant.RecipeAdvancement.TNT;
+package be.vilevar.missiles.game.missile.merchant;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,9 +26,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.defense.Defender;
-import be.vilevar.missiles.defense.defender.TeamDefender;
+import be.vilevar.missiles.defense.defender.BigTeamDefender;
 import be.vilevar.missiles.game.Game;
-import be.vilevar.missiles.mcelements.CustomElementManager;
+import be.vilevar.missiles.merchant.WeaponsMerchant;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -51,7 +44,7 @@ public class MissileMerchant implements WeaponsMerchant {
 	private Villager villager;
 	private Location loc;
 	private int money;
-	private TeamDefender enemy;
+	private BigTeamDefender enemy;
 	private WeaponsMerchantStage open;
 	
 	private ItemStack utilitariesItem, researchItem, developmentItem, attackItem, healthItem, moneyItem;
@@ -59,7 +52,7 @@ public class MissileMerchant implements WeaponsMerchant {
 	public MissileMerchant(Defender defender, Location loc) {
 		this.defender = defender;
 		
-		this.canResearch.addAll(Arrays.asList(PISTOL, TNT, ENGINE_1, PROPELLANT_1, RADAR, HOWITZER));
+		this.canResearch.addAll(Arrays.asList());
 		
 		this.updateResearchMerchant();
 		
@@ -123,7 +116,6 @@ public class MissileMerchant implements WeaponsMerchant {
 			return false;
 		}
 		
-		this.testLocation();
 		if(p.getLocation().distance(loc) < 7) {
 			return false;
 		}
@@ -149,7 +141,14 @@ public class MissileMerchant implements WeaponsMerchant {
 		p.openInventory(this.createMenuInventory());
 		this.open = WeaponsMerchantStage.HOME;
 		
+		this.main.getCustomElementManager().getMissileMerchantListener().registerOpenMerchant(p, this);
+		
 		return true;
+	}
+	
+	@Override
+	public boolean isOpen() {
+		return this.open != null;
 	}
 	
 	public WeaponsMerchantStage getOpenStage() {
@@ -215,7 +214,7 @@ public class MissileMerchant implements WeaponsMerchant {
 	public ItemStack updateAttackItem() {
 		if(this.enemy != null && this.enemy.getMerchant() != null) {
 			ItemMeta im = this.attackItem.getItemMeta();
-			im.setDisplayName("§6Il reste §c"+Main.round(this.enemy.getMerchant().villager.getHealth())+" PV§6 à mettre.");
+			im.setDisplayName("§6Il reste §c"+Main.round(this.enemy.getMerchant().getVillager().getHealth())+" PV§6 à mettre.");
 			this.attackItem.setItemMeta(im);
 			return this.attackItem;
 		}
@@ -280,8 +279,7 @@ public class MissileMerchant implements WeaponsMerchant {
 	
 	private ArrayList<MerchantRecipe> getUtilitaries(Defender defender) {
 		ArrayList<MerchantRecipe> utilitaries = new ArrayList<>(Arrays.asList(
-				new DevelopmentRecipe(new ItemStack(Material.OBSIDIAN, 32), 64),
-				new DevelopmentRecipe(CustomElementManager.RANGEFINDER.create(), 5)));
+				new DevelopmentRecipe(new ItemStack(Material.OBSIDIAN, 32), 64)));
 		
 		ItemStack is = new ItemStack(Material.HORSE_SPAWN_EGG);
 		try {
@@ -347,4 +345,11 @@ public class MissileMerchant implements WeaponsMerchant {
 		return utilitaries;
 	}
 
+	
+	public static enum WeaponsMerchantStage {
+		HOME,
+		UTILITARIES,
+		RESEARCH,
+		DEVELOPMENT;
+	}
 }

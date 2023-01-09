@@ -1,13 +1,13 @@
 name: Missiles
-version: 1.0
+version: 2.0
 author: Vilevar
 main: be.vilevar.missiles.Main
-api-version: 1.16
+api-version: 1.17
 commands:
-    missile:
+    game:
         description: launch the game
-    discharge:
-        description: Discharge your gun
+#    discharge:
+#        description: Discharge your gun
     outpost:
         description: Teleport to the outpost of your team
     setoutpost:

@@ -23,6 +23,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.game.missile.merchant.MissileMerchantListener;
+import be.vilevar.missiles.game.siege.merchant.SiegeMerchantListener;
 import be.vilevar.missiles.mcelements.abm.ABMLBlockListener;
 import be.vilevar.missiles.mcelements.abm.ABMLauncher;
 import be.vilevar.missiles.mcelements.artillery.Howitzer;
@@ -33,11 +35,11 @@ import be.vilevar.missiles.mcelements.crafting.RVCraftBlock;
 import be.vilevar.missiles.mcelements.crafting.RVCraftingTableListener;
 import be.vilevar.missiles.mcelements.launcher.LauncherBlockListener;
 import be.vilevar.missiles.mcelements.launcher.MissileLauncherBlock;
-import be.vilevar.missiles.mcelements.merchant.MerchantListener;
 import be.vilevar.missiles.mcelements.radar.Radar;
 import be.vilevar.missiles.mcelements.radar.RadarBlockListener;
 import be.vilevar.missiles.mcelements.weapons.Weapon;
 import be.vilevar.missiles.mcelements.weapons.WeaponListener;
+import be.vilevar.missiles.merchant.MerchantListener;
 
 public class CustomElementManager implements Listener {
 
@@ -99,13 +101,14 @@ public class CustomElementManager implements Listener {
 	public static final CustomBlock	CLAYMORE = new CustomBlock(Material.STONE_BUTTON, "Claymore");
 	
 	public static final CustomItem	BOMB = new CustomItem(Material.SNOWBALL, 1, "Bomb"),
-									SMOKE_BOMB = new CustomItem(Material.SNOWBALL, 2, "Smoke Bomb");
+									SMOKE_BOMB = new CustomItem(Material.SNOWBALL, 2, "Smoke Bomb"),
+									PLIERS = new CustomItem(Material.IRON_HOE, 8, "Pliers");
 	
 	public static final CustomBlock	MISSILE_LAUNCHER = new CustomBlock(Material.NETHER_QUARTZ_ORE, "Missile Launcher"),
 									MISSILE_CRAFT = new CustomBlock(Material.NETHERRACK, "Missile Crafter"),
 									RV_CRAFT = new CustomBlock(Material.NETHER_GOLD_ORE, "Reentry Vehicle Crafter"),
 									RADAR = new CustomBlock(Material.RED_NETHER_BRICKS, "Radar"),
-									ABM_LAUNCHER = new CustomBlock(Material.BLACKSTONE, "ABM Launcher");
+									ABM_LAUNCHER = new CustomBlock(Material.CUT_COPPER, "ABM Launcher");
 	
 	public static final CustomBlock HOWITZER = new CustomBlock(Material.NETHER_BRICK_STAIRS, "Howitzer");
 	
@@ -127,6 +130,9 @@ public class CustomElementManager implements Listener {
 	private ABMLBlockListener abm;
 	
 	private WeaponListener weapons;
+	
+	private MissileMerchantListener missileMerchant;
+	private SiegeMerchantListener siegeMerchant;
 	
 	private ArrayList<UUID> ids = new ArrayList<>();
 	
@@ -163,6 +169,12 @@ public class CustomElementManager implements Listener {
 		pm.registerEvents(this.weapons, pl);
 		
 		pm.registerEvents(new MerchantListener(), pl);
+		
+		this.missileMerchant = new MissileMerchantListener();
+		pm.registerEvents(this.missileMerchant, pl);
+		
+		this.siegeMerchant = new SiegeMerchantListener();
+		pm.registerEvents(this.siegeMerchant, pl);
 	}
 	
 	
@@ -328,5 +340,19 @@ public class CustomElementManager implements Listener {
 	
 	public WeaponListener getWeapons() {
 		return weapons;
+	}
+	
+	public MissileMerchantListener getMissileMerchantListener() {
+		return this.missileMerchant;
+	}
+	
+	public SiegeMerchantListener getSiegeMerchantListener() {
+		return this.siegeMerchant;
+	}
+	
+	
+	public static boolean isCustomBlock(Block block) {
+		return MISSILE_LAUNCHER.isParentOf(block) || MISSILE_CRAFT.isParentOf(block) || RV_CRAFT.isParentOf(block) || HOWITZER.isParentOf(block) ||
+				RADAR.isParentOf(block) || ABM_LAUNCHER.isParentOf(block) || MINE.isParentOf(block) || CLAYMORE.isParentOf(block);
 	}
 }
