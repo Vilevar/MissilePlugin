@@ -22,6 +22,7 @@ public class ShellPath extends BukkitRunnable {
 	private Shell shell;
 	private Player gunner;
 	
+	private Location lastPosition;
 	private ArrayList<Vec3d> locs = new ArrayList<>();
 	private Iterator<Vec3d> it;
 	
@@ -57,11 +58,12 @@ public class ShellPath extends BukkitRunnable {
 //				it.remove();
 				Location loc = x.toLocation(world);
 				if(loc.getBlock().getType().isSolid() || loc.getBlock().getType() == Material.LAVA) {
-					this.shell.explode(loc, this.gunner);
+					this.shell.explode(this.lastPosition == null ? loc : this.lastPosition, this.gunner);
 					this.gunner.sendMessage("§6Obus explosé à §cx=§a"+loc.getBlockX()+" §cy=§a"+loc.getBlockY()+" §cz=§a"+loc.getBlockZ());
 					this.cancel();
 					return;
 				}
+				this.lastPosition = loc;
 				Main.display(Particle.FLAME, loc);
 			}
 		} else {

@@ -140,31 +140,34 @@ public class TraditionalExplosive implements Explosive {
 
 					double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
+					double d13;
 					if (dist != 0.0D) {
 						dx /= dist;
 						dy /= dist;
 						dz /= dist;
 
 						double obstacles = getObstacleImportance(vec3d, entity);
-						double d13 = (1.0D - relativeSquareDistance) * obstacles;
+						d13 = (1.0D - relativeSquareDistance) * obstacles * 1.5;
+					} else {
+						d13 = 1;
+					}
+					
+					CraftEventFactory.entityDamage = source;
+					entity.forceExplosionKnockback = false;
 
-						CraftEventFactory.entityDamage = source;
-						entity.forceExplosionKnockback = false;
+					boolean wasDamaged = entity.damageEntity(damageSrc, ((int) ((d13 * d13 + d13) / 2.0D * 8.0D * range + 1.0D)));
 
-						boolean wasDamaged = entity.damageEntity(damageSrc, ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * range + 1.0D)));
+					CraftEventFactory.entityDamage = null;
 
-						CraftEventFactory.entityDamage = null;
+					if (wasDamaged || entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock
+							|| entity.forceExplosionKnockback) {
 
-						if (wasDamaged || entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock
-								|| entity.forceExplosionKnockback) {
-
-							double ejection = d13;
-							if (entity instanceof EntityLiving) {
-								ejection = EnchantmentProtection.a((EntityLiving) entity, d13);
-							}
-
-							entity.setMot(entity.getMot().add(dx * ejection, dy * ejection, dz * ejection));
+						double ejection = d13;
+						if (entity instanceof EntityLiving) {
+							ejection = EnchantmentProtection.a((EntityLiving) entity, d13);
 						}
+
+						entity.setMot(entity.getMot().add(dx * ejection, dy * ejection, dz * ejection));
 					}
 				}
 			}

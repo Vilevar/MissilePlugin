@@ -92,45 +92,46 @@ public class MainEventListener implements Listener {
 						CustomElementManager.PLIERS.create());
 			}
 		}
+		
 		// Removing entities and tile entities
-		if (e.getMaterial() == Material.STICK && e.getAction() == Action.LEFT_CLICK_AIR) {
-			Set<EntityType> ents = new HashSet<>();
-			List<Entity> entities = p.getWorld().getEntities();
-			p.sendMessage("N entities = "+entities.size());
-			for(Entity ent : e.getPlayer().getWorld().getEntities()) {
-				if(ents.add(ent.getType())) {
-					p.sendMessage(ent.getType()+" "+ent.getLocation());
-				}
-				if(ent.getType() != EntityType.PLAYER)
-					ent.remove();
-			}
-			
-			p.sendMessage("Tiles :");
-			Set<Material> mat = new HashSet<>();
-			for(Chunk c : p.getWorld().getLoadedChunks()) {
-				for(BlockState bs : c.getTileEntities()) {
-					if(mat.add(bs.getType())) {
-						p.sendMessage(bs.getType()+" "+bs.getLocation());
-					}
-					bs.getBlock().setType(Material.AIR);
-				}
-			}
-			
-			p.sendMessage("Custom blocks :");
-			for(Chunk c : p.getWorld().getLoadedChunks()) {
-				for(int x = 0; x < 16; x++) {
-					for(int y = 0; y < 256; y++) {
-						for(int z = 0; z < 16; z++) {
-							Block block = c.getBlock(x, y, z);
-							if(CustomElementManager.isCustomBlock(block)) {
-								Location loc = block.getLocation();
-								p.sendMessage("§6Custom §e"+block.getType()+"§6 at : §c"+loc.getBlockX()+"/"+loc.getBlockY()+"/"+loc.getBlockZ());
-							}
-						}
-					}
-				}
-			}
-		}
+//		if (e.getMaterial() == Material.STICK && e.getAction() == Action.LEFT_CLICK_AIR) {
+//			Set<EntityType> ents = new HashSet<>();
+//			List<Entity> entities = p.getWorld().getEntities();
+//			p.sendMessage("N entities = "+entities.size());
+//			for(Entity ent : e.getPlayer().getWorld().getEntities()) {
+//				if(ents.add(ent.getType())) {
+//					p.sendMessage(ent.getType()+" "+ent.getLocation());
+//				}
+//				if(ent.getType() != EntityType.PLAYER)
+//					ent.remove();
+//			}
+//			
+//			p.sendMessage("Tiles :");
+//			Set<Material> mat = new HashSet<>();
+//			for(Chunk c : p.getWorld().getLoadedChunks()) {
+//				for(BlockState bs : c.getTileEntities()) {
+//					if(mat.add(bs.getType())) {
+//						p.sendMessage(bs.getType()+" "+bs.getLocation());
+//					}
+//					bs.getBlock().setType(Material.AIR);
+//				}
+//			}
+//			
+//			p.sendMessage("Custom blocks :");
+//			for(Chunk c : p.getWorld().getLoadedChunks()) {
+//				for(int x = 0; x < 16; x++) {
+//					for(int y = 0; y < 256; y++) {
+//						for(int z = 0; z < 16; z++) {
+//							Block block = c.getBlock(x, y, z);
+//							if(CustomElementManager.isCustomBlock(block)) {
+//								Location loc = block.getLocation();
+//								p.sendMessage("§6Custom §e"+block.getType()+"§6 at : §c"+loc.getBlockX()+"/"+loc.getBlockY()+"/"+loc.getBlockZ());
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
 	}
 
 	

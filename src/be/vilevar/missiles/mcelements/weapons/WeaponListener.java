@@ -181,6 +181,9 @@ public class WeaponListener implements Listener {
 	
 	@EventHandler
 	public void onShoot(PlayerInteractEvent e) {
+		if(main.hasGame() && !main.getGame().isStarted()) {
+			return;
+		}
 		Player p = e.getPlayer();
 		ItemStack is = e.getItem();
 		Weapon w = this.getWeapon(is);

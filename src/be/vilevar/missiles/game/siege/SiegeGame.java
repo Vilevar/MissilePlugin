@@ -179,26 +179,55 @@ public class SiegeGame implements Game {
 			}
 		}.runTaskTimer(main, 1200, 20);
 		
-		
+		this.time = 300;
 		this.task1 = new BukkitRunnable() {
 			@Override
 			public void run() {
-				if((firstRound ? communism : capitalism).getMerchant() == null) {
-					main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6La défense n'a pas posé ");
-					testStop(TestStopReason.MERCHANT_DEATH);
-					return;
+				resetScoreboard();
+				int seconds = time % 60;
+				String secs = seconds / 10 == 0 ? "0"+seconds : String.valueOf(seconds);
+				obj.getScore("§6Temps restant :§a "+(time / 60)+":"+secs).setScore(0);
+				
+				if(--time == 0) {
+					this.cancel();
+					if((firstRound ? communism : capitalism).getMerchant() == null) {
+						main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6La défense n'a pas posé de base.");
+						testStop(TestStopReason.MERCHANT_DEATH);
+						return;
+					}
+					
+					for(Player p : main.getServer().getOnlinePlayers()) {
+						if(!isDefender(p)) {
+							p.setGameMode(GameMode.SURVIVAL);
+							p.teleport(behind(p.getLocation()));
+						}
+					}
+					main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6Début de la manche, que le meilleur gagne !");
+					started = true;
 				}
 				
-				for(Player p : main.getServer().getOnlinePlayers()) {
-					if(!isDefender(p)) {
-						p.setGameMode(GameMode.SURVIVAL);
-						p.teleport(behind(p.getLocation()));
-					}
-				}
-				main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6Début de la manche, que le meilleur gagne !");
-				started = true;
 			}
-		}.runTaskLater(main, 7200);
+		}.runTaskTimer(main, 0, 20);
+		
+//		this.task1 = new BukkitRunnable() {
+//			@Override
+//			public void run() {
+//				if((firstRound ? communism : capitalism).getMerchant() == null) {
+//					main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6La défense n'a pas posé de base.");
+//					testStop(TestStopReason.MERCHANT_DEATH);
+//					return;
+//				}
+//				
+//				for(Player p : main.getServer().getOnlinePlayers()) {
+//					if(!isDefender(p)) {
+//						p.setGameMode(GameMode.SURVIVAL);
+//						p.teleport(behind(p.getLocation()));
+//					}
+//				}
+//				main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6Début de la manche, que le meilleur gagne !");
+//				started = true;
+//			}
+//		}.runTaskLater(main, 7200);
 		
 		main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6Phase de préparation, §e5 minutes§6.");
 	}
