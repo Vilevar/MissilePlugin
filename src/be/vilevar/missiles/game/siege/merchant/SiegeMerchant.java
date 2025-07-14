@@ -30,7 +30,7 @@ public class SiegeMerchant implements WeaponsMerchant {
 	public SiegeMerchant(BigTeamDefender team, Location loc, boolean defender) {
 		this.team = team;
 		
-		double health = defender ? 500 : 250;
+		double health = 500; //defender ? 500 : 250;
 		
 		this.villager = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
 		this.villager.setAI(false);

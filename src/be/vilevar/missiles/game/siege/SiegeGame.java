@@ -106,7 +106,7 @@ public class SiegeGame implements Game {
 			p.getEnderChest().clear();
 			
 			if(this.isDefender(p)) {
-				p.setGameMode(GameMode.SURVIVAL);
+				p.setGameMode(GameMode.ADVENTURE);
 				p.teleport(this.world.getDefenseSpawn().toLocation(world));
 			} else {
 				p.setGameMode(GameMode.ADVENTURE);
@@ -328,12 +328,19 @@ public class SiegeGame implements Game {
 	@Override
 	public WeaponsMerchant createMerchant(BigTeamDefender team, Location loc) {
 		boolean defender = firstRound == team.equals(this.communism);
-		if(defender) {
-			return new SiegeMerchant(team, loc, defender);
+		if(defender){
+			for(Player p : main.getServer().getOnlinePlayers()) {
+				if(this.isDefender(p)) {
+					p.setGameMode(GameMode.SURVIVAL);
+				}
+			}
+			SiegeMerchant merchant = new SiegeMerchant(team, loc, defender);
+			merchant.addMoney(60); // TODO See
+			return merchant;
 		} else {
 			if(this.started) {
 				SiegeMerchant merchant = new SiegeMerchant(team, loc, defender);
-				merchant.addMoney(40); // TODO see
+				merchant.addMoney(180); // TODO see
 				return merchant;
 			} else {
 				return null;

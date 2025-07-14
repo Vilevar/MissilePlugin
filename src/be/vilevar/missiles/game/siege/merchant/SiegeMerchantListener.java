@@ -4,8 +4,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -14,9 +17,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import be.vilevar.missiles.Main;
 import be.vilevar.missiles.mcelements.CustomElementManager;
@@ -30,42 +35,63 @@ public class SiegeMerchantListener implements Listener {
 	private HashMap<UUID, SiegeMerchant> enemyOpen = new HashMap<>();
 	private HashSet<UUID> attacks = new HashSet<>();
 	
+	private Color defenseArmorColor = Color.OLIVE;
+	private Color attackArmorColor = Color.MAROON;
+	
+	private AttributeModifier helmetArmor = new AttributeModifier(new UUID(13072025, 0), "armor-helmet-defense", 2, Operation.ADD_NUMBER, EquipmentSlot.HEAD);
+	private AttributeModifier chestplateArmor = new AttributeModifier(new UUID(13072025, 1), "armor-chestplate-defense", 6, Operation.ADD_NUMBER, EquipmentSlot.HEAD);
+	private AttributeModifier leggingsArmor = new AttributeModifier(new UUID(13072025, 2), "armor-leggings-defense", 5, Operation.ADD_NUMBER, EquipmentSlot.HEAD);
+	private AttributeModifier bootsArmor = new AttributeModifier(new UUID(13072025, 3), "armor-boots-defense", 2, Operation.ADD_NUMBER, EquipmentSlot.HEAD);
+	
 	private Inventory enemyInv;
 	
 	public SiegeMerchantListener() {
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.SNIPER.createItem(), 1, 0));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.SNIPER.getAmmunition().create(5), 1, 9));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.MACHINE_GUN.createItem(), 1, 1));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.MACHINE_GUN.getAmmunition().create(5), 1, 10));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.SHOTGUN.createItem(), 1, 2));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.SHOTGUN.getAmmunition().create(5), 1, 11));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.PISTOL.createItem(), 1, 3));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.PISTOL.getAmmunition().create(5), 1, 12));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.SNIPER.createItem(), 60, 0));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.SNIPER.getAmmunition().create(), 20, 9));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.MACHINE_GUN.createItem(), 45, 1));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.MACHINE_GUN.getAmmunition().create(), 10, 10));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.SHOTGUN.createItem(), 45, 2));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.SHOTGUN.getAmmunition().create(), 10, 11));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.PISTOL.createItem(), 30, 3));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.PISTOL.getAmmunition().create(), 5, 12));
 		
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.BOMB.create(3), 1, 5));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.SMOKE_BOMB.create(1), 1, 14));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.BOMB.create(), 5, 5));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.SMOKE_BOMB.create(), 10, 14));
 		
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.MINE.create(3), 1, 6), true, false);
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.CLAYMORE.create(1), 1, 15), true, false);
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.MINE.create(), 10, 6), true, false);
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.CLAYMORE.create(), 15, 15), true, false);
 		
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.PLIERS.create(), 3, 6), false, true);
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.PLIERS.create(), 15, 6), false, true);
 		this.registerItem(new SiegeMerchantItem(this.createExplosionArmor(), 10, 15), false, true);
 		
 		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.LADDER, 16), 1, 8));
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_PICKAXE), 1, 17));
+		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_PICKAXE), 2, 17));
 		
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_HELMET), 1, 36));
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_CHESTPLATE), 1, 37));
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_LEGGINGS), 1, 38));
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_BOOTS), 1, 39));
+		this.registerItem(new SiegeMerchantItem(this.createHelmet(false, false), 10, 36), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createChestplate(false, false), 25, 37), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createLeggings(false, false), 20, 38), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createBoots(false, false), 10, 39), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createHelmet(true, false), 10, 36), false, true);
+		this.registerItem(new SiegeMerchantItem(this.createChestplate(true, false), 25, 37), false, true);
+		this.registerItem(new SiegeMerchantItem(this.createLeggings(true, false), 20, 38), false, true);
+		this.registerItem(new SiegeMerchantItem(this.createBoots(true, false), 10, 39), false, true);
 		
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_SWORD), 1, 28));
-		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.COOKED_BEEF, 32), 1, 46));
+		this.registerItem(new SiegeMerchantItem(this.createHelmet(false, true), 20, 45), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createChestplate(false, true), 50, 46), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createLeggings(false, true), 40, 47), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createBoots(false, true), 20, 48), true, false);
+		this.registerItem(new SiegeMerchantItem(this.createHelmet(true, true), 20, 45), false, true);
+		this.registerItem(new SiegeMerchantItem(this.createChestplate(true, true), 50, 46), false, true);
+		this.registerItem(new SiegeMerchantItem(this.createLeggings(true, true), 40, 47), false, true);
+		this.registerItem(new SiegeMerchantItem(this.createBoots(true, true), 20, 48), false, true);
 		
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.HOWITZER.create(), 2, 32));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.RANGEFINDER.create(), 1, 41));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.SMALL_SHELL.create(3), 1, 33));
-		this.registerItem(new SiegeMerchantItem(CustomElementManager.BIG_SHELL.create(), 2, 42));
+		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.IRON_SWORD), 10, 28));
+		this.registerItem(new SiegeMerchantItem(new ItemStack(Material.COOKED_BEEF, 32), 1, 29));
+		
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.HOWITZER.create(), 60, 32));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.RANGEFINDER.create(), 20, 41));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.SMALL_SHELL.create(2), 5, 33));
+		this.registerItem(new SiegeMerchantItem(CustomElementManager.BIG_SHELL.create(), 5, 42));
 		
 		this.enemyInv = main.getServer().createInventory(null, 9, "§cEnemy SiegeMerchant");
 		
@@ -181,6 +207,56 @@ public class SiegeMerchantListener implements Listener {
 		ItemStack is = new ItemStack(Material.CHAINMAIL_HELMET);
 		ItemMeta im = is.getItemMeta();
 		im.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, 2, true);
+		is.setItemMeta(im);
+		return is;
+	}
+	
+	
+	
+	private ItemStack createHelmet(boolean attacker, boolean arrowProtection) {
+		ItemStack is = new ItemStack(Material.LEATHER_HELMET);
+		LeatherArmorMeta im = (LeatherArmorMeta) is.getItemMeta();
+		im.addAttributeModifier(Attribute.GENERIC_ARMOR, this.helmetArmor);
+		im.setColor(attacker ? this.attackArmorColor : this.defenseArmorColor);
+		if(arrowProtection) {
+			im.addEnchant(Enchantment.PROTECTION_PROJECTILE, 2, true);
+		}
+		is.setItemMeta(im);
+		return is;
+	}
+	
+	private ItemStack createChestplate(boolean attacker, boolean arrowProtection) {
+		ItemStack is = new ItemStack(Material.LEATHER_CHESTPLATE);
+		LeatherArmorMeta im = (LeatherArmorMeta) is.getItemMeta();
+		im.addAttributeModifier(Attribute.GENERIC_ARMOR, this.chestplateArmor);
+		im.setColor(attacker ? this.attackArmorColor : this.defenseArmorColor);
+		if(arrowProtection) {
+			im.addEnchant(Enchantment.PROTECTION_PROJECTILE, 2, true);
+		}
+		is.setItemMeta(im);
+		return is;
+	}
+	
+	private ItemStack createLeggings(boolean attacker, boolean arrowProtection) {
+		ItemStack is = new ItemStack(Material.LEATHER_LEGGINGS);
+		LeatherArmorMeta im = (LeatherArmorMeta) is.getItemMeta();
+		im.addAttributeModifier(Attribute.GENERIC_ARMOR, this.leggingsArmor);
+		im.setColor(attacker ? this.attackArmorColor : this.defenseArmorColor);
+		if(arrowProtection) {
+			im.addEnchant(Enchantment.PROTECTION_PROJECTILE, 2, true);
+		}
+		is.setItemMeta(im);
+		return is;
+	}
+	
+	private ItemStack createBoots(boolean attacker, boolean arrowProtection) {
+		ItemStack is = new ItemStack(Material.LEATHER_BOOTS);
+		LeatherArmorMeta im = (LeatherArmorMeta) is.getItemMeta();
+		im.addAttributeModifier(Attribute.GENERIC_ARMOR, this.bootsArmor);
+		im.setColor(attacker ? this.attackArmorColor : this.defenseArmorColor);
+		if(arrowProtection) {
+			im.addEnchant(Enchantment.PROTECTION_PROJECTILE, 2, true);
+		}
 		is.setItemMeta(im);
 		return is;
 	}
