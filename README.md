@@ -10,10 +10,10 @@ If you use (parts of) the code here, don't hesitate to cite this repository some
 3. (To be tested) Fixing leather armors for Siege game
 4. (To be tested) Not allowing blocks to be placed to close to the base in Siege games
 5. (To be tested) Cooling time to howitzers
-6. Adding custom projectile protection to the armors
-7. Adding compass artillery-countermeasure
-8. Adding a perforing shell
-9. Limiting spectating of death siege attackers to view of teammates
+6. (To be tested) Adding custom projectile protection to the armors
+7. (To be tested) Adding a perforing shell
+8. (To be tested) Limiting spectating of death siege attackers to view of teammates
+9. Adding compass artillery-countermeasure
 10. (For the long term) Adding a Wiki and more to the GitHub
 11. (For the long term) Adding mortars ?
 
