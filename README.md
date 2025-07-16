@@ -6,16 +6,12 @@ If you use (parts of) the code here, don't hesitate to cite this repository some
 
 **TODO List**
 1. Fix known bugs
-2. (To be tested) Adding time to spectate after each round of Siege game
-3. (To be tested) Fixing leather armors for Siege game
-4. (To be tested) Not allowing blocks to be placed to close to the base in Siege games
-5. (To be tested) Cooling time to howitzers
-6. (To be tested) Adding custom projectile protection to the armors
-7. (To be tested) Adding a perforing shell
+2. In BigGameCommand : asking permission to Game handler if can place base
+6. REPAIR : Adding custom projectile protection to the armors
+7. REPAIR : Adding a perforing shell
 8. (To be tested) Limiting spectating of death siege attackers to view of teammates
-9. Adding compass artillery-countermeasure
 10. (For the long term) Adding a Wiki and more to the GitHub
 11. (For the long term) Adding mortars ?
 
 **Known Bugs**
-- (To be tested) Duplication bug in Siege base UI
+- Nothing known :)
