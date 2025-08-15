@@ -7,11 +7,9 @@ If you use (parts of) the code here, don't hesitate to cite this repository some
 **TODO List**
 1. Fix known bugs
 2. In BigGameCommand : asking permission to Game handler if can place base
-6. REPAIR : Adding custom projectile protection to the armors
-7. REPAIR : Adding a perforing shell
-8. (To be tested) Limiting spectating of death siege attackers to view of teammates
-10. (For the long term) Adding a Wiki and more to the GitHub
-11. (For the long term) Adding mortars ?
+3. (To be tested) Limiting spectating of death siege attackers to view of teammates
+4. (For the long term) Adding a Wiki (for the code and the gameplay) and more to the GitHub
+5. (For the long term) Adding mortars ?
 
 **Known Bugs**
 - Nothing known :)
