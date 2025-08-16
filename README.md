@@ -5,11 +5,11 @@ Spigot 1.17.1 plugin adding some military stuff (ballistic missiles, basic artil
 If you use (parts of) the code here, please cite this repository somewhere visible to the users of your plugin and to let me know what you did with it, whether it be for having fun with some friends or for a server !
 
 **TODO List**
-[x] Fix known bugs
-[] In BigGameCommand : asking permission to Game handler if can place base
-[] (To be tested) Limiting spectating of death siege attackers to view of teammates
-[] (For the long term) Adding a Wiki (for the code and the gameplay) and more to the GitHub
-[] (For the long term) Adding mortars ?
+- [x] Fix known bugs
+- [ ] In BigGameCommand : asking permission to Game handler if can place base
+- [ ] (To be tested) Limiting spectating of death siege attackers to view of teammates
+- [ ] (For the long term) Adding a Wiki (for the code and the gameplay) and more to the GitHub
+- [ ] (For the long term) Adding mortars ?
 
 **Known Bugs**
 - Nothing known :)
