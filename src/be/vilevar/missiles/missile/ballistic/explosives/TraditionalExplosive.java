@@ -65,6 +65,11 @@ public class TraditionalExplosive implements Explosive {
 		EntityPlayer source = ((CraftPlayer) damager).getHandle();
 		DamageSource damageSrc = DamageSource.d(source);
 		
+		// Destroy impact block in order to avoid the slab aberration
+		org.bukkit.World bukkitWorld = world.getWorld();
+		cem.blockBreak(bukkitWorld.getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+		world.setTypeAndData(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), Blocks.a.getBlockData(), 3);
+		
 		// Get blocks
 		ArrayList<BlockPosition> blocks = new ArrayList<>();
 
@@ -176,7 +181,7 @@ public class TraditionalExplosive implements Explosive {
 		// Destroy blocks
 		world.addParticle(Particles.y, loc.getX(), loc.getY(), loc.getZ(), 1.0D, 0.0D, 0.0D);
 		
-		org.bukkit.World bukkitWorld = world.getWorld();
+//		org.bukkit.World bukkitWorld = world.getWorld();
 		
 		for(BlockPosition pos : blocks) {
 			cem.blockBreak(bukkitWorld.getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
@@ -242,7 +247,7 @@ public class TraditionalExplosive implements Explosive {
 
 	@Override
 	public void explodeByInterception(Location loc, Player damager) {
-		this.interception = new TraditionalExplosive(main, 50);
+		this.interception = new TraditionalExplosive(main, this.power / 4);
 		this.interception.explode(loc, damager);
 	}
 

@@ -112,8 +112,12 @@ public class CustomElementManager implements Listener {
 	
 	public static final CustomBlock HOWITZER = new CustomBlock(Material.NETHER_BRICK_STAIRS, "Howitzer");
 	
-	public static final CustomItem 	SMALL_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 8, "Small Shell"),
-									BIG_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 9, "Big Shell");
+	public static final CustomItem 	SHELL = new CustomItem(Material.GLOWSTONE_DUST, 8, "Shell"),
+									EXPLOSIVE_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 9, "Highly Explosive Shell"),
+									INCENDIARY_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 30, "Incendiary Shell"),
+									PERFORATING_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 31, "Perforating Shell");
+//	public static final CustomItem 	SMALL_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 8, "Small Shell"),
+//									BIG_SHELL = new CustomItem(Material.GLOWSTONE_DUST, 9, "Big Shell");
 //									REMOTE_CONTROL = new CustomItem(Material.IRON_HOE, 5, "Howitzer Remote Control");
 	
 	public static final CustomItem 	WEATHER_FORECASTER = new CustomItem(Material.IRON_HOE, 6, "Weather Forecaster");
@@ -175,6 +179,8 @@ public class CustomElementManager implements Listener {
 		
 		this.siegeMerchant = new SiegeMerchantListener();
 		pm.registerEvents(this.siegeMerchant, pl);
+		
+		pm.registerEvents(new EnchantmentListener(), pl);
 	}
 	
 	
@@ -286,6 +292,10 @@ public class CustomElementManager implements Listener {
 				}
 			}
 		}
+		
+//		if(e.getAction() == Action.RIGHT_CLICK_AIR && e.getItem() != null && e.getItem().getType() == Material.BOOK) {
+//			
+//		}
 	}
 	
 	@EventHandler
@@ -355,4 +365,6 @@ public class CustomElementManager implements Listener {
 		return MISSILE_LAUNCHER.isParentOf(block) || MISSILE_CRAFT.isParentOf(block) || RV_CRAFT.isParentOf(block) || HOWITZER.isParentOf(block) ||
 				RADAR.isParentOf(block) || ABM_LAUNCHER.isParentOf(block) || MINE.isParentOf(block) || CLAYMORE.isParentOf(block);
 	}
+	
+	
 }

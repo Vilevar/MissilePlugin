@@ -7,13 +7,18 @@ import be.vilevar.missiles.merchant.WeaponsMerchant;
 
 public class BigTeamDefender extends TeamDefender {
 
+	private boolean isCommunist;
 	private WeaponsMerchant merchant;
 	private Location outpost;
 	
-	public BigTeamDefender(Team team, int channels, String horse) {
+	public BigTeamDefender(Team team, boolean isCommunist, int channels, String horse) {
 		super(team, channels, horse);
+		this.isCommunist = isCommunist;
 	}
 	
+	public boolean isCommunist() {
+		return isCommunist;
+	}
 	
 	public WeaponsMerchant getMerchant() {
 		return merchant;

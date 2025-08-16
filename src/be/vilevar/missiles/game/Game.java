@@ -64,6 +64,7 @@ public interface Game {
 		if(main.getCapitalism().getSize() == 0 || main.getCommunism().getSize() == 0) {
 			return "§cLes équipes ne sont pas bien réparties.";
 		}
+		main.updateTeams();
 		return null;
 	}
 	

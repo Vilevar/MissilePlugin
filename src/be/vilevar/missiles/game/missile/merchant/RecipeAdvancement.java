@@ -89,10 +89,10 @@ public class RecipeAdvancement extends MerchantRecipe {
 						new DevelopmentRecipe(CustomElementManager.BOMB.create(5), 2)}),
 		
 		SMALL_SHELL = new RecipeAdvancement(new RecipeAdvancement[] {HOWITZER, TNT}, new ResearchRecipe("Obus léger", 12), new DevelopmentRecipe[] {
-						new DevelopmentRecipe(CustomElementManager.SMALL_SHELL.create(5), 5)}),
+						new DevelopmentRecipe(CustomElementManager.SHELL.create(5), 5)}),
 		
 		BIG_SHELL = new RecipeAdvancement(new RecipeAdvancement[] {SMALL_SHELL}, new ResearchRecipe("Obus lourd", 17), new DevelopmentRecipe[] {
-						new DevelopmentRecipe(CustomElementManager.BIG_SHELL.create(5), 8)}),
+						new DevelopmentRecipe(CustomElementManager.EXPLOSIVE_SHELL.create(5), 8)}),
 		
 		ENGINE_2 = new RecipeAdvancement(new RecipeAdvancement[] {ENGINE_1}, new ResearchRecipe("Moteur 2", 25), new DevelopmentRecipe[] {
 						new DevelopmentRecipe(CustomElementManager.ENGINE_2.create(), 15)}),

@@ -61,6 +61,8 @@ public class WeaponListener implements Listener {
 	private ArrayList<UUID> aiming = new ArrayList<>();
 	private HashMap<UUID, Integer> discharge = new HashMap<>();
 	
+	private ArrayList<UUID> headshotArrows = new ArrayList<>();
+	
 	private ArrayList<MinePredicate> mines = new ArrayList<>();
 	private Random random = new Random();
 	
@@ -235,8 +237,31 @@ public class WeaponListener implements Listener {
 						}
 					}
 				}
+				boolean isAiming = this.aiming.contains(p.getUniqueId());
+				// Test Headshot
+				boolean isHeadshot = false;
+				for(Player target : Main.i.getServer().getOnlinePlayers()) {
+					if(!p.getUniqueId().equals(target.getUniqueId())) {
+						Vector dist = target.getEyeLocation().subtract(p.getEyeLocation()).toVector();
+						Vector dir = p.getLocation().getDirection().normalize();
+						double y = this.shootY(dist.clone().setY(0).length(), dir.clone().setY(0).length(), dir.getY());
+						Vector hit = dir.clone().setY(0).normalize().multiply(dist.clone().setY(0).length()).setY(y);
+						System.out.println(hit.distance(dist));
+						if(hit.distance(dist) <= 0.25 && (isAiming ? w.getAimingSpread() : w.getSpread())*dist.length() <= 5) {
+							isHeadshot = true;
+							break;
+						}
+						
+					}
+				}
+				System.out.println(isHeadshot);
 				// Shoot
-				w.shoot(p, this.aiming.contains(p.getUniqueId()));
+				Arrow[] arrows = w.shoot(p, isAiming);
+				if(isHeadshot) {
+					for(Arrow arw : arrows) {
+						this.headshotArrows.add(arw.getUniqueId());
+					}
+				}
 				this.recover.put(p.getUniqueId(), System.currentTimeMillis() + recover);
 			// Aim
 			} else {
@@ -276,7 +301,7 @@ public class WeaponListener implements Listener {
 				e.setCancelled(true);
 			} else if(e.getEntityType() == EntityType.SNOWBALL) {
 				ItemStack main = p.getInventory().getItemInMainHand();
-				if(BOMB.isParentOf(main)  || (main.getType() != Material.SNOWBALL && BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
+				if(BOMB.isParentOf(main) || (main.getType() != Material.SNOWBALL && BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
 					e.getEntity().setMetadata("bomb-type", new FixedMetadataValue(this.main, 0));
 				} else if(SMOKE_BOMB.isParentOf(main)
 						|| (main.getType() != Material.SNOWBALL && SMOKE_BOMB.isParentOf(p.getInventory().getItemInOffHand()))) {
@@ -307,15 +332,20 @@ public class WeaponListener implements Listener {
 			} else if(proj instanceof Arrow) {
 				if(e.getHitBlock() != null && e.getHitBlock().getType().toString().contains("GLASS")) {
 					e.getHitBlock().setType(Material.AIR);
-				} else if(e.getHitEntity() != null && e.getHitEntity().getType() == EntityType.PLAYER) {
-					Arrow arrow = (Arrow) proj;
-					Player hit = (Player) e.getHitEntity();
-					if(proj.getLocation().distance(hit.getEyeLocation()) <= 0.25) {
-						if(hit.getInventory().getHelmet() == null || hit.getInventory().getHelmet().getType() == Material.AIR) {
-							arrow.setCritical(true);
-							p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-						}
+				} else if(this.headshotArrows.contains(proj.getUniqueId())) {
+					if(e.getHitEntity() != null && e.getHitEntity().getType() == EntityType.PLAYER) {
+						Arrow arrow = (Arrow) proj;
+						arrow.setDamage(arrow.getDamage() * 1.5);
+						p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 					}
+					this.headshotArrows.remove(proj.getUniqueId());
+//				} else if(e.getHitEntity() != null && e.getHitEntity().getType() == EntityType.PLAYER) {
+//					Player hit = (Player) e.getHitEntity();
+//					if(proj.getLocation().distance(hit.getEyeLocation()) <= 0.25) {
+//						Arrow arrow = (Arrow) proj;
+//						arrow.setDamage(arrow.getDamage() * 1.5);
+//						p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+//					}
 				}
 			}
 		}
@@ -383,17 +413,28 @@ public class WeaponListener implements Listener {
 	
 	private int createSmoke(Location loc, double radius, int n) {
 		return main.getServer().getScheduler().scheduleSyncRepeatingTask(main, () -> {
-//			for(int i = 0; i < n; i++) {
-//				double r = radius * Math.sqrt(Math.random());
-//				double theta = 2 * Math.PI * Math.random();
-//				double phi = 2 * Math.PI * Math.random();
-//				Vector add = new Vector(r*Math.sin(theta)*Math.cos(phi), r*Math.cos(theta), r*Math.sin(theta)*Math.sin(phi));
-//				Main.display(ParticleEffect.SMOKE_LARGE, loc.clone().add(add));
-//			}
+			for(int i = 0; i < n; i++) {
+				double r = radius * Math.sqrt(Math.random());
+				double theta = 2 * Math.PI * Math.random();
+				double phi = 2 * Math.PI * Math.random();
+				Vector add = new Vector(r*Math.sin(theta)*Math.cos(phi), r*Math.cos(theta), r*Math.sin(theta)*Math.sin(phi));
+				Main.display(Particle.SMOKE_LARGE, loc.clone().add(add));
+			}
 			loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, loc, 1, radius, radius, radius, 0, null, true);
 			for(Entity ent : loc.getWorld().getNearbyEntities(loc, radius, radius, radius, e -> e instanceof LivingEntity)) {
 				((LivingEntity) ent).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 255));
 			}
 		}, 1, 1);
+	}
+	
+	
+	private double g = -0.05;
+	private double k = 0.99;
+	private double v0 = 20;
+	
+	private double shootY(double x, double vxMultiplier, double vyMultiplier) {
+		double vx = v0 * vxMultiplier;
+		double vy = v0 * vyMultiplier;
+		return x / vx * (vy + g/(k-1)) - g/(k-1)*Math.log(1 + (k-1)*x/vx)/Math.log(k);
 	}
 }

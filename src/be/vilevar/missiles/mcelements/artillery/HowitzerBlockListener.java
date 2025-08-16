@@ -31,7 +31,8 @@ public class HowitzerBlockListener implements Listener {
 	private ItemStack unusedSlot;
 	private ItemStack fire, cantFire;
 	
-	private WorldManager wm = Main.i.getWorldManager();
+	private Main main = Main.i;
+	private WorldManager wm = main.getWorldManager();
 	
 	public HowitzerBlockListener(ItemStack unusedSlot) {
 		this.unusedSlot = unusedSlot;
@@ -133,6 +134,8 @@ public class HowitzerBlockListener implements Listener {
 						if(is.equals(fire) && howitzer.canFire()) {
 							howitzer.fire(p);
 							inv.setItem(0, null);
+							main.getServer().getScheduler().runTaskLater(main, () -> this.setFireItem(inv, howitzer),
+									Howitzer.COOLING_TIME * 20 + 1);
 						}
 						this.setFireItem(inv, howitzer);
 					}

@@ -6,9 +6,6 @@ import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -26,7 +23,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
@@ -35,11 +31,7 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import be.vilevar.missiles.Main;
-import be.vilevar.missiles.artillery.Shell;
-import be.vilevar.missiles.artillery.ShellPath;
 import be.vilevar.missiles.mcelements.data.RangefinderData;
-import be.vilevar.missiles.utils.Vec3d;
 
 public class RangefinderListener implements Listener {
 
@@ -207,7 +199,7 @@ public class RangefinderListener implements Listener {
 			}
 			return;
 		}
-		if(args[0].equalsIgnoreCase("%msg") && p.getGameMode()==GameMode.SURVIVAL) {
+		if(args[0].equalsIgnoreCase("%msg") && p.getGameMode() == GameMode.SURVIVAL) {
 			e.setCancelled(true);
 			if(args.length<3) {
 				p.sendMessage("§c%msg <player> [msg]");
@@ -247,30 +239,30 @@ public class RangefinderListener implements Listener {
 			p.sendMessage("§6%rf <x> <y> <z> §a: configurer le pointer laser");
 			p.sendMessage("§6%dist <x> <z>");
 		}
-		if(args[0].equalsIgnoreCase("%mrl")) {
-			e.setCancelled(true);
-			ArrayList<Vec3d> loc = new ArrayList<>();
-			for(double x = -1.5; x <= 1.5; x += 0.333) {
-				for(double y = 0.333; y <= 1.333; y += 0.333) {
-					loc.add(new Vec3d(p.getEyeLocation().add(rotate(new Vector(x, y, 0), p.getEyeLocation()))));
-				}
-			}
-			Random r = new Random();
-			Collections.shuffle(loc, r);
-			Iterator<Vec3d> l = loc.iterator();
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					if(l.hasNext()) {
-						new ShellPath(p.getWorld(), Shell.ROCKET, l.next(),
-								Math.toRadians(-p.getEyeLocation().getPitch()) + r.nextGaussian()*0.025, 
-								Math.toRadians(p.getEyeLocation().getYaw() + 90) + r.nextGaussian()*0.025, p).runTaskTimer(Main.i, 1, 0);
-					} else {
-						this.cancel();
-					}
-				}
-			}.runTaskTimer(Main.i, 0, 0);
-		}
+//		if(args[0].equalsIgnoreCase("%mrl")) {
+//			e.setCancelled(true);
+//			ArrayList<Vec3d> loc = new ArrayList<>();
+//			for(double x = -1.5; x <= 1.5; x += 0.333) {
+//				for(double y = 0.333; y <= 1.333; y += 0.333) {
+//					loc.add(new Vec3d(p.getEyeLocation().add(rotate(new Vector(x, y, 0), p.getEyeLocation()))));
+//				}
+//			}
+//			Random r = new Random();
+//			Collections.shuffle(loc, r);
+//			Iterator<Vec3d> l = loc.iterator();
+//			new BukkitRunnable() {
+//				@Override
+//				public void run() {
+//					if(l.hasNext()) {
+//						new ShellPath(p.getWorld(), Shell.ROCKET, l.next(),
+//								Math.toRadians(-p.getEyeLocation().getPitch()) + r.nextGaussian()*0.025, 
+//								Math.toRadians(p.getEyeLocation().getYaw() + 90) + r.nextGaussian()*0.025, p).runTaskTimer(Main.i, 1, 0);
+//					} else {
+//						this.cancel();
+//					}
+//				}
+//			}.runTaskTimer(Main.i, 0, 0);
+//		}
 	}
 	
 	

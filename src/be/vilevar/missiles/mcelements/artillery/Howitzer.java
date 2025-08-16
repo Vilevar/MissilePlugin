@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import be.vilevar.missiles.Main;
+import be.vilevar.missiles.MainEventListener;
 import be.vilevar.missiles.artillery.Shell;
 import be.vilevar.missiles.artillery.ShellPath;
 import be.vilevar.missiles.utils.Vec3d;
@@ -31,6 +32,8 @@ public class Howitzer {
 	private static final int minPitchMillirad = -99;
 	private static final int maxPitchMillirad = 99;
 	private static final Sound BOOM = Sound.ENTITY_ENDER_DRAGON_DEATH;
+	public static final int COOLING_TIME = 5;
+	private static final int COOLING_TIME_MS = COOLING_TIME * 1000;
 	
 	
 	private Main main = Main.i;
@@ -46,6 +49,7 @@ public class Howitzer {
 	private int pitchMillirad = 0;
 	
 	private Shell shell;
+	private long lastFireTime;
 	
 	private Player open;
 	
@@ -146,7 +150,7 @@ public class Howitzer {
 	}
 
 	public double getPitch() {
-		return Math.toRadians(this.pitchDegrees) + ((this.pitchMillirad) / 1000.0);
+		return Math.toRadians(this.pitchDegrees) + (this.pitchMillirad / 1000.0);
 	}
 	
 	
@@ -163,7 +167,7 @@ public class Howitzer {
 		if(this.main.getGame() != null && !this.main.getGame().isStarted()) {
 			return false;
 		}
-		return this.shell != null;
+		return this.shell != null && System.currentTimeMillis() - this.lastFireTime > COOLING_TIME_MS;
 	}
 	
 	
@@ -172,6 +176,7 @@ public class Howitzer {
 				this.getPitch(), this.getYaw(), gunner).runTaskTimer(main, 1, 1);
 		this.shell = null;
 		gunner.getWorld().playSound(this.firedLoc, BOOM, 4.f, 1.f);
+		MainEventListener.trackSoundOrigin(firedLoc, 5, gunner);
 		
 		main.getServer().getScheduler().runTaskLater(main, () -> {
 			for(double r = 0; r <= 1; r += 0.2) {
@@ -184,6 +189,7 @@ public class Howitzer {
 				}
 			}
 		}, 1);
+		this.lastFireTime = System.currentTimeMillis();
 	}
 	
 	
@@ -203,9 +209,9 @@ public class Howitzer {
 			double dist = target.clone().setY(0).length();
 			
 			double g = Main.i.getWorldManager().getG().length();
-			double s = Math.sqrt(Math.pow(this.shell.getV0(), 4) - g*(g*Math.pow(dist, 2) + 2*target.getY()*Math.pow(this.shell.getV0(), 2)));
-			double maxAngle = Math.atan((Math.pow(this.shell.getV0(), 2) + s) / (g * dist));
-			double minAngle = Math.atan((Math.pow(this.shell.getV0(), 2) - s) / (g * dist));
+			double s = Math.sqrt(Math.pow(this.shell.getInitialSpeed(), 4) - g*(g*Math.pow(dist, 2) + 2*target.getY()*Math.pow(this.shell.getInitialSpeed(), 2)));
+			double maxAngle = Math.atan((Math.pow(this.shell.getInitialSpeed(), 2) + s) / (g * dist));
+			double minAngle = Math.atan((Math.pow(this.shell.getInitialSpeed(), 2) - s) / (g * dist));
 			
 			if(this.testPitchAngle(maxAngle) < this.testPitchAngle(minAngle))
 				this.testPitchAngle(maxAngle);

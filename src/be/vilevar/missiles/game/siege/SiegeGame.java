@@ -1,5 +1,6 @@
 package be.vilevar.missiles.game.siege;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -38,8 +39,14 @@ public class SiegeGame implements Game {
 	private BigTeamDefender capitalism;
 	private SiegeWorld world;
 	
+	// Constant
+	private String firstRoundScoreboardName = "§7------§b Partie de §dSiège§b (1/2)§7 ------";
+	private String secondRoundScoreboardName = "§7------§b Partie de §dSiège§b (2/2)§7 ------";
+	private PotionEffect respawnResistance = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 400, 2, true, true);
+	
 	// Round data
 	private HashMap<UUID, Integer> deaths = new HashMap<>();
+	private ArrayList<UUID> spectatingPlayers = new ArrayList<>();
 	private int time;
 	
 	private boolean started;
@@ -57,8 +64,8 @@ public class SiegeGame implements Game {
 	private boolean stopped;
 	
 	public SiegeGame(SiegeWorld world) {
-		this.communism = new BigTeamDefender(main.getCommunism(), 0, null);
-		this.capitalism = new BigTeamDefender(main.getCapitalism(), 0, null);
+		this.communism = new BigTeamDefender(main.getCommunism(), true, 0, null);
+		this.capitalism = new BigTeamDefender(main.getCapitalism(), false, 0, null);
 		
 		this.world = world;
 	}
@@ -84,8 +91,7 @@ public class SiegeGame implements Game {
 		}
 		
 		// Create objective
-		this.obj = this.main.getScoreboard().registerNewObjective("MissilePL-GSiege", "dummy",
-				"§7------§b Partie de §dSiège§7 ------");
+		this.obj = this.main.getScoreboard().registerNewObjective("MissilePL-GSiege", "dummy", this.firstRoundScoreboardName);
 		this.obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		
 		this.firstRound = true;
@@ -95,7 +101,6 @@ public class SiegeGame implements Game {
 
 	@Override
 	public void start() {
-		System.out.println("Start");
 		World world = this.firstRound ? this.world.getWorld1() : this.world.getWorld2();
 		
 		ItemStack beef = new ItemStack(Material.COOKED_BEEF, 16);
@@ -125,12 +130,16 @@ public class SiegeGame implements Game {
 			@Override
 			public void run() {
 				WeaponsMerchant merchant = communism.getMerchant();
-				if(merchant != null)
+				if(merchant != null) {
 					merchant.addMoney(1); // TODO see
+					merchant.testLocation();
+				}
 				
 				merchant = capitalism.getMerchant();
-				if(merchant != null)
+				if(merchant != null) {
 					merchant.addMoney(1); // TODO see
+					merchant.testLocation();
+				}
 				
 				if(isStarted()) {
 					
@@ -175,6 +184,20 @@ public class SiegeGame implements Game {
 							online.sendTitle("§e"+remainingTime, null, 0, 15, 0);
 						}
 					}
+					
+					// Test spectating players
+					for(UUID id : spectatingPlayers) {
+						Player p = main.getServer().getPlayer(id);
+						if(p.getSpectatorTarget() == null //|| !(p.getSpectatorTarget() instanceof Player)
+								|| isDefender(p.getSpectatorTarget().getName())) {
+							find_player: for(Player online : main.getServer().getOnlinePlayers()) {
+								if(!online.isDead() && !isSpectating(online) && !isDefender(online)) {
+									p.setSpectatorTarget(online);
+									break find_player;
+								}
+							}
+						}
+					}
 				}
 			}
 		}.runTaskTimer(main, 1200, 20);
@@ -192,14 +215,14 @@ public class SiegeGame implements Game {
 					this.cancel();
 					if((firstRound ? communism : capitalism).getMerchant() == null) {
 						main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6La défense n'a pas posé de base.");
-						testStop(TestStopReason.MERCHANT_DEATH);
+						testStop(TestStopReason.MERCHANT_NOT_PLACED);
 						return;
 					}
 					
 					for(Player p : main.getServer().getOnlinePlayers()) {
 						if(!isDefender(p)) {
 							p.setGameMode(GameMode.SURVIVAL);
-							p.teleport(behind(p.getLocation()));
+							p.teleport(below(p.getLocation()));
 						}
 					}
 					main.getServer().broadcastMessage("§5[§2SiegeGame§5] §6Début de la manche, que le meilleur gagne !");
@@ -233,7 +256,7 @@ public class SiegeGame implements Game {
 	}
 
 	private void testStop(TestStopReason reason) {
-		boolean defenderWon = reason != TestStopReason.MERCHANT_DEATH;
+		boolean defenderWon = reason != TestStopReason.MERCHANT_DEATH && reason != TestStopReason.MERCHANT_NOT_PLACED;
 		
 		if(this.firstRound) {
 			
@@ -248,11 +271,11 @@ public class SiegeGame implements Game {
 				p.setGameMode(GameMode.SPECTATOR);
 			
 			this.task1.cancel();
+			this.task2.cancel();
 			this.deaths.clear();
+			this.spectatingPlayers.clear();
 			
 			main.getServer().getScheduler().runTaskLater(main, () -> {
-				this.task2.cancel();
-				
 				this.time = 0;
 				this.firstRound = false;
 				
@@ -263,22 +286,29 @@ public class SiegeGame implements Game {
 				this.resetScoreboard();
 				
 				this.start();
-			}, 200);
+			}, reason == TestStopReason.MERCHANT_NOT_PLACED ? 20*10 : 20*120);
 			
 		} else {
 			
 			main.getServer().broadcastMessage("§6Le §a"+(defenderWon ? this.capitalism.getDisplayName() : this.communism.getDisplayName())
 					+"§6 a gagné §dla deuxième manche §6!");
 			
-			if(this.defenderWonFirstRound != defenderWon) { // The same team won twice
-				this.stop(defenderWon ? capitalism : communism, true);
-			} else { // The attackers or defenders won only
-				if(this.time <= this.lastTime) { // The last time was better -> The winner of the game is the winner of the round
+			for(Player p : main.getServer().getOnlinePlayers())
+				p.setGameMode(GameMode.SPECTATOR);
+			this.task1.cancel();
+			this.task2.cancel();
+			
+			main.getServer().getScheduler().runTaskLater(main, () -> {
+				if(this.defenderWonFirstRound != defenderWon) { // The same team won twice
 					this.stop(defenderWon ? capitalism : communism, true);
-				} else { // The previous time was better -> The winner of the game is the winner of the previous round
-					this.stop(defenderWon ? communism : capitalism, true);
+				} else { // The attackers or defenders won only
+					if(this.time <= this.lastTime) { // The last time was better -> The winner of the game is the winner of the round
+						this.stop(defenderWon ? capitalism : communism, true);
+					} else { // The previous time was better -> The winner of the game is the winner of the previous round
+						this.stop(defenderWon ? communism : capitalism, true);
+					}
 				}
-			}
+			}, reason == TestStopReason.MERCHANT_NOT_PLACED ? 20*10 : 20*120);
 		}
 	}
 	
@@ -360,14 +390,20 @@ public class SiegeGame implements Game {
 			} else {
 				World world = this.firstRound ? this.world.getWorld1() : this.world.getWorld2();
 				e.setRespawnLocation(
-						behind(this.isDefender(p) ? this.world.getDefenseSpawn().toLocation(world) : this.world.getAttackSpawn().toLocation(world)));
+						below(this.isDefender(p) ? this.world.getDefenseSpawn().toLocation(world) : this.world.getAttackSpawn().toLocation(world)));
 			}
 			// GameMode after respawn
 			p.setGameMode(GameMode.SPECTATOR);
-			if(this.isStarted() && (this.isDefender(p) || this.deaths.getOrDefault(p.getUniqueId(), 0) < MAX_DEATHS)) {
+			if(this.isStarted()) {
+//				System.out.println("Respawn Resistance : " + p.addPotionEffect(this.respawnResistance));
 				main.getServer().getScheduler().runTaskLater(main, () -> {
-					if(main.hasGame() && p.isOnline()) {
-						p.setGameMode(GameMode.SURVIVAL);
+					if(main.hasGame() && p.isOnline() && SiegeGame.this.isStarted()) {
+						if(this.isDefender(p) || this.deaths.getOrDefault(p.getUniqueId(), 0) < MAX_DEATHS) {
+							p.setGameMode(GameMode.SURVIVAL);
+							p.addPotionEffect(this.respawnResistance);
+						} else {
+							this.spectatingPlayers.add(p.getUniqueId());
+						}
 					}
 				}, 60);
 			}
@@ -395,6 +431,14 @@ public class SiegeGame implements Game {
 		return firstRound == this.communism.getTeam().hasEntry(p.getName());
 	}
 	
+	public boolean isDefender(String playerName) {
+		return firstRound == this.communism.getTeam().hasEntry(playerName);
+	}
+	
+	public boolean isSpectating(Player p) {
+		return this.spectatingPlayers.contains(p.getUniqueId());
+	}
+	
 	private int getRemainingLive() {
 		int r = 0;
 		for(Player online : main.getServer().getOnlinePlayers()) {
@@ -406,6 +450,7 @@ public class SiegeGame implements Game {
 	}
 	
 	private void resetScoreboard() {
+		obj.setDisplayName(this.firstRound ? this.firstRoundScoreboardName : this.secondRoundScoreboardName);
 		for(String entry : main.getScoreboard().getEntries()) {
 			if(obj.getScore(entry).isScoreSet()) {
 				main.getScoreboard().resetScores(entry);
@@ -413,7 +458,7 @@ public class SiegeGame implements Game {
 		}
 	}
 	
-	private Location behind(Location test) {
+	private Location below(Location test) {
 		test.add(0, -2, 0);
 		while(test.add(0, -1, 0).getBlock().getType() == Material.AIR);
 		test.add(0, 1, 0);
@@ -422,7 +467,7 @@ public class SiegeGame implements Game {
 	
 	
 	private static enum TestStopReason {
-		TIME, MERCHANT_DEATH, ATTACKERS_DEATH;
+		TIME, MERCHANT_DEATH, MERCHANT_NOT_PLACED, ATTACKERS_DEATH;
 	}
 
 }

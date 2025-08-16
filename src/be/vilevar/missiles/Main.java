@@ -69,8 +69,8 @@ public class Main extends JavaPlugin {
 
 		PluginManager pm = getServer().getPluginManager();
 		
-		pm.registerEvents(new MainEventListener(), this);
 		pm.registerEvents(this.custom = new CustomElementManager(this, pm), this);
+		pm.registerEvents(new MainEventListener(), this);
 		pm.registerEvents(new GameListener(), this);
 		
 		BasicCommands basicCommands = new BasicCommands();
@@ -88,7 +88,6 @@ public class Main extends JavaPlugin {
 		for (Player p : getServer().getOnlinePlayers()) {
 			players.put(p.getUniqueId(), new PlayerDefender(p));
 		}
-		
 	}
 
 	@Override
@@ -113,11 +112,21 @@ public class Main extends JavaPlugin {
 	}
 
 	private void prepareTeam(Team team, ChatColor color, String prefix) {
+		team.setColor(color);
+		team.setPrefix(prefix);
+		this.updateTeam(team);
+	}
+	
+	private void updateTeam(Team team) {
 		team.setAllowFriendlyFire(false);
 		team.setCanSeeFriendlyInvisibles(true);
-		team.setColor(color);
-		team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OWN_TEAM);
-		team.setPrefix(prefix);
+		team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
+		team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
+	}
+	
+	public void updateTeams() {
+		this.updateTeam(communism);
+		this.updateTeam(capitalism);
 	}
 
 	

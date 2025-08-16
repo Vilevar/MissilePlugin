@@ -12,7 +12,7 @@ import be.vilevar.missiles.missile.ballistic.explosives.TraditionalExplosive;
 import io.netty.buffer.ByteBuf;
 
 public interface Explosive {
-
+	
 	void explode(Location loc, Player damager);
 	void explodeByInterception(Location loc, Player damager);
 	

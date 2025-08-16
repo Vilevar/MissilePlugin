@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
+import be.vilevar.missiles.MainEventListener;
 import be.vilevar.missiles.mcelements.CustomItem;
 
 public class Weapon {
@@ -115,7 +116,20 @@ public class Weapon {
 		return rechargeTime;
 	}
 	
-	public void shoot(Player p, boolean isAiming) {
+	public float getSpeed() {
+		return speed;
+	}
+	
+	public float getSpread() {
+		return spread;
+	}
+	
+	public float getAimingSpread() {
+		return aimingSpread;
+	}
+	
+	public Arrow[] shoot(Player p, boolean isAiming) {
+		Arrow[] arrows = new Arrow[this.bullets];
 		World world = p.getWorld();
 		Location loc = p.getEyeLocation();
 		Vector direction = loc.getDirection();
@@ -128,6 +142,7 @@ public class Weapon {
 			arrow.setKnockbackStrength(this.knockback);
 			arrow.setPierceLevel(this.pierce);
 			arrow.setFireTicks(this.fireTicks);
+			arrows[i] = arrow;
 		}
 		if(this.pitchDecline != 0) {
 			Location newPitch = p.getLocation();
@@ -138,6 +153,8 @@ public class Weapon {
 			p.setVelocity(p.getVelocity().add(direction.normalize().setY(0).multiply(-this.planeDecline)));
 		}
 		world.playSound(loc, sound, volume, pitch);
+		MainEventListener.trackSoundOrigin(loc, volume, p);
+		return arrows;
 	}
 	
 	

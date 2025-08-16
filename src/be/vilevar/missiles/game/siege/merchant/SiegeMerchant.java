@@ -43,7 +43,7 @@ public class SiegeMerchant implements WeaponsMerchant {
 		
 		this.moneyItem = new ItemStack(Material.EMERALD);
 		ItemMeta im = this.moneyItem.getItemMeta();
-		im.setLore(Arrays.asList("§6Clickez ici pour §dme soigner§6."));
+		im.setLore(Arrays.asList("§6Clickez (droit) ici pour §dme soigner§6.", "§6Cliquez (gauche) ici pour §em'actualiser§6."));
 		this.moneyItem.setItemMeta(im);
 		
 		merchants.add(this);
@@ -57,6 +57,10 @@ public class SiegeMerchant implements WeaponsMerchant {
 	@Override
 	public SiegeMerchant getAsSiegeMerchant() {
 		return this;
+	}
+	
+	public BigTeamDefender getTeam() {
+		return team;
 	}
 	
 	public boolean isDefender() {

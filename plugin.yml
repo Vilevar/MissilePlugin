@@ -6,8 +6,6 @@ api-version: 1.17
 commands:
     game:
         description: launch the game
-#    discharge:
-#        description: Discharge your gun
     outpost:
         description: Teleport to the outpost of your team
     setoutpost:

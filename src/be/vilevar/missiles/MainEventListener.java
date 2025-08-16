@@ -1,17 +1,10 @@
 package be.vilevar.missiles;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Random;
 
-import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,7 +14,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
 
 import be.vilevar.missiles.mcelements.CustomElementManager;
 
@@ -70,7 +62,7 @@ public class MainEventListener implements Listener {
 			if(e.getAction() == Action.RIGHT_CLICK_AIR) {
 				p.getInventory().addItem(
 						CustomElementManager.A_BOMB.create(), CustomElementManager.ABM.create(), CustomElementManager.ABM_LAUNCHER.create(),
-						CustomElementManager.BIG_SHELL.create(), CustomElementManager.BOMB.create(), CustomElementManager.CLAYMORE.create(),
+						CustomElementManager.SHELL.create(), CustomElementManager.BOMB.create(), CustomElementManager.CLAYMORE.create(),
 						CustomElementManager.E_BOMB.create(), CustomElementManager.ENGINE_1.create(), CustomElementManager.ENGINE_2.create(),
 						CustomElementManager.ENGINE_3.create(), CustomElementManager.FUEL_1.create(), CustomElementManager.FUEL_2.create(),
 						CustomElementManager.FUEL_3.create(), CustomElementManager.H_BOMB.create(), CustomElementManager.HOWITZER.create(),
@@ -86,12 +78,14 @@ public class MainEventListener implements Listener {
 						CustomElementManager.RADAR.create(), CustomElementManager.RANGEFINDER.create(), 
 						CustomElementManager.REENTRY_VEHICLE.create(), CustomElementManager.RV_CRAFT.create(),
 						CustomElementManager.SHOTGUN.createItem(), CustomElementManager.SHOTGUN.getAmmunition().create(),
-						CustomElementManager.SMALL_SHELL.create(), CustomElementManager.SMOKE_BOMB.create(),
+						CustomElementManager.EXPLOSIVE_SHELL.create(), CustomElementManager.PERFORATING_SHELL.create(),
+						CustomElementManager.INCENDIARY_SHELL.create(), CustomElementManager.SMOKE_BOMB.create(),
 						CustomElementManager.SNIPER.createItem(), CustomElementManager.SNIPER.getAmmunition().create(),
 						CustomElementManager.SRBM.create(), CustomElementManager.WEATHER_FORECASTER.create(),
 						CustomElementManager.PLIERS.create());
 			}
 		}
+		
 		
 		// Removing entities and tile entities
 //		if (e.getMaterial() == Material.STICK && e.getAction() == Action.LEFT_CLICK_AIR) {
@@ -134,6 +128,32 @@ public class MainEventListener implements Listener {
 //		}
 	}
 
+	
+	public static void trackSoundOrigin(Location soundOrigin, double volume, Player origin) {
+		if(volume < 0.5) {
+			return;
+		}
+		Main main = Main.i;
+		Random random = new Random();
+		for(Player p : main.getServer().getOnlinePlayers()) {
+			if(!p.getUniqueId().equals(origin.getUniqueId())) {
+				double distance = soundOrigin.distance(p.getLocation());
+				main.getServer().getScheduler().runTaskLater(main, () -> {
+					double angle = random.nextDouble() * 2 * Math.PI;
+					double error = distance * distance / (volume * 500.);
+					if(error <= 100) {
+						Location target = soundOrigin.clone().add(error * Math.cos(angle), error * Math.sin(angle), 0);
+						p.setCompassTarget(target);
+						if(p.getInventory().getItemInMainHand().getType() == Material.COMPASS) {
+							p.sendMessage("§9[Contre-batterie]§6 Un son de tir a été détecté à approximativement §c" 
+									+ target.distance(p.getLocation())+"m§6.");
+						}
+					}
+					
+				}, (int) (distance / 100 * 20));
+			}
+		}
+	}
 	
 	
 	// Debug

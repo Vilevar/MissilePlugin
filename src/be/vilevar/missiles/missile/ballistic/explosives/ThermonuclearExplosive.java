@@ -208,7 +208,7 @@ public class ThermonuclearExplosive implements Explosive {
 	
 	@Override
 	public void explodeByInterception(Location loc, Player damager) {
-		this.interception = new TraditionalExplosive(main, 100);
+		this.interception = new TraditionalExplosive(main, (float) (this.energy0 / 40000));
 		this.interception.explode(loc, damager);
 	}
 	

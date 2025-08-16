@@ -41,9 +41,19 @@ public class GameListener implements Listener {
 	
 	@EventHandler
 	public void onRespawn(PlayerRespawnEvent e) {
-		final Game game = main.getGame();
+		Game game = main.getGame();
 		if(game != null) {
 			game.handleRespawn(e);
 		}
 	}
+	
+//	// Events for SiegeGame only TODO See if necessary
+//	@EventHandler
+//	public void onTeleport(PlayerTeleportEvent e) {
+//		Game game = main.getGame();
+//		if(game != null && game instanceof SiegeGame) {
+//			SiegeGame sgame = (SiegeGame) game;
+//			
+//		}
+//	}
 }

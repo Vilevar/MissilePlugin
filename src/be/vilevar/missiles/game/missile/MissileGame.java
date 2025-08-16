@@ -51,8 +51,8 @@ public class MissileGame implements Game {
 	private int task;
 
 	public MissileGame() {
-		this.communism = new BigTeamDefender(main.getCommunism(), 10, communistHorse);
-		this.capitalism = new BigTeamDefender(main.getCapitalism(), 10, capitalistHorse);
+		this.communism = new BigTeamDefender(main.getCommunism(), true, 10, communistHorse);
+		this.capitalism = new BigTeamDefender(main.getCapitalism(), false, 10, capitalistHorse);
 	}
 	
 	@Override
