@@ -1,0 +1,11 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "item/leather_helmet",
+    "layer1": "item/leather_helmet_overlay"
+  },
+  "overrides": [
+	{"predicate": {"custom_model_data":1}, "model": "item/armors/communist/leather_helmet"},
+    {"predicate": {"custom_model_data":2}, "model": "item/armors/capitalist/leather_helmet"}
+  ]
+}

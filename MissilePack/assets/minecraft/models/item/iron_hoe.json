@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "minecraft:item/iron_hoe"
+  },
+  "overrides": [
+    {"predicate": {"custom_model_data":1}, "model": "item/weapons/barrett_50"},
+	{"predicate": {"custom_model_data":2}, "model": "item/weapons/pistol"},
+	{"predicate": {"custom_model_data":3}, "model": "item/weapons/vityaz_sn"},
+	{"predicate": {"custom_model_data":4}, "model": "item/weapons/shotgun"},
+	{"predicate": {"custom_model_data":5}, "model": "item/artillery/remote_control"},
+	{"predicate": {"custom_model_data":6}, "model": "item/tools/weather_forecaster"},
+	{"predicate": {"custom_model_data":8}, "model": "item/tools/pliers"}
+  ]
+}

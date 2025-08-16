@@ -1,0 +1,128 @@
+{   
+	"parent": "block/cube_all",
+    "textures": {
+		"particle": "block/obsidian",
+        "obsidian": "minecraft:block/obsidian",
+        "redstone_dust": "minecraft:item/redstone",
+        "missile_launcher_red": "minecraft:blocks/missile_launcher_red"
+    },
+    "display": {
+        "gui": {
+            "rotation": [ 30, 45, 0 ],
+            "translation": [ 0, 0, 0 ],
+            "scale": [ 0.625, 0.625, 0.625 ]
+        },
+        "ground": {
+            "rotation": [ 0, 0, 0 ],
+            "translation": [ 0, 3, 0 ],
+            "scale": [ 0.25, 0.25, 0.25 ]
+        },
+        "fixed": {
+            "rotation": [ 0, 180, 0 ],
+            "translation": [ 0, 0, 0 ],
+            "scale": [ 1, 1, 1 ]
+        },
+        "head": {
+            "rotation": [ 0, 180, 0 ],
+            "translation": [ 0, 0, 0 ],
+            "scale": [ 1, 1, 1 ]
+        },
+        "firstperson_righthand": {
+            "rotation": [ 0, 315, 0 ],
+            "translation": [ 0, 2.5, 0 ],
+            "scale": [ 0.4, 0.4, 0.4 ]
+        },
+        "thirdperson_righthand": {
+            "rotation": [ 75, 315, 0 ],
+            "translation": [ 0, 2.5, 0 ],
+            "scale": [ 0.375, 0.375, 0.375 ]
+        }
+    },
+    "elements": [
+        {
+            "name": "Cube",
+            "from": [ 0, 3, 0 ], 
+            "to": [ 3, 16, 3 ], 
+            "faces": {
+                "north": { "texture": "#obsidian", "uv": [ 9, 0, 12, 13 ] },
+                "east": { "texture": "#obsidian", "uv": [ 5, 0, 8, 13 ] },
+                "south": { "texture": "#obsidian", "uv": [ 12, 0, 15, 13 ] },
+                "west": { "texture": "#obsidian", "uv": [ 0, 0, 3, 13 ] },
+                "up": { "texture": "#obsidian", "uv": [ 5, 7, 8, 10 ] }
+            }
+        },
+        {
+            "name": "Cube",
+            "from": [ 13, 3, 0 ], 
+            "to": [ 16, 16, 4 ], 
+            "faces": {
+                "north": { "texture": "#obsidian", "uv": [ 5, 0, 8, 13 ] },
+                "east": { "texture": "#obsidian", "uv": [ 8, 0, 12, 13 ] },
+                "south": { "texture": "#obsidian", "uv": [ 0, 0, 3, 13 ] },
+                "west": { "texture": "#obsidian", "uv": [ 3, 0, 7, 13 ] },
+                "up": { "texture": "#obsidian", "uv": [ 5, 12, 8, 16 ] }
+            }
+        },
+        {
+            "name": "Cube",
+            "from": [ 0, 3, 13 ], 
+            "to": [ 3, 16, 16 ], 
+            "faces": {
+                "north": { "texture": "#obsidian", "uv": [ 0, 0, 3, 13 ] },
+                "east": { "texture": "#obsidian", "uv": [ 4, 0, 7, 13 ] },
+                "south": { "texture": "#obsidian", "uv": [ 2, 0, 5, 13 ] },
+                "west": { "texture": "#obsidian", "uv": [ 10, 0, 13, 13 ] },
+                "up": { "texture": "#obsidian", "uv": [ 2, 3, 5, 6 ] }
+            }
+        },
+        {
+            "name": "Cube",
+            "from": [ 13, 3, 13 ], 
+            "to": [ 16, 16, 16 ], 
+            "faces": {
+                "north": { "texture": "#obsidian", "uv": [ 4, 0, 7, 13 ] },
+                "east": { "texture": "#obsidian", "uv": [ 11, 0, 14, 13 ] },
+                "south": { "texture": "#obsidian", "uv": [ 2, 0, 5, 13 ] },
+                "west": { "texture": "#obsidian", "uv": [ 13, 0, 16, 13 ] },
+                "up": { "texture": "#obsidian", "uv": [ 4, 3, 7, 6 ] }
+            }
+        },
+        {
+            "name": "Cube",
+            "from": [ 0, 0, 0 ], 
+            "to": [ 16, 3, 16 ], 
+            "faces": {
+                "north": { "texture": "#obsidian", "uv": [ 0, 6, 16, 9 ] },
+                "east": { "texture": "#obsidian", "uv": [ 0, 11, 16, 14 ] },
+                "south": { "texture": "#obsidian", "uv": [ 0, 13, 16, 16 ] },
+                "west": { "texture": "#obsidian", "uv": [ 0, 1, 16, 4 ] },
+                "up": { "texture": "#obsidian", "uv": [ 0, 0, 16, 16 ] },
+                "down": { "texture": "#obsidian", "uv": [ 0, 0, 16, 16 ] }
+            }
+        },
+        {
+            "name": "Cube",
+            "from": [ 7, 4, 7 ], 
+            "to": [ 9, 5, 9 ], 
+            "faces": {
+                "north": { "texture": "#redstone_dust", "uv": [ 6, 9, 8, 10 ] },
+                "east": { "texture": "#redstone_dust", "uv": [ 7, 7, 9, 8 ] },
+                "south": { "texture": "#redstone_dust", "uv": [ 6, 6, 8, 8 ] },
+                "west": { "texture": "#redstone_dust", "uv": [ 6, 9, 8, 10 ] },
+                "up": { "texture": "#redstone_dust", "uv": [ 7, 9, 9, 11 ] }
+            }
+        },
+        {
+            "name": "Cube",
+            "from": [ 5, 3, 5 ], 
+            "to": [ 11, 4, 11 ], 
+            "faces": {
+                "north": { "texture": "#missile_launcher_red", "uv": [ 0, 0, 6, 1 ] },
+                "east": { "texture": "#missile_launcher_red", "uv": [ 0, 0, 6, 1 ] },
+                "south": { "texture": "#missile_launcher_red", "uv": [ 0, 0, 6, 1 ] },
+                "west": { "texture": "#missile_launcher_red", "uv": [ 0, 0, 6, 1 ] },
+                "up": { "texture": "#missile_launcher_red", "uv": [ 0, 0, 6, 6 ] }
+            }
+        }
+    ]
+}

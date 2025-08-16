@@ -1,0 +1,37 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/glowstone_dust"
+  },
+  "overrides": [
+    {"predicate": {"custom_model_data":1}, "model": "item/missiles/rangefinder"},
+	{"predicate": {"custom_model_data":4}, "model": "item/weapons/barrett_ammo"},
+	{"predicate": {"custom_model_data":5}, "model": "item/weapons/pistol_ammo"},
+	{"predicate": {"custom_model_data":6}, "model": "item/weapons/vityaz_sn_ammo"},
+	{"predicate": {"custom_model_data":7}, "model": "item/weapons/shotgun_ammo"},
+	{"predicate": {"custom_model_data":8}, "model": "item/artillery/small_shell"},
+	{"predicate": {"custom_model_data":9}, "model": "item/artillery/big_shell"},
+	
+	{"predicate": {"custom_model_data":10}, "model": "item/missiles/engine1"},
+	{"predicate": {"custom_model_data":11}, "model": "item/missiles/engine2"},
+	{"predicate": {"custom_model_data":12}, "model": "item/missiles/engine3"},
+	
+	{"predicate": {"custom_model_data":15}, "model": "item/missiles/fuel1"},
+	{"predicate": {"custom_model_data":16}, "model": "item/missiles/fuel2"},
+	{"predicate": {"custom_model_data":17}, "model": "item/missiles/fuel3"},
+	
+	{"predicate": {"custom_model_data":20}, "model": "item/missiles/srbm"},
+	{"predicate": {"custom_model_data":21}, "model": "item/missiles/mrbm"},
+	{"predicate": {"custom_model_data":22}, "model": "item/missiles/icbm"},
+	{"predicate": {"custom_model_data":23}, "model": "item/missiles/abm"},
+	
+	{"predicate": {"custom_model_data":25}, "model": "item/missiles/rv"},
+	{"predicate": {"custom_model_data":26}, "model": "item/missiles/a-bomb"},
+	{"predicate": {"custom_model_data":27}, "model": "item/missiles/h-bomb"},
+	{"predicate": {"custom_model_data":28}, "model": "item/missiles/e-bomb"},
+	{"predicate": {"custom_model_data":29}, "model": "item/missiles/mirv"},
+
+	{"predicate": {"custom_model_data":30}, "model": "item/artillery/incendiary_shell"},
+	{"predicate": {"custom_model_data":31}, "model": "item/artillery/perforating_shell"}
+  ]
+}

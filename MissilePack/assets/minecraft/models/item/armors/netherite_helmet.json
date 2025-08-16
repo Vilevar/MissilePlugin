@@ -1,0 +1,10 @@
+{
+  "parent": "item/generated",
+  "textures": {
+     "layer0": "minecraft:item/netherite_helmet"
+  },
+  "overrides": [
+	{"predicate": {"custom_model_data":1}, "model": "item/armors/communist/netherite_helmet"},
+    {"predicate": {"custom_model_data":2}, "model": "item/armors/capitalist/netherite_helmet"}
+  ]
+}

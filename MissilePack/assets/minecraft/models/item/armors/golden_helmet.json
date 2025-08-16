@@ -1,0 +1,10 @@
+{
+  "parent": "item/generated",
+  "textures": {
+     "layer0": "minecraft:item/golden_helmet"
+  },
+  "overrides": [
+	{"predicate": {"custom_model_data":1}, "model": "item/armors/communist/golden_helmet"},
+    {"predicate": {"custom_model_data":2}, "model": "item/armors/capitalist/golden_helmet"}
+  ]
+}
